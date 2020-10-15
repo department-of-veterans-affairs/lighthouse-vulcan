@@ -1,5 +1,6 @@
 package gov.va.api.lighthouse.vulcan;
 
+import gov.va.api.lighthouse.vulcan.DateMapping.PredicateFactory;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
@@ -18,24 +19,49 @@ public class Mappings<EntityT> implements Supplier<List<Mapping<EntityT>>> {
     return new Mappings<>();
   }
 
+  /** Add any mapping. */
+  public Mappings<EntityT> add(Mapping<EntityT> mapping) {
+    mappings.add(mapping);
+    return this;
+  }
+
   /** Create a CSV list mapping where request and field name are the same. */
   public Mappings<EntityT> csvList(String parameterAndFieldName) {
-    mappings.add(
-        CsvListMapping.<EntityT>builder()
-            .parameterName(parameterAndFieldName)
-            .fieldName(parameterAndFieldName)
-            .build());
-    return this;
+    return csvList(parameterAndFieldName, parameterAndFieldName);
   }
 
   /** Create a CSV list mapping where request and field name are different. */
   public Mappings<EntityT> csvList(String parameterName, String fieldName) {
-    mappings.add(
+    return add(
         CsvListMapping.<EntityT>builder()
             .parameterName(parameterName)
             .fieldName(fieldName)
             .build());
-    return this;
+  }
+
+  /**
+   * Add a date mapping using a custom predicate factory to for precise control on how the DB is
+   * queried.
+   */
+  public <DateT> Mappings<EntityT> date(
+      String parameterName, String fieldName, PredicateFactory<DateT> predicateFactory) {
+    return add(
+        DateMapping.<EntityT, DateT>builder()
+            .parameterName(parameterName)
+            .fieldName(fieldName)
+            .predicates(predicateFactory)
+            .build());
+  }
+
+  /**
+   * Add a date mapping for Instant entity field values using standard "ap" (approximate) date
+   * processing.
+   */
+  public Mappings<EntityT> dateAsInstant(String parameterName, String fieldName) {
+    return date(
+        parameterName,
+        fieldName,
+        new DateMapping.InstantPredicateFactory(DateMapping.defaultGraduatedApproximation()));
   }
 
   /** Get the mappings. */
@@ -44,63 +70,30 @@ public class Mappings<EntityT> implements Supplier<List<Mapping<EntityT>>> {
     return mappings;
   }
 
-  /** Create an instant mapping where request and field name are the same. */
-  public Mappings<EntityT> instant(String parameterAndFieldName) {
-    mappings.add(
-        InstantMapping.<EntityT>builder()
-            .parameterName(parameterAndFieldName)
-            .fieldName(parameterAndFieldName)
-            .build());
-    return this;
-  }
-
-  /** Create a instant mapping where request and field name are different. */
-  public Mappings<EntityT> instant(String parameterName, String fieldName) {
-    mappings.add(
-        InstantMapping.<EntityT>builder()
-            .parameterName(parameterName)
-            .fieldName(fieldName)
-            .build());
-    return this;
-  }
-
   /** Create a string mapping where request and field name are the same. */
   public Mappings<EntityT> string(String parameterAndFieldName) {
-    mappings.add(
-        StringMapping.<EntityT>builder()
-            .parameterName(parameterAndFieldName)
-            .fieldName(parameterAndFieldName)
-            .build());
-    return this;
+    return string(parameterAndFieldName, parameterAndFieldName);
   }
 
   /** Create a string mapping where request and field name are different. */
   public Mappings<EntityT> string(String parameterName, String fieldName) {
-    mappings.add(
+    return add(
         StringMapping.<EntityT>builder().parameterName(parameterName).fieldName(fieldName).build());
-    return this;
   }
 
   /** Create a value mapping where request and field name are the same. */
   public Mappings<EntityT> value(String parameterAndFieldName, Function<String, ?> converter) {
-    mappings.add(
-        ValueMapping.<EntityT>builder()
-            .parameterName(parameterAndFieldName)
-            .fieldName(parameterAndFieldName)
-            .converter(converter)
-            .build());
-    return this;
+    return value(parameterAndFieldName, parameterAndFieldName, converter);
   }
 
   /** Create a value mapping where request and field name are different. */
   public Mappings<EntityT> value(
       String parameterName, String fieldName, Function<String, ?> converter) {
-    mappings.add(
+    return add(
         ValueMapping.<EntityT>builder()
             .parameterName(parameterName)
             .fieldName(fieldName)
             .converter(converter)
             .build());
-    return this;
   }
 }

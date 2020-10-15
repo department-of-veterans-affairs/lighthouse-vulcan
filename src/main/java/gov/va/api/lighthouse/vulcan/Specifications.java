@@ -11,19 +11,20 @@ import org.springframework.data.jpa.domain.Specification;
 public class Specifications {
 
   /** Create a Stream collector for Specifications. */
-  public static <E> Collector<Specification<E>, MatchesAll<E>, Specification<E>> and() {
+  public static <E>
+      Collector<Specification<E>, MatchesAllSpecifications<E>, Specification<E>> and() {
     return Collector.of(
-        MatchesAll::new,
-        MatchesAll::add,
+        MatchesAllSpecifications::new,
+        MatchesAllSpecifications::add,
         (a, b) -> a.add(b.specification()),
-        MatchesAll::specification,
+        MatchesAllSpecifications::specification,
         Characteristics.UNORDERED);
   }
 
-  private static class MatchesAll<E> {
+  private static class MatchesAllSpecifications<E> {
     @Getter Specification<E> specification;
 
-    MatchesAll<E> add(Specification<E> andMe) {
+    MatchesAllSpecifications<E> add(Specification<E> andMe) {
       if (andMe == null) {
         return this;
       }

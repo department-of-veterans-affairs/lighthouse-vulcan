@@ -77,6 +77,14 @@ class VulcanTest {
     assertThat(req("/fugazi?xfood=NACHOS")).containsExactly(nachos2005);
   }
 
+  @Test
+  void dateAsInstantMapping() {
+    assertThat(req("/fugazi?xdate=")).isEmpty();
+    assertThat(req("/fugazi?xdate=gt2006-01-20")).containsExactly(tacos2006);
+    assertThat(req("/fugazi?xdate=gt2005-01-20&xdate=lt2005-02"))
+        .containsExactlyInAnyOrder(nachos2005, tacos2005, moreNachos2005);
+  }
+
   @BeforeEach
   void insertData() {
     nachos2005 = save("nachos2005", "2005-01-21T07:57:00Z", Food.NACHOS);
