@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import gov.va.api.health.autoconfig.configuration.JacksonConfig;
 import gov.va.api.lighthouse.vulcan.Mappings;
 import gov.va.api.lighthouse.vulcan.Vulcan;
+import java.time.Instant;
 import java.util.List;
 import javax.servlet.http.HttpServletRequest;
 import lombok.SneakyThrows;
@@ -42,6 +43,8 @@ public class FugaziController {
                 .string("xname", "name")
                 .csvList("food")
                 .csvList("xfood", "food")
+                .value("millis", v -> Instant.parse(v).toEpochMilli())
+                .value("xmillis", "millis", v -> Instant.parse(v).toEpochMilli())
                 .instant("date")
                 .instant("xdate", "date")
                 .get())

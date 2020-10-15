@@ -25,5 +25,6 @@ public class FugaziEntity {
   @Column @NotNull String name;
   @Column @NotNull String food;
   @Column @NotNull Instant date;
+  @Column long millis;
   @Column String payload;
 }

@@ -2,6 +2,7 @@ package gov.va.api.lighthouse.vulcan;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 /**
@@ -77,6 +78,29 @@ public class Mappings<EntityT> implements Supplier<List<Mapping<EntityT>>> {
   public Mappings<EntityT> string(String parameterName, String fieldName) {
     mappings.add(
         StringMapping.<EntityT>builder().parameterName(parameterName).fieldName(fieldName).build());
+    return this;
+  }
+
+  /** Create a value mapping where request and field name are the same. */
+  public Mappings<EntityT> value(String parameterAndFieldName, Function<String, ?> converter) {
+    mappings.add(
+        ValueMapping.<EntityT>builder()
+            .parameterName(parameterAndFieldName)
+            .fieldName(parameterAndFieldName)
+            .converter(converter)
+            .build());
+    return this;
+  }
+
+  /** Create a value mapping where request and field name are different. */
+  public Mappings<EntityT> value(
+      String parameterName, String fieldName, Function<String, ?> converter) {
+    mappings.add(
+        ValueMapping.<EntityT>builder()
+            .parameterName(parameterName)
+            .fieldName(fieldName)
+            .converter(converter)
+            .build());
     return this;
   }
 }
