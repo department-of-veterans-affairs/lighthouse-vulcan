@@ -3,11 +3,14 @@ package gov.va.api.lighthouse.vulcan;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import gov.va.api.lighthouse.vulcan.DateMapping.DateFidelity;
 import gov.va.api.lighthouse.vulcan.DateMapping.DateOperator;
 import gov.va.api.lighthouse.vulcan.DateMapping.FixedAmountDateApproximation;
 import gov.va.api.lighthouse.vulcan.DateMapping.SearchableDate;
+import gov.va.api.lighthouse.vulcan.fugazi.FugaziEntity;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.OffsetDateTime;
@@ -16,6 +19,7 @@ import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.function.Function;
 import java.util.stream.Stream;
+import javax.servlet.http.HttpServletRequest;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -29,6 +33,7 @@ class DateMappingTest {
   static final Function<String, Instant> offset =
       s -> OffsetDateTime.parse(s + localOffset).toInstant();
 
+  @SuppressWarnings("unused")
   static Stream<Arguments> fixedDateApproximation() {
     return Stream.of( // 365 day expansion of each boundary of the range
         arguments(
@@ -55,6 +60,7 @@ class DateMappingTest {
             Instant.parse("2005-01-22T07:57:00.999Z")));
   }
 
+  @SuppressWarnings("unused")
   static Stream<Arguments> parsedParameters() {
     return Stream.of( // year range if only year is specified
         arguments(
@@ -170,5 +176,20 @@ class DateMappingTest {
               var sd = new SearchableDate("x", parameterValue);
               sd.upperBound();
             });
+  }
+
+  @Test
+  void specificationForThrowsExceptionIfParameterIsRepeatedMoreThanTwice() {
+    var r = mock(HttpServletRequest.class);
+    when(r.getParameterValues("date")).thenReturn(new String[] {"1", "2", "3"});
+    assertThatExceptionOfType(InvalidParameter.class)
+        .isThrownBy(
+            () ->
+                DateMapping.<FugaziEntity, Long>builder()
+                    .parameterName("date")
+                    .fieldName("x")
+                    .predicates((date, field, cb) -> null)
+                    .build()
+                    .specificationFor(r));
   }
 }

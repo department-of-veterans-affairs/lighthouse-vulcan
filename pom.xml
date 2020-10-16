@@ -11,9 +11,6 @@
   <artifactId>vulcan</artifactId>
   <version>0.0.1-SNAPSHOT</version>
   <packaging>jar</packaging>
-  <properties>
-    <jacoco.coverage>0.88</jacoco.coverage>
-  </properties>
   <dependencies>
     <dependency>
       <groupId>org.springframework.boot</groupId>

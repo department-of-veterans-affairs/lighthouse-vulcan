@@ -25,13 +25,12 @@ public class Specifications {
     @Getter Specification<E> specification;
 
     MatchesAllSpecifications<E> add(Specification<E> andMe) {
-      if (andMe == null) {
-        return this;
-      }
-      if (specification == null) {
-        specification = andMe;
-      } else {
-        specification = specification.and(andMe);
+      if (andMe != null) {
+        if (specification == null) {
+          specification = andMe;
+        } else {
+          specification = specification.and(andMe);
+        }
       }
       return this;
     }

@@ -10,11 +10,11 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.experimental.UtilityClass;
 
-/** Utilities for specifications. */
+/** Utilities for predicates. */
 @UtilityClass
 public class Predicates {
 
-  /** Create a Stream collector for Specifications. */
+  /** Create a Stream collector for predicates. */
   public static Collector<Predicate, MatchesAllPredicates, Predicate> andUsing(
       CriteriaBuilder criteriaBuilder) {
     return Collector.of(
@@ -34,16 +34,10 @@ public class Predicates {
       return this;
     }
 
-    MatchesAllPredicates add(Predicate andMe) {
-      if (andMe == null) {
-        return this;
+    void add(Predicate andMe) {
+      if (andMe != null) {
+        predicates.add(andMe);
       }
-      predicates.add(andMe);
-      return this;
-    }
-
-    Predicate predicate() {
-      return null;
     }
   }
 }

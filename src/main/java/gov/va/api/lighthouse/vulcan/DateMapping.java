@@ -99,6 +99,7 @@ public class DateMapping<EntityT, DateT> implements SingleParameterMapping<Entit
    * Pluggable field predicate generation. This is where you support different JPA entity field
    * types, such as Instant or long.
    */
+  @FunctionalInterface
   public interface PredicateFactory<FieldT> {
     Predicate predicate(
         SearchableDate date, Expression<? extends FieldT> field, CriteriaBuilder criteriaBuilder);

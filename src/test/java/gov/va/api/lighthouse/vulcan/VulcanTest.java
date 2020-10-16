@@ -61,6 +61,14 @@ class VulcanTest {
 
   private FugaziDto tacos2006;
 
+  @BeforeEach
+  void _insertData() {
+    nachos2005 = save("nachos2005", "2005-01-21T07:57:00Z", Food.NACHOS);
+    moreNachos2005 = save("moreNachos2005", "2005-01-22T07:57:00Z", Food.EVEN_MORE_NACHOS);
+    tacos2005 = save("tacos2005", "2005-01-23T07:57:00Z", Food.TACOS);
+    tacos2006 = save("tacos2006", "2006-01-21T07:57:00Z", Food.TACOS);
+  }
+
   @Test
   void csvListMapping() {
     assertThat(req("/fugazi?food=")).isEmpty();
@@ -80,17 +88,22 @@ class VulcanTest {
   @Test
   void dateAsInstantMapping() {
     assertThat(req("/fugazi?xdate=")).isEmpty();
+    assertThat(req("/fugazi?xdate=2006-01-21")).containsExactly(tacos2006);
+    assertThat(req("/fugazi?xdate=eq2006-01-21")).containsExactly(tacos2006);
     assertThat(req("/fugazi?xdate=gt2006-01-20")).containsExactly(tacos2006);
+    assertThat(req("/fugazi?xdate=sa2006-01-20")).containsExactly(tacos2006);
+    assertThat(req("/fugazi?xdate=ge2005-01-22"))
+        .containsExactlyInAnyOrder(tacos2005, moreNachos2005, tacos2006);
+    assertThat(req("/fugazi?xdate=lt2005-01-22")).containsExactly(nachos2005);
+    assertThat(req("/fugazi?xdate=eb2005-01-22")).containsExactly(nachos2005);
+    assertThat(req("/fugazi?xdate=le2005-01-22"))
+        .containsExactlyInAnyOrder(nachos2005, moreNachos2005);
+    assertThat(req("/fugazi?xdate=ap2005-01-22"))
+        .containsExactlyInAnyOrder(nachos2005, moreNachos2005, tacos2005);
+    assertThat(req("/fugazi?xdate=ne2006"))
+        .containsExactlyInAnyOrder(nachos2005, moreNachos2005, tacos2005);
     assertThat(req("/fugazi?xdate=gt2005-01-20&xdate=lt2005-02"))
         .containsExactlyInAnyOrder(nachos2005, tacos2005, moreNachos2005);
-  }
-
-  @BeforeEach
-  void insertData() {
-    nachos2005 = save("nachos2005", "2005-01-21T07:57:00Z", Food.NACHOS);
-    moreNachos2005 = save("moreNachos2005", "2005-01-21T07:57:00Z", Food.EVEN_MORE_NACHOS);
-    tacos2005 = save("tacos2005", "2005-01-21T07:57:00Z", Food.TACOS);
-    tacos2006 = save("tacos2006", "2006-01-21T07:57:00Z", Food.TACOS);
   }
 
   @Test
