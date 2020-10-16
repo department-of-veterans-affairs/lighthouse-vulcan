@@ -131,7 +131,7 @@ Date formats
 - `YYYY-MM-DD` - year, month, or day (`2005-01-21`)
 - `YYYY-MM-DD'T'HH:MM:SS` - precise time (`2005-01-21T07:57:00`)
 - `YYYY-MM-DD'T'HH:MM:SSZ` - precise time in UTC (`2005-01-21T07:57:00Z`)
-- `YYYY-MM-DD'T'HH:MM:SS±HH:MM` - precise time with a specified zone offset (`2005-01-21T07:57:00-04:00`)
+- `YYYY-MM-DD'T'HH:MM:SS??HH:MM` - precise time with a specified zone offset (`2005-01-21T07:57:00-04:00`)
 
 The server's local time zone is used for dates without a time zone.
 
