@@ -1,0 +1,28 @@
+@startuml
+
+interface Specification <<jpa>>
+interface Predicate <<jpa>>
+
+interface ParameterMapping<EntityT>
+class DateMapping<EntityT,DateT> implements ParameterMapping
+interface PredicateFactory<DateT>
+interface DateApproximation
+class FixedAmountDateApproximation implements DateApproximation
+class InstantPredicateFactory implements PredicateFactory
+class SearchableDate <<data>>
+enum DateOperator
+enum DateFidelity
+
+SearchableDate *--> DateOperator
+SearchableDate *--> DateFidelity
+InstantPredicateFactory o--> DateApproximation
+DateMapping o--> PredicateFactory
+
+ParameterMapping --> Specification:<<create>>
+DateMapping --> SearchableDate:<<create>>
+DateMapping --> Predicate:<<combines>>
+PredicateFactory --> Predicate:<<create>>
+PredicateFactory --> SearchableDate:<<use>>
+DateApproximation --> SearchableDate:<<use>>
+
+@enduml
