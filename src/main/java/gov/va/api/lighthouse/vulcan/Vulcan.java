@@ -2,9 +2,12 @@ package gov.va.api.lighthouse.vulcan;
 
 import java.util.List;
 import javax.servlet.http.HttpServletRequest;
+import javax.validation.constraints.NotNull;
 import lombok.Builder;
-import lombok.Singular;
+import lombok.NonNull;
+import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 
@@ -17,8 +20,9 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 @Slf4j
 public class Vulcan<EntityT, JpaRepositoryT extends JpaSpecificationExecutor<EntityT>> {
 
-  private final JpaRepositoryT repository;
-  @Singular private final List<Mapping<EntityT>> mappings;
+  @NonNull private final JpaRepositoryT repository;
+
+  @NotNull private final VulcanConfiguration<EntityT> config;
 
   public static <E, R extends JpaSpecificationExecutor<E>> VulcanBuilder<E, R> forRepo(R repo) {
     return Vulcan.<E, R>builder().repository(repo);
@@ -27,20 +31,24 @@ public class Vulcan<EntityT, JpaRepositoryT extends JpaSpecificationExecutor<Ent
   /** Process there request and return a non-null list of database entities that apply. */
   public List<EntityT> forge(HttpServletRequest request) {
 
-    Specification<EntityT> specification =
-        mappings.stream()
-            .filter(m -> m.appliesTo(request))
-            .peek(
-                m -> {
-                  log.info("Applying {}", m);
-                })
-            .map(m -> m.specificationFor(request))
-            .collect(Specifications.and());
+    RequestContext context = RequestContext.forConfig(config).request(request).build();
+
+    Specification<EntityT> specification = context.specification();
 
     log.info("specification {}", specification);
     if (specification == null) {
       return List.of();
     }
     return repository.findAll(specification);
+  }
+
+  @Value
+  @Builder
+  public static class PagingParameters {
+    @NonNull String pageParameter;
+    @NotNull String countParameter;
+    @Builder.Default int defaultCount = 10;
+    @Builder.Default int maxCount = 20;
+    @NotNull Sort sort;
   }
 }

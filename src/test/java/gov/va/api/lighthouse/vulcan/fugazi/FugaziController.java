@@ -6,12 +6,15 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import gov.va.api.health.autoconfig.configuration.JacksonConfig;
 import gov.va.api.lighthouse.vulcan.Mappings;
 import gov.va.api.lighthouse.vulcan.Vulcan;
+import gov.va.api.lighthouse.vulcan.Vulcan.PagingParameters;
+import gov.va.api.lighthouse.vulcan.VulcanConfiguration;
 import java.time.Instant;
 import java.util.List;
 import javax.servlet.http.HttpServletRequest;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Sort;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -34,9 +37,16 @@ public class FugaziController {
     return mapper.readValue(e.payload(), FugaziDto.class);
   }
 
-  @GetMapping
-  public List<FugaziDto> get(HttpServletRequest request) {
-    return Vulcan.forRepo(repo)
+  private VulcanConfiguration<FugaziEntity> configuration() {
+    return VulcanConfiguration.forEntity(FugaziEntity.class)
+        .paging(
+            PagingParameters.builder()
+                .pageParameter("page")
+                .countParameter("_count")
+                .defaultCount(30)
+                .maxCount(100)
+                .sort(Sort.by("id").ascending())
+                .build())
         .mappings(
             Mappings.forEntity(FugaziEntity.class)
                 .string("name")
@@ -47,9 +57,12 @@ public class FugaziController {
                 .value("xmillis", "millis", v -> Instant.parse(v).toEpochMilli())
                 .dateAsInstant("xdate", "date")
                 .get())
-        .build()
-        .forge(request)
-        .stream()
+        .build();
+  }
+
+  @GetMapping
+  public List<FugaziDto> get(HttpServletRequest request) {
+    return Vulcan.forRepo(repo).config(configuration()).build().forge(request).stream()
         .map(this::asFoo)
         .collect(toList());
   }

@@ -63,14 +63,29 @@ class VulcanTest {
 
   @BeforeEach
   void _insertData() {
-    nachos2005 = save("nachos2005", "2005-01-21T07:57:00Z", Food.NACHOS);
-    moreNachos2005 = save("moreNachos2005", "2005-01-22T07:57:00Z", Food.EVEN_MORE_NACHOS);
-    tacos2005 = save("tacos2005", "2005-01-23T07:57:00Z", Food.TACOS);
-    tacos2006 = save("tacos2006", "2006-01-21T07:57:00Z", Food.TACOS);
+    nachos2005 = _save("nachos2005", "2005-01-21T07:57:00Z", Food.NACHOS);
+    moreNachos2005 = _save("moreNachos2005", "2005-01-22T07:57:00Z", Food.EVEN_MORE_NACHOS);
+    tacos2005 = _save("tacos2005", "2005-01-23T07:57:00Z", Food.TACOS);
+    tacos2006 = _save("tacos2006", "2006-01-21T07:57:00Z", Food.TACOS);
+  }
+
+  @SneakyThrows
+  FugaziDto _save(String name, String date, Food food) {
+    var dto = FugaziDto.builder().name(name).dinner(food).favoriteNumber(name.length()).build();
+    Instant time = Instant.parse(date);
+    repo.save(
+        FugaziEntity.builder()
+            .name(name)
+            .food(food.toString())
+            .date(time)
+            .millis(time.toEpochMilli())
+            .payload(mapper.writeValueAsString(dto))
+            .build());
+    return dto;
   }
 
   @Test
-  void csvListMapping() {
+  void mappingCsvList() {
     assertThat(req("/fugazi?food=")).isEmpty();
     assertThat(req("/fugazi?food=,")).isEmpty();
     assertThat(req("/fugazi?food=NOPE")).isEmpty();
@@ -86,7 +101,7 @@ class VulcanTest {
   }
 
   @Test
-  void dateAsInstantMapping() {
+  void mappingDateAsInstant() {
     assertThat(req("/fugazi?xdate=")).isEmpty();
     assertThat(req("/fugazi?xdate=2006-01-21")).containsExactly(tacos2006);
     assertThat(req("/fugazi?xdate=eq2006-01-21")).containsExactly(tacos2006);
@@ -107,38 +122,7 @@ class VulcanTest {
   }
 
   @Test
-  void mulitpleParametersAreAnded() {
-    assertThat(req("/fugazi?food=NACHOS,TACOS&name:contains=nacho")).containsExactly(nachos2005);
-  }
-
-  @SneakyThrows
-  List<FugaziDto> req(String uri) {
-    var json =
-        mvc.perform(get(uri))
-            .andExpect(status().isOk())
-            .andReturn()
-            .getResponse()
-            .getContentAsString();
-    return mapper.readValue(json, new TypeReference<>() {});
-  }
-
-  @SneakyThrows
-  FugaziDto save(String name, String date, Food food) {
-    var dto = FugaziDto.builder().name(name).dinner(food).favoriteNumber(name.length()).build();
-    Instant time = Instant.parse(date);
-    repo.save(
-        FugaziEntity.builder()
-            .name(name)
-            .food(food.toString())
-            .date(time)
-            .millis(time.toEpochMilli())
-            .payload(mapper.writeValueAsString(dto))
-            .build());
-    return dto;
-  }
-
-  @Test
-  void stringMapping() {
+  void mappingString() {
     assertThat(req("/fugazi?name=")).isEmpty();
     assertThat(req("/fugazi?name=nachos2005")).containsExactly(nachos2005);
     assertThat(req("/fugazi?name=tacos")).containsExactlyInAnyOrder(tacos2005, tacos2006);
@@ -152,10 +136,26 @@ class VulcanTest {
   }
 
   @Test
-  void valueMapping() {
+  void mappingValue() {
     assertThat(req("/fugazi?millis=")).isEmpty();
     assertThat(req("/fugazi?millis=2006-01-21T07:57:00Z")).containsExactly(tacos2006);
 
     assertThat(req("/fugazi?xmillis=2006-01-21T07:57:00Z")).containsExactly(tacos2006);
+  }
+
+  @Test
+  void multipleParametersAreAnded() {
+    assertThat(req("/fugazi?food=NACHOS,TACOS&name:contains=nacho")).containsExactly(nachos2005);
+  }
+
+  @SneakyThrows
+  List<FugaziDto> req(String uri) {
+    var json =
+        mvc.perform(get(uri))
+            .andExpect(status().isOk())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+    return mapper.readValue(json, new TypeReference<>() {});
   }
 }
