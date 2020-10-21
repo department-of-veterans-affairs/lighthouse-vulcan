@@ -7,7 +7,7 @@ import static org.junit.jupiter.params.provider.Arguments.arguments;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import gov.va.api.lighthouse.vulcan.Vulcan.PagingParameters;
+import gov.va.api.lighthouse.vulcan.VulcanConfiguration.PagingConfiguration;
 import gov.va.api.lighthouse.vulcan.fugazi.FugaziEntity;
 import java.util.stream.Stream;
 import javax.servlet.http.HttpServletRequest;
@@ -31,7 +31,7 @@ class RequestContextTest {
   private VulcanConfiguration<FugaziEntity> config() {
     return VulcanConfiguration.forEntity(FugaziEntity.class)
         .paging(
-            PagingParameters.builder()
+            PagingConfiguration.builder()
                 .pageParameter("page")
                 .countParameter("count")
                 .defaultCount(10)

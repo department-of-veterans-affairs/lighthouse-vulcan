@@ -43,7 +43,7 @@ public class FugaziController {
   private VulcanConfiguration<FugaziEntity> configuration() {
     return VulcanConfiguration.forEntity(FugaziEntity.class)
         .paging(
-            PagingParameters.builder()
+            PagingConfiguration.builder()
                 .pageParameter("page")
                 .countParameter("count")
                 .defaultCount(30)

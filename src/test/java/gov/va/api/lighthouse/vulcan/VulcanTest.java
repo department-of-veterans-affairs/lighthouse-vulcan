@@ -9,7 +9,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import gov.va.api.health.autoconfig.configuration.JacksonConfig;
-import gov.va.api.lighthouse.vulcan.Vulcan.PagingParameters;
+import gov.va.api.lighthouse.vulcan.VulcanConfiguration.PagingConfiguration;
 import gov.va.api.lighthouse.vulcan.VulcanResult.Paging;
 import gov.va.api.lighthouse.vulcan.fugazi.FugaziApplication;
 import gov.va.api.lighthouse.vulcan.fugazi.FugaziDto;
@@ -209,7 +209,7 @@ class VulcanTest {
             .config(
                 VulcanConfiguration.forEntity(FugaziEntity.class)
                     .paging(
-                        PagingParameters.builder()
+                        PagingConfiguration.builder()
                             .pageParameter("page")
                             .countParameter("count")
                             .defaultCount(3)

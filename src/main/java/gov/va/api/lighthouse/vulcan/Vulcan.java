@@ -10,10 +10,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.validation.constraints.NotNull;
 import lombok.Builder;
 import lombok.NonNull;
-import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 
 /**
@@ -163,15 +161,4 @@ public class Vulcan<EntityT, JpaRepositoryT extends JpaSpecificationExecutor<Ent
   }
 
   public interface BaseUrlStrategy extends Function<HttpServletRequest, String> {}
-
-  @Value
-  @Builder
-  public static class PagingParameters {
-    @NonNull String pageParameter;
-    @NotNull String countParameter;
-    @Builder.Default int defaultCount = 10;
-    @Builder.Default int maxCount = 20;
-    @NotNull Sort sort;
-    @NonNull BaseUrlStrategy baseUrlStrategy;
-  }
 }
