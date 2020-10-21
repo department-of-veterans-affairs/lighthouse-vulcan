@@ -73,6 +73,11 @@ public class RequestContext<EntityT> {
         "Expected number between 0 and " + config.paging().maxCount());
   }
 
+  private InvalidParameter invalidPageParameter(String value) {
+    return InvalidParameter.badValue(
+        config.paging().pageParameter(), value, "Expected number greater than 1");
+  }
+
   /** Return true if the given parameter is either the page or count parameter. */
   public boolean isPagingRelatedParameter(String param) {
     return config().paging().pageParameter().equals(param)
@@ -92,11 +97,11 @@ public class RequestContext<EntityT> {
     try {
       int page = Integer.parseInt(value);
       if (page < 1) {
-        throw invalidCountParameter(value);
+        throw invalidPageParameter(value);
       }
       return page;
     } catch (NumberFormatException e) {
-      throw invalidCountParameter(value);
+      throw invalidPageParameter(value);
     }
   }
 
