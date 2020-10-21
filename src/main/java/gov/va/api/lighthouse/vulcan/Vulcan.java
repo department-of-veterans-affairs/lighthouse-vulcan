@@ -67,6 +67,14 @@ public class Vulcan<EntityT, JpaRepositoryT extends JpaSpecificationExecutor<Ent
     // TODO - return empty (select none)
     // TODO - select with default parameters
 
+    // TODO make paging option so that when executed the JPA Page isn't provided
+    // TODO to support Observation query hack
+
+    // TODO prototype usage
+    // TODO procedure has superman hack
+    // TODO observation has select all hack
+    // TODO location/organization has address
+
     RequestContext<EntityT> context = RequestContext.forConfig(config).request(request).build();
 
     log.info("specification {}", context.specification());

@@ -13,25 +13,14 @@ import java.time.Instant;
 import java.util.List;
 import javax.servlet.http.HttpServletRequest;
 import lombok.SneakyThrows;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
-import org.springframework.validation.annotation.Validated;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
 
-@Slf4j
-@Validated
-@RestController
-@RequestMapping(
-    value = {"/fugazi"},
-    produces = {"application/json"})
-public class FugaziController {
-
+public class ExampleUsage {
   final ObjectMapper mapper = JacksonConfig.createMapper();
 
-  @Autowired FugaziRepository repo;
+  FugaziRepository repo;
 
   @SneakyThrows
   private FugaziDto asFoo(FugaziEntity e) {
@@ -52,26 +41,30 @@ public class FugaziController {
         .mappings(
             Mappings.forEntity(FugaziEntity.class)
                 .string("name")
-                .string("xname", "name")
                 .csvList("food")
-                .csvList("xfood", "food")
                 .value("millis", v -> Instant.parse(v).toEpochMilli())
-                .value("xmillis", "millis", v -> Instant.parse(v).toEpochMilli())
-                .dateAsInstant("xdate", "date")
+                .dateAsInstant("when", "date")
                 .get())
         .build();
   }
 
   @GetMapping
-  public List<FugaziDto> get(HttpServletRequest request) {
-    log.info("URL {}", request.getRequestURL());
-    log.info("URI {}", request.getQueryString());
-    return Vulcan.forRepo(repo)
-        .config(configuration())
-        .build()
-        .forge(request)
-        .entities()
-        .map(this::asFoo)
-        .collect(toList());
+  public ResponseEntity<List<FugaziDto>> get(HttpServletRequest request) {
+    // Invoke Vulcan to perform determine and perform the approriate query
+    var result = Vulcan.forRepo(repo).config(configuration()).build().forge(request);
+
+    // Process the entities anyway you want. Here we'll map them a DTO.
+    var body = result.entities().map(this::asFoo).collect(toList());
+    var response = ResponseEntity.ok(body);
+
+    // Enhance your response with paging information anyway you want.
+    // I'll just add some headers, but you could do whatever.
+    var headers = response.getHeaders();
+    result.paging().firstPageUrl().ifPresent(url -> headers.add("X-FIRST-PAGE", url));
+    result.paging().previousPageUrl().ifPresent(url -> headers.add("X-PREVIOUS-PAGE", url));
+    result.paging().thisPageUrl().ifPresent(url -> headers.add("X-THIS-PAGE", url));
+    result.paging().nextPageUrl().ifPresent(url -> headers.add("X-NEXT-PAGE", url));
+    result.paging().lastPageUrl().ifPresent(url -> headers.add("X-LAST-PAGE", url));
+    return response;
   }
 }

@@ -39,20 +39,47 @@ public class FugaziController {
 
   @Autowired FugaziRepository repo;
 
-  @GetMapping
-  public List<FugaziDto> get(HttpServletRequest request) {
-    return Vulcan.forRepo(repo)
+  /* You'll need to configure Vulcan. */
+  private VulcanConfiguration<FugaziEntity> configuration() {
+    return VulcanConfiguration.forEntity(FugaziEntity.class)
+        .paging(
+            PagingParameters.builder()
+                .pageParameter("page")
+                .countParameter("count")
+                .defaultCount(30)
+                .maxCount(100)
+                .sort(Sort.by("id").ascending())
+                .baseUrlStrategy(useUrl("http://vulcan.com"))
+                .build())
         .mappings(
             Mappings.forEntity(FugaziEntity.class)
                 .string("name")
                 .csvList("food")
+                .value("millis", v -> Instant.parse(v).toEpochMilli())
                 .dateAsInstant("when", "date")
                 .get())
-        .build()
-        .forge(request)
-        .stream()
-        .map(FugaziDto::fromEntity)
-        .collect(toList());
+        .build();
+  }
+
+
+  @GetMapping
+  public ResponseEntity<List<FugaziDto>> get(HttpServletRequest request) {
+    // Invoke Vulcan to perform determine and perform the approriate query
+    var result = Vulcan.forRepo(repo).config(configuration()).build().forge(request);
+
+    // Process the entities anyway you want. Here we'll map them a DTO.
+    var body = result.entities().map(this::asFoo).collect(toList());
+    var response = ResponseEntity.ok(body);
+
+    // Enhance your response with paging information anyway you want.
+    // I'll just add some headers, but you could do whatever.
+    var headers = response.getHeaders();
+    result.paging().firstPageUrl().ifPresent(url -> headers.add("X-FIRST-PAGE", url));
+    result.paging().previousPageUrl().ifPresent(url -> headers.add("X-PREVIOUS-PAGE", url));
+    result.paging().thisPageUrl().ifPresent(url -> headers.add("X-THIS-PAGE", url));
+    result.paging().nextPageUrl().ifPresent(url -> headers.add("X-NEXT-PAGE", url));
+    result.paging().lastPageUrl().ifPresent(url -> headers.add("X-LAST-PAGE", url));
+    return response;
   }
 }
 ```
