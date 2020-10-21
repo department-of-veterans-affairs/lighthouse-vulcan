@@ -1,5 +1,6 @@
 package gov.va.api.lighthouse.vulcan;
 
+import static gov.va.api.lighthouse.vulcan.Vulcan.useRequestUrl;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
@@ -18,6 +19,7 @@ import org.springframework.data.domain.Sort;
 
 class RequestContextTest {
 
+  @SuppressWarnings("unused")
   static Stream<Arguments> pageAndCount() {
     return Stream.of(
         arguments(null, null, 1, 10),
@@ -35,6 +37,7 @@ class RequestContextTest {
                 .defaultCount(10)
                 .maxCount(20)
                 .sort(Sort.unsorted())
+                .baseUrlStrategy(useRequestUrl())
                 .build())
         .mappings(Mappings.forEntity(FugaziEntity.class).string("name").get())
         .build();
@@ -45,7 +48,7 @@ class RequestContextTest {
     HttpServletRequest req = mock(HttpServletRequest.class);
     when(req.getParameter("count")).thenReturn(count);
     when(req.getParameter("page")).thenReturn(page);
-    return RequestContext.<FugaziEntity>forConfig(config).request(req).build();
+    return RequestContext.forConfig(config).request(req).build();
   }
 
   @ParameterizedTest

@@ -1,5 +1,6 @@
 package gov.va.api.lighthouse.vulcan.fugazi;
 
+import static gov.va.api.lighthouse.vulcan.Vulcan.useUrl;
 import static java.util.stream.Collectors.toList;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -46,6 +47,7 @@ public class FugaziController {
                 .defaultCount(30)
                 .maxCount(100)
                 .sort(Sort.by("id").ascending())
+                .baseUrlStrategy(useUrl("http://vulcon.com"))
                 .build())
         .mappings(
             Mappings.forEntity(FugaziEntity.class)
@@ -62,6 +64,8 @@ public class FugaziController {
 
   @GetMapping
   public List<FugaziDto> get(HttpServletRequest request) {
+    log.info("URL {}", request.getRequestURL());
+    log.info("URI {}", request.getQueryString());
     return Vulcan.forRepo(repo)
         .config(configuration())
         .build()

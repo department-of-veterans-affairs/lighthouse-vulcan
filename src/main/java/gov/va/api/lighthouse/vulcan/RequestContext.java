@@ -10,20 +10,20 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.jpa.domain.Specification;
 
+/**
+ * The RequestContext provides additional details about the request beyond the HttpServletRequest.
+ * This contains configuration data (which influences behavior while processing the request), and
+ * information derived from the request.
+ */
 @Value
 @Slf4j
 public class RequestContext<EntityT> {
 
   VulcanConfiguration<EntityT> config;
-
   HttpServletRequest request;
-
   Specification<EntityT> specification;
-
   int page;
-
   int count;
-
   PageRequest pageRequest;
 
   @Builder
@@ -34,7 +34,7 @@ public class RequestContext<EntityT> {
     specification = specificationOf(request);
     page = pageValueOf(request);
     count = countValueOf(request);
-    pageRequest = PageRequest.of(page - 1, count, config.paging().sort());
+    pageRequest = PageRequest.of(page - 1, Math.max(count, 1), config.paging().sort());
   }
 
   public static <E> RequestContextBuilder<E> forConfig(VulcanConfiguration<E> configuration) {
@@ -46,7 +46,7 @@ public class RequestContext<EntityT> {
   }
 
   /**
-   * Determine a usuable paging count value from the request. This will return the default count if
+   * Determine a usable paging count value from the request. This will return the default count if
    * the request does not include any count parameters. It will thrown an InvalidParameter exception
    * if the count is not a number or out of range.
    */
@@ -73,10 +73,16 @@ public class RequestContext<EntityT> {
         "Expected number between 0 and " + config.paging().maxCount());
   }
 
+  /** Return true if the given parameter is either the page or count parameter. */
+  public boolean isPagingRelatedParameter(String param) {
+    return config().paging().pageParameter().equals(param)
+        || config().paging().countParameter().equals(param);
+  }
+
   /**
-   * Determine a usuable paging page value from the request. This will return the default page if
-   * the request does not include any page parameters. It will thrown an InvalidParameter exception
-   * if the page is not a number or out of range.
+   * Determine a usable paging page value from the request. This will return the default page if the
+   * request does not include any page parameters. It will thrown an InvalidParameter exception if
+   * the page is not a number or out of range.
    */
   private int pageValueOf(HttpServletRequest request) {
     String value = request.getParameter(config.paging().pageParameter());
@@ -97,10 +103,7 @@ public class RequestContext<EntityT> {
   private Specification<EntityT> specificationOf(HttpServletRequest request) {
     return config.mappings().stream()
         .filter(m -> m.appliesTo(request))
-        .peek(
-            m -> {
-              log.info("Applying {}", m);
-            })
+        .peek(m -> log.info("Applying {}", m))
         .map(m -> m.specificationFor(request))
         .collect(Specifications.and());
   }

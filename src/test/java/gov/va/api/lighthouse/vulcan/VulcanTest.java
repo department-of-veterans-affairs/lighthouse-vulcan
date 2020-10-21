@@ -1,5 +1,6 @@
 package gov.va.api.lighthouse.vulcan;
 
+import static gov.va.api.lighthouse.vulcan.Vulcan.useRequestUrl;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -70,14 +71,30 @@ class VulcanTest {
   private FugaziDto tacos2007;
   private FugaziDto tacos2008;
 
+  @SuppressWarnings("unused")
   static Stream<Arguments> pageAndCount() {
+    // String requestName,
+    // String requestPage,
+    // String requestCount,
+    // int totalRecords,
+    // int totalPages,
+    // Integer firstPage,
+    // Integer previousPage,
+    // Integer thisPage,
+    // Integer nextPage,
+    // Integer lastPage
     return Stream.of(
-        arguments("1", "10", 1, 1, null, 1, null, 1),
-        arguments("2", "10", 1, 1, null, 2, null, 1),
-        arguments("1", "2", 3, 1, null, 1, 2, 3),
-        arguments("2", "2", 3, 1, 1, 2, 3, 3),
-        arguments("3", "2", 3, 1, 2, 3, null, 3),
-        arguments("2", "5", 2, 1, 1, 2, null, 2));
+        // pages of results
+        arguments("a", "1", "10", 6, 1, 1, null, 1, null, 1),
+        arguments("a", "2", "10", 6, 1, 1, null, 2, null, 1),
+        arguments("a", "1", "2", 6, 3, 1, null, 1, 2, 3),
+        arguments("a", "2", "2", 6, 3, 1, 1, 2, 3, 3),
+        arguments("a", "3", "2", 6, 3, 1, 2, 3, null, 3),
+        arguments("a", "2", "5", 6, 2, 1, 1, 2, null, 2),
+        // no records found
+        arguments("nope", "1", "5", 0, 0, null, null, 1, null, null),
+        // count only results
+        arguments("a", "1", "0", 6, 0, null, null, 1, null, null));
   }
 
   @BeforeEach
@@ -105,6 +122,7 @@ class VulcanTest {
     return dto;
   }
 
+  @SuppressWarnings("SpellCheckingInspection")
   @Test
   void mappingCsvList() {
     assertThat(req("/fugazi?food=")).isEmpty();
@@ -121,6 +139,7 @@ class VulcanTest {
     assertThat(req("/fugazi?xfood=NACHOS")).containsExactly(nachos2005);
   }
 
+  @SuppressWarnings("SpellCheckingInspection")
   @Test
   void mappingDateAsInstant() {
     assertThat(req("/fugazi?xdate=")).isEmpty();
@@ -142,6 +161,7 @@ class VulcanTest {
         .containsExactlyInAnyOrder(nachos2005, tacos2005, moreNachos2005);
   }
 
+  @SuppressWarnings("SpellCheckingInspection")
   @Test
   void mappingString() {
     assertThat(req("/fugazi?name=")).isEmpty();
@@ -157,6 +177,7 @@ class VulcanTest {
     assertThat(req("/fugazi?xname=nachos2005")).containsExactly(nachos2005);
   }
 
+  @SuppressWarnings("SpellCheckingInspection")
   @Test
   void mappingValue() {
     assertThat(req("/fugazi?millis=")).isEmpty();
@@ -165,25 +186,18 @@ class VulcanTest {
     assertThat(req("/fugazi?xmillis=2006-01-21T07:57:00Z")).containsExactly(tacos2006);
   }
 
-  private MockHttpServletRequest mockRequest(String page, String count) {
-    var r = new MockHttpServletRequest();
-    r.addParameter("name:contains", "a");
-    r.addParameter("page", page);
-    r.addParameter("count", count);
-    r.setRequestURI("/fugazi");
-    return r;
-  }
-
   @Test
-  void multipleParametersAreAnded() {
+  void multipleParametersAreCombinedWithAnd() {
     assertThat(req("/fugazi?food=NACHOS,TACOS&name:contains=nacho")).containsExactly(nachos2005);
   }
 
   @ParameterizedTest
   @MethodSource
   void pageAndCount(
+      String requestName,
       String requestPage,
       String requestCount,
+      int totalRecords,
       int totalPages,
       Integer firstPage,
       Integer previousPage,
@@ -201,23 +215,39 @@ class VulcanTest {
                             .defaultCount(3)
                             .maxCount(10)
                             .sort(Sort.by("id").ascending())
+                            .baseUrlStrategy(useRequestUrl())
                             .build())
                     .mappings(Mappings.forEntity(FugaziEntity.class).string("name").get())
                     .build())
             .build();
 
+    String url =
+        "http://localhost/fugazi?name:contains="
+            + requestName
+            + "&count="
+            + requestCount
+            + "&page=";
     var expectedPaging =
         Paging.builder()
-            .totalRecords(6)
+            .totalRecords(totalRecords)
             .totalPages(totalPages)
             .firstPage(Optional.ofNullable(firstPage))
             .previousPage(Optional.ofNullable(previousPage))
             .thisPage(Optional.ofNullable(thisPage))
             .nextPage(Optional.ofNullable(nextPage))
             .lastPage(Optional.ofNullable(lastPage))
+            .firstPageUrl(Optional.ofNullable(firstPage == null ? null : url + firstPage))
+            .previousPageUrl(Optional.ofNullable(previousPage == null ? null : url + previousPage))
+            .thisPageUrl(Optional.ofNullable(thisPage == null ? null : url + thisPage))
+            .nextPageUrl(Optional.ofNullable(nextPage == null ? null : url + nextPage))
+            .lastPageUrl(Optional.ofNullable(firstPage == null ? null : url + lastPage))
             .build();
-
-    var result = vulcan.forge(mockRequest(requestPage, requestCount));
+    var request = new MockHttpServletRequest();
+    request.addParameter("name:contains", requestName);
+    request.addParameter("page", requestPage);
+    request.addParameter("count", requestCount);
+    request.setRequestURI("/fugazi");
+    var result = vulcan.forge(request);
     assertThat(result.paging()).isEqualTo(expectedPaging);
   }
 

@@ -1,7 +1,10 @@
 package gov.va.api.lighthouse.vulcan;
 
+import static java.util.Optional.empty;
+
 import gov.va.api.lighthouse.vulcan.VulcanResult.Paging;
 import java.util.Optional;
+import java.util.function.Function;
 import java.util.stream.Stream;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.constraints.NotNull;
@@ -30,17 +33,40 @@ public class Vulcan<EntityT, JpaRepositoryT extends JpaSpecificationExecutor<Ent
     return Vulcan.<E, R>builder().repository(repo);
   }
 
-  private VulcanResult<EntityT> countOnlyResult(RequestContext<EntityT> context) {
-    long totalRecords = repository.count(context.specification());
-    // TODO PAGING FOR COUNT ONLY
-    return VulcanResult.<EntityT>builder()
-        .paging(Paging.builder().build())
-        .entities(Stream.empty())
-        .build();
+  /** When making paging links, use the request URL from the HttpServletRequest object. */
+  @SuppressWarnings("JdkObsolete")
+  public static BaseUrlStrategy useRequestUrl() {
+    /*
+     * The compiler is flagging the interaction with StringBuffer as a warning. Neither
+     * HttpServletRequest or the getRequestURL method are deprecated, nor are there alternatives
+     * that do not return StringBuffer.
+     */
+    return r -> r.getRequestURL().toString();
+  }
+
+  /** When making paging links, use the given base URL. */
+  public static BaseUrlStrategy useUrl(String baseUrl) {
+    return r -> baseUrl;
   }
 
   /** Process there request and return a non-null list of database entities that apply. */
   public VulcanResult<EntityT> forge(HttpServletRequest request) {
+
+    // TODO extensible page link strategy
+    // TODO - url from request
+    // TODO - url from provided (e.g. configured like dq)
+
+    // TODO parameter rules
+    // TODO - at least one of
+    // TODO - only one onf
+    // TODO - required groups of parameters (e.g. if "a" is specified then must specify "b")
+
+    // TODO configurable behavior if no parameters are specified
+    // TODO - throw error
+    // TODO - select all
+    // TODO - return empty (select none)
+    // TODO - select with default parameters
+
     RequestContext<EntityT> context = RequestContext.forConfig(config).request(request).build();
 
     log.info("specification {}", context.specification());
@@ -55,22 +81,49 @@ public class Vulcan<EntityT, JpaRepositoryT extends JpaSpecificationExecutor<Ent
               Paging.builder()
                   .totalRecords(0)
                   .totalPages(0)
-                  .firstPage(Optional.empty())
-                  .previousPage(Optional.empty())
-                  .thisPage(Optional.empty())
-                  .nextPage(Optional.empty())
-                  .lastPage(Optional.empty())
+                  .firstPage(empty())
+                  .firstPageUrl(empty())
+                  .previousPage(empty())
+                  .previousPageUrl(empty())
+                  .thisPage(empty())
+                  .thisPageUrl(empty())
+                  .nextPage(empty())
+                  .nextPageUrl(empty())
+                  .lastPage(empty())
+                  .lastPageUrl(empty())
                   .build())
           .entities(Stream.empty())
           .build();
     }
     if (context.countOnly()) {
-      return countOnlyResult(context);
+      return resultsForCountOnly(context);
     }
-    return pageOfRecords(context);
+    return resultsForPageOfRecords(context);
   }
 
-  private VulcanResult<EntityT> pageOfRecords(RequestContext<EntityT> context) {
+  private VulcanResult<EntityT> resultsForCountOnly(RequestContext<EntityT> context) {
+    long totalRecords = repository.count(context.specification());
+    return VulcanResult.<EntityT>builder()
+        .paging(
+            Paging.builder()
+                .totalRecords(totalRecords)
+                .totalPages(0)
+                .firstPage(empty())
+                .firstPageUrl(empty())
+                .previousPage(empty())
+                .previousPageUrl(empty())
+                .thisPage(Optional.of(context.page()))
+                .thisPageUrl(PageLinkBuilder.of(context).urlForPage(context.page()))
+                .nextPage(empty())
+                .nextPageUrl(empty())
+                .lastPage(empty())
+                .lastPageUrl(empty())
+                .build())
+        .entities(Stream.empty())
+        .build();
+  }
+
+  private VulcanResult<EntityT> resultsForPageOfRecords(RequestContext<EntityT> context) {
     Page<EntityT> searchResult = repository.findAll(context.specification(), context.pageRequest());
     boolean hasPages = searchResult.getTotalElements() > 0;
     int thisPage = context.page();
@@ -79,20 +132,29 @@ public class Vulcan<EntityT, JpaRepositoryT extends JpaSpecificationExecutor<Ent
     Integer previousPage = hasPages && thisPage > 1 && thisPage <= lastPage ? (thisPage - 1) : null;
     Integer nextPage = hasPages && thisPage < lastPage ? (thisPage + 1) : null;
 
+    PageLinkBuilder links = PageLinkBuilder.of(context);
+
     return VulcanResult.<EntityT>builder()
         .paging(
             Paging.builder()
                 .totalPages(searchResult.getTotalPages())
                 .totalRecords(searchResult.getTotalElements())
                 .firstPage(Optional.ofNullable(firstPage))
+                .firstPageUrl(links.urlForPage(firstPage))
                 .previousPage(Optional.ofNullable(previousPage))
-                .thisPage(Optional.ofNullable(thisPage))
+                .previousPageUrl(links.urlForPage(previousPage))
+                .thisPage(Optional.of(thisPage))
+                .thisPageUrl(links.urlForPage(thisPage))
                 .nextPage(Optional.ofNullable(nextPage))
+                .nextPageUrl(links.urlForPage(nextPage))
                 .lastPage(Optional.ofNullable(lastPage))
+                .lastPageUrl(links.urlForPage(lastPage))
                 .build())
         .entities(searchResult.stream())
         .build();
   }
+
+  public interface BaseUrlStrategy extends Function<HttpServletRequest, String> {}
 
   @Value
   @Builder
@@ -102,5 +164,6 @@ public class Vulcan<EntityT, JpaRepositoryT extends JpaSpecificationExecutor<Ent
     @Builder.Default int defaultCount = 10;
     @Builder.Default int maxCount = 20;
     @NotNull Sort sort;
+    @NonNull BaseUrlStrategy baseUrlStrategy;
   }
 }

@@ -12,7 +12,8 @@ public class VulcanConfiguration<EntityT> {
   @NonNull Vulcan.PagingParameters paging;
   @Singular @NonNull List<Mapping<EntityT>> mappings;
 
-  public static <E> VulcanConfigurationBuilder<E> forEntity(Class<E> repo) {
-    return VulcanConfiguration.<E>builder();
+  public static <E> VulcanConfigurationBuilder<E> forEntity(
+      @SuppressWarnings("unused") Class<E> repo) {
+    return VulcanConfiguration.builder();
   }
 }
