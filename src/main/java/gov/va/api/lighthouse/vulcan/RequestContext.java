@@ -75,7 +75,7 @@ public class RequestContext<EntityT> {
 
   private InvalidParameter invalidPageParameter(String value) {
     return InvalidParameter.badValue(
-        config.paging().pageParameter(), value, "Expected number greater than 1");
+        config.paging().pageParameter(), value, "Expected number greater than or equal to 1");
   }
 
   /** Return true if the given parameter is either the page or count parameter. */
