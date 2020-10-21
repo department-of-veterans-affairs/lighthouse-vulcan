@@ -41,6 +41,10 @@ public class RequestContext<EntityT> {
     return RequestContext.<E>builder().config(configuration);
   }
 
+  public boolean countOnly() {
+    return count == 0;
+  }
+
   /**
    * Determine a usuable paging count value from the request. This will return the default count if
    * the request does not include any count parameters. It will thrown an InvalidParameter exception

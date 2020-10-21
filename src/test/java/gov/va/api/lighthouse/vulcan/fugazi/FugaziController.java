@@ -42,7 +42,7 @@ public class FugaziController {
         .paging(
             PagingParameters.builder()
                 .pageParameter("page")
-                .countParameter("_count")
+                .countParameter("count")
                 .defaultCount(30)
                 .maxCount(100)
                 .sort(Sort.by("id").ascending())
@@ -62,7 +62,11 @@ public class FugaziController {
 
   @GetMapping
   public List<FugaziDto> get(HttpServletRequest request) {
-    return Vulcan.forRepo(repo).config(configuration()).build().forge(request).stream()
+    return Vulcan.forRepo(repo)
+        .config(configuration())
+        .build()
+        .forge(request)
+        .entities()
         .map(this::asFoo)
         .collect(toList());
   }

@@ -1,12 +1,15 @@
 package gov.va.api.lighthouse.vulcan;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.params.provider.Arguments.arguments;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import gov.va.api.health.autoconfig.configuration.JacksonConfig;
+import gov.va.api.lighthouse.vulcan.Vulcan.PagingParameters;
+import gov.va.api.lighthouse.vulcan.VulcanResult.Paging;
 import gov.va.api.lighthouse.vulcan.fugazi.FugaziApplication;
 import gov.va.api.lighthouse.vulcan.fugazi.FugaziDto;
 import gov.va.api.lighthouse.vulcan.fugazi.FugaziDto.Food;
@@ -14,17 +17,24 @@ import gov.va.api.lighthouse.vulcan.fugazi.FugaziEntity;
 import gov.va.api.lighthouse.vulcan.fugazi.FugaziRepository;
 import java.time.Instant;
 import java.util.List;
+import java.util.Optional;
+import java.util.stream.Stream;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase.Replace;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.MockMvcPrint;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.domain.Sort;
+import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
@@ -54,12 +64,21 @@ class VulcanTest {
   ObjectMapper mapper = JacksonConfig.createMapper();
 
   private FugaziDto nachos2005;
-
   private FugaziDto moreNachos2005;
-
   private FugaziDto tacos2005;
-
   private FugaziDto tacos2006;
+  private FugaziDto tacos2007;
+  private FugaziDto tacos2008;
+
+  static Stream<Arguments> pageAndCount() {
+    return Stream.of(
+        arguments("1", "10", 1, 1, null, 1, null, 1),
+        arguments("2", "10", 1, 1, null, 2, null, 1),
+        arguments("1", "2", 3, 1, null, 1, 2, 3),
+        arguments("2", "2", 3, 1, 1, 2, 3, 3),
+        arguments("3", "2", 3, 1, 2, 3, null, 3),
+        arguments("2", "5", 2, 1, 1, 2, null, 2));
+  }
 
   @BeforeEach
   void _insertData() {
@@ -67,6 +86,8 @@ class VulcanTest {
     moreNachos2005 = _save("moreNachos2005", "2005-01-22T07:57:00Z", Food.EVEN_MORE_NACHOS);
     tacos2005 = _save("tacos2005", "2005-01-23T07:57:00Z", Food.TACOS);
     tacos2006 = _save("tacos2006", "2006-01-21T07:57:00Z", Food.TACOS);
+    tacos2007 = _save("tacos2007", "2007-01-21T07:57:00Z", Food.TACOS);
+    tacos2008 = _save("tacos2008", "2008-01-21T07:57:00Z", Food.TACOS);
   }
 
   @SneakyThrows
@@ -92,9 +113,9 @@ class VulcanTest {
     assertThat(req("/fugazi?food=NACHOS")).containsExactly(nachos2005);
     assertThat(req("/fugazi?food=NACHOS,NACHOS")).containsExactly(nachos2005);
     assertThat(req("/fugazi?food=NACHOS,TACOS"))
-        .containsExactlyInAnyOrder(nachos2005, tacos2005, tacos2006);
+        .containsExactlyInAnyOrder(nachos2005, tacos2005, tacos2006, tacos2007, tacos2008);
     assertThat(req("/fugazi?food=NACHOS,,TACOS,TACOS"))
-        .containsExactlyInAnyOrder(nachos2005, tacos2005, tacos2006);
+        .containsExactlyInAnyOrder(nachos2005, tacos2005, tacos2006, tacos2007, tacos2008);
     assertThat(req("/fugazi?food=NACHOS,NOPE")).containsExactly(nachos2005);
 
     assertThat(req("/fugazi?xfood=NACHOS")).containsExactly(nachos2005);
@@ -105,10 +126,10 @@ class VulcanTest {
     assertThat(req("/fugazi?xdate=")).isEmpty();
     assertThat(req("/fugazi?xdate=2006-01-21")).containsExactly(tacos2006);
     assertThat(req("/fugazi?xdate=eq2006-01-21")).containsExactly(tacos2006);
-    assertThat(req("/fugazi?xdate=gt2006-01-20")).containsExactly(tacos2006);
-    assertThat(req("/fugazi?xdate=sa2006-01-20")).containsExactly(tacos2006);
+    assertThat(req("/fugazi?xdate=gt2006-01-20")).containsExactly(tacos2006, tacos2007, tacos2008);
+    assertThat(req("/fugazi?xdate=sa2006-01-20")).containsExactly(tacos2006, tacos2007, tacos2008);
     assertThat(req("/fugazi?xdate=ge2005-01-22"))
-        .containsExactlyInAnyOrder(tacos2005, moreNachos2005, tacos2006);
+        .containsExactlyInAnyOrder(tacos2005, moreNachos2005, tacos2006, tacos2007, tacos2008);
     assertThat(req("/fugazi?xdate=lt2005-01-22")).containsExactly(nachos2005);
     assertThat(req("/fugazi?xdate=eb2005-01-22")).containsExactly(nachos2005);
     assertThat(req("/fugazi?xdate=le2005-01-22"))
@@ -116,7 +137,7 @@ class VulcanTest {
     assertThat(req("/fugazi?xdate=ap2005-01-22"))
         .containsExactlyInAnyOrder(nachos2005, moreNachos2005, tacos2005);
     assertThat(req("/fugazi?xdate=ne2006"))
-        .containsExactlyInAnyOrder(nachos2005, moreNachos2005, tacos2005);
+        .containsExactlyInAnyOrder(nachos2005, moreNachos2005, tacos2005, tacos2007, tacos2008);
     assertThat(req("/fugazi?xdate=gt2005-01-20&xdate=lt2005-02"))
         .containsExactlyInAnyOrder(nachos2005, tacos2005, moreNachos2005);
   }
@@ -125,7 +146,8 @@ class VulcanTest {
   void mappingString() {
     assertThat(req("/fugazi?name=")).isEmpty();
     assertThat(req("/fugazi?name=nachos2005")).containsExactly(nachos2005);
-    assertThat(req("/fugazi?name=tacos")).containsExactlyInAnyOrder(tacos2005, tacos2006);
+    assertThat(req("/fugazi?name=tacos"))
+        .containsExactlyInAnyOrder(tacos2005, tacos2006, tacos2007, tacos2008);
     assertThat(req("/fugazi?name:exact=nachos")).isEmpty();
     assertThat(req("/fugazi?name:exact=")).isEmpty();
     assertThat(req("/fugazi?name:contains=nachos"))
@@ -143,9 +165,60 @@ class VulcanTest {
     assertThat(req("/fugazi?xmillis=2006-01-21T07:57:00Z")).containsExactly(tacos2006);
   }
 
+  private MockHttpServletRequest mockRequest(String page, String count) {
+    var r = new MockHttpServletRequest();
+    r.addParameter("name:contains", "a");
+    r.addParameter("page", page);
+    r.addParameter("count", count);
+    r.setRequestURI("/fugazi");
+    return r;
+  }
+
   @Test
   void multipleParametersAreAnded() {
     assertThat(req("/fugazi?food=NACHOS,TACOS&name:contains=nacho")).containsExactly(nachos2005);
+  }
+
+  @ParameterizedTest
+  @MethodSource
+  void pageAndCount(
+      String requestPage,
+      String requestCount,
+      int totalPages,
+      Integer firstPage,
+      Integer previousPage,
+      Integer thisPage,
+      Integer nextPage,
+      Integer lastPage) {
+    var vulcan =
+        Vulcan.forRepo(repo)
+            .config(
+                VulcanConfiguration.forEntity(FugaziEntity.class)
+                    .paging(
+                        PagingParameters.builder()
+                            .pageParameter("page")
+                            .countParameter("count")
+                            .defaultCount(3)
+                            .maxCount(10)
+                            .sort(Sort.by("id").ascending())
+                            .build())
+                    .mappings(Mappings.forEntity(FugaziEntity.class).string("name").get())
+                    .build())
+            .build();
+
+    var expectedPaging =
+        Paging.builder()
+            .totalRecords(6)
+            .totalPages(totalPages)
+            .firstPage(Optional.ofNullable(firstPage))
+            .previousPage(Optional.ofNullable(previousPage))
+            .thisPage(Optional.ofNullable(thisPage))
+            .nextPage(Optional.ofNullable(nextPage))
+            .lastPage(Optional.ofNullable(lastPage))
+            .build();
+
+    var result = vulcan.forge(mockRequest(requestPage, requestCount));
+    assertThat(result.paging()).isEqualTo(expectedPaging);
   }
 
   @SneakyThrows
