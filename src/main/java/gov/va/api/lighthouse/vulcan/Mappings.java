@@ -88,7 +88,7 @@ public class Mappings<EntityT> implements Supplier<List<Mapping<EntityT>>> {
 
   /** Create a value mapping where request and field name are the same with no value conversion. */
   public Mappings<EntityT> value(String parameterAndFieldName) {
-    return value(parameterAndFieldName, parameterAndFieldName, Function.identity());
+    return value(parameterAndFieldName, parameterAndFieldName);
   }
 
   /**
