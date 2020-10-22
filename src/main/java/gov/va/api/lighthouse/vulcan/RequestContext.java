@@ -25,13 +25,24 @@ public class RequestContext<EntityT> {
   int page;
   int count;
   PageRequest pageRequest;
+  boolean abortSearch;
 
   @Builder
   private RequestContext(
       @NonNull VulcanConfiguration<EntityT> config, @NonNull HttpServletRequest request) {
     this.config = config;
     this.request = request;
-    specification = specificationOf(request);
+    Specification<EntityT> maybeSpecification;
+    boolean maybeAbortSearch = false;
+    try {
+      maybeSpecification = specificationOf(request);
+    } catch (CircuitBreaker e) {
+      maybeSpecification = null;
+      maybeAbortSearch = true;
+      log.info("Circuit breaker thrown, skipping search: {}", e.getMessage());
+    }
+    specification = maybeSpecification;
+    abortSearch = maybeAbortSearch;
     page = pageValueOf(request);
     count = countValueOf(request);
     pageRequest = PageRequest.of(page - 1, Math.max(count, 1), config.paging().sort());

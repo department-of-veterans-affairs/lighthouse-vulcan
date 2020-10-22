@@ -3,8 +3,10 @@ package gov.va.api.lighthouse.vulcan.mappings;
 import gov.va.api.lighthouse.vulcan.Mapping;
 import gov.va.api.lighthouse.vulcan.mappings.DateMapping.PredicateFactory;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.function.Supplier;
 
 /**
@@ -80,6 +82,35 @@ public class Mappings<EntityT> implements Supplier<List<Mapping<EntityT>>> {
   public Mappings<EntityT> string(String parameterName, String fieldName) {
     return add(
         StringMapping.<EntityT>builder().parameterName(parameterName).fieldName(fieldName).build());
+  }
+
+  public Mappings<EntityT> token(
+      String parameterName,
+      String fieldName,
+      Predicate<TokenParameter> supportedToken,
+      Function<TokenParameter, Collection<String>> valueSelector) {
+    return token(parameterName, t -> fieldName, supportedToken, valueSelector);
+  }
+
+  public Mappings<EntityT> token(
+      String parameterAndFieldName,
+      Predicate<TokenParameter> supportedToken,
+      Function<TokenParameter, Collection<String>> valueSelector) {
+    return token(parameterAndFieldName, parameterAndFieldName, supportedToken, valueSelector);
+  }
+
+  public Mappings<EntityT> token(
+      String parameterName,
+      Function<TokenParameter, String> fieldNameSelector,
+      Predicate<TokenParameter> supportedToken,
+      Function<TokenParameter, Collection<String>> valueSelector) {
+    return add(
+        TokenMapping.<EntityT>builder()
+            .parameterName(parameterName)
+            .supportedToken(supportedToken)
+            .fieldNameSelector(fieldNameSelector)
+            .valueSelector(valueSelector)
+            .build());
   }
 
   /** Create a value mapping where request and field name are the same. */

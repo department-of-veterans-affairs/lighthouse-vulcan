@@ -47,12 +47,30 @@ public class Vulcan<EntityT, JpaRepositoryT extends JpaSpecificationExecutor<Ent
     return r -> baseUrl;
   }
 
+  private VulcanResult<EntityT> emptyVulcanResult(
+      RequestContext<EntityT> context, long totalRecords) {
+    return VulcanResult.<EntityT>builder()
+        .paging(
+            Paging.builder()
+                .totalRecords(totalRecords)
+                .totalPages(0)
+                .firstPage(empty())
+                .firstPageUrl(empty())
+                .previousPage(empty())
+                .previousPageUrl(empty())
+                .thisPage(Optional.of(context.page()))
+                .thisPageUrl(PageLinkBuilder.of(context).urlForPage(context.page()))
+                .nextPage(empty())
+                .nextPageUrl(empty())
+                .lastPage(empty())
+                .lastPageUrl(empty())
+                .build())
+        .entities(Stream.empty())
+        .build();
+  }
+
   /** Process there request and return a non-null list of database entities that apply. */
   public VulcanResult<EntityT> forge(HttpServletRequest request) {
-
-    // TODO extensible page link strategy
-    // TODO - url from request
-    // TODO - url from provided (e.g. configured like dq)
 
     // TODO parameter rules
     // TODO - at least one of
@@ -74,6 +92,10 @@ public class Vulcan<EntityT, JpaRepositoryT extends JpaSpecificationExecutor<Ent
     // TODO location/organization has address
 
     RequestContext<EntityT> context = RequestContext.forConfig(config).request(request).build();
+
+    if (context.abortSearch()) {
+      return resultsForAbortedSearch(context);
+    }
 
     log.info("specification {}", context.specification());
     if (context.specification() == null) {
@@ -107,26 +129,13 @@ public class Vulcan<EntityT, JpaRepositoryT extends JpaSpecificationExecutor<Ent
     return resultsForPageOfRecords(context);
   }
 
+  private VulcanResult<EntityT> resultsForAbortedSearch(RequestContext<EntityT> context) {
+    return emptyVulcanResult(context, 0);
+  }
+
   private VulcanResult<EntityT> resultsForCountOnly(RequestContext<EntityT> context) {
     long totalRecords = repository.count(context.specification());
-    return VulcanResult.<EntityT>builder()
-        .paging(
-            Paging.builder()
-                .totalRecords(totalRecords)
-                .totalPages(0)
-                .firstPage(empty())
-                .firstPageUrl(empty())
-                .previousPage(empty())
-                .previousPageUrl(empty())
-                .thisPage(Optional.of(context.page()))
-                .thisPageUrl(PageLinkBuilder.of(context).urlForPage(context.page()))
-                .nextPage(empty())
-                .nextPageUrl(empty())
-                .lastPage(empty())
-                .lastPageUrl(empty())
-                .build())
-        .entities(Stream.empty())
-        .build();
+    return emptyVulcanResult(context, totalRecords);
   }
 
   private VulcanResult<EntityT> resultsForPageOfRecords(RequestContext<EntityT> context) {

@@ -124,13 +124,25 @@ public class TokenParameter {
   public static class Behavior<T> {
     @NonNull TokenParameter token;
 
-    Function<String, T> onAnySystemAndExplicitCode;
+    @Builder.Default
+    Function<String, T> onAnySystemAndExplicitCode =
+        s -> throwNotConfigured("onAnySystemAndExplicitCode");
 
-    Function<String, T> onExplicitSystemAndAnyCode;
+    @Builder.Default
+    Function<String, T> onExplicitSystemAndAnyCode =
+        s -> throwNotConfigured("onExplicitSystemAndAnyCode");
 
-    BiFunction<String, String, T> onExplicitSystemAndExplicitCode;
+    @Builder.Default
+    BiFunction<String, String, T> onExplicitSystemAndExplicitCode =
+        (s, c) -> throwNotConfigured("onNoSystemAndExplicitCode");
 
-    Function<String, T> onNoSystemAndExplicitCode;
+    @Builder.Default
+    Function<String, T> onNoSystemAndExplicitCode =
+        s -> throwNotConfigured("onNoSystemAndExplicitCode");
+
+    private static <T> T throwNotConfigured(String state) {
+      throw new IllegalStateException("Behavior not configured for state: " + state);
+    }
 
     /** Check if behavior is specified before executing it. */
     public <T1> T1 check(T1 n) {

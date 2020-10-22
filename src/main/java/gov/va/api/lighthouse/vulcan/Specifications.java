@@ -10,6 +10,10 @@ import org.springframework.data.jpa.domain.Specification;
 @UtilityClass
 public class Specifications {
 
+  public static <E> Specification<E> selectNothing() {
+    return (root, query, builder) -> null;
+  }
+
   /** Create a Stream collector for Specifications. */
   public static <E>
       Collector<Specification<E>, MatchesAllSpecifications<E>, Specification<E>> and() {
