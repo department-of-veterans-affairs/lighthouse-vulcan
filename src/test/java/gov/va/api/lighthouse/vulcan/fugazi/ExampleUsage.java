@@ -5,10 +5,10 @@ import static java.util.stream.Collectors.toList;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import gov.va.api.health.autoconfig.configuration.JacksonConfig;
-import gov.va.api.lighthouse.vulcan.Mappings;
 import gov.va.api.lighthouse.vulcan.Vulcan;
 import gov.va.api.lighthouse.vulcan.VulcanConfiguration;
 import gov.va.api.lighthouse.vulcan.VulcanConfiguration.PagingConfiguration;
+import gov.va.api.lighthouse.vulcan.mappings.Mappings;
 import java.time.Instant;
 import java.util.List;
 import javax.servlet.http.HttpServletRequest;

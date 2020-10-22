@@ -1,7 +1,8 @@
-package gov.va.api.lighthouse.vulcan;
+package gov.va.api.lighthouse.vulcan.mappings;
 
 import static java.util.stream.Collectors.toSet;
 
+import gov.va.api.lighthouse.vulcan.SingleParameterMapping;
 import java.util.stream.Stream;
 import javax.persistence.criteria.CriteriaBuilder.In;
 import javax.servlet.http.HttpServletRequest;

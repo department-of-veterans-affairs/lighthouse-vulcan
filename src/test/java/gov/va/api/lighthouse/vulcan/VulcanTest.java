@@ -16,6 +16,7 @@ import gov.va.api.lighthouse.vulcan.fugazi.FugaziDto;
 import gov.va.api.lighthouse.vulcan.fugazi.FugaziDto.Food;
 import gov.va.api.lighthouse.vulcan.fugazi.FugaziEntity;
 import gov.va.api.lighthouse.vulcan.fugazi.FugaziRepository;
+import gov.va.api.lighthouse.vulcan.mappings.Mappings;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;

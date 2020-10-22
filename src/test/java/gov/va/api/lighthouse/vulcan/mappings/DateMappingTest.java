@@ -1,4 +1,4 @@
-package gov.va.api.lighthouse.vulcan;
+package gov.va.api.lighthouse.vulcan.mappings;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
@@ -6,11 +6,12 @@ import static org.junit.jupiter.params.provider.Arguments.arguments;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import gov.va.api.lighthouse.vulcan.DateMapping.DateFidelity;
-import gov.va.api.lighthouse.vulcan.DateMapping.DateOperator;
-import gov.va.api.lighthouse.vulcan.DateMapping.FixedAmountDateApproximation;
-import gov.va.api.lighthouse.vulcan.DateMapping.SearchableDate;
+import gov.va.api.lighthouse.vulcan.InvalidParameter;
 import gov.va.api.lighthouse.vulcan.fugazi.FugaziEntity;
+import gov.va.api.lighthouse.vulcan.mappings.DateMapping.DateFidelity;
+import gov.va.api.lighthouse.vulcan.mappings.DateMapping.DateOperator;
+import gov.va.api.lighthouse.vulcan.mappings.DateMapping.FixedAmountDateApproximation;
+import gov.va.api.lighthouse.vulcan.mappings.DateMapping.SearchableDate;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.OffsetDateTime;

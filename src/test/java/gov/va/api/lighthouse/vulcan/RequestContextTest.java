@@ -9,6 +9,7 @@ import static org.mockito.Mockito.when;
 
 import gov.va.api.lighthouse.vulcan.VulcanConfiguration.PagingConfiguration;
 import gov.va.api.lighthouse.vulcan.fugazi.FugaziEntity;
+import gov.va.api.lighthouse.vulcan.mappings.Mappings;
 import java.util.stream.Stream;
 import javax.servlet.http.HttpServletRequest;
 import org.junit.jupiter.params.ParameterizedTest;

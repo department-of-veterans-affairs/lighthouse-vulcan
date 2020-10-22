@@ -1,8 +1,9 @@
-package gov.va.api.lighthouse.vulcan;
+package gov.va.api.lighthouse.vulcan.mappings;
 
 import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
+import gov.va.api.lighthouse.vulcan.Mapping;
 import java.util.Locale;
 import javax.servlet.http.HttpServletRequest;
 import lombok.Builder;

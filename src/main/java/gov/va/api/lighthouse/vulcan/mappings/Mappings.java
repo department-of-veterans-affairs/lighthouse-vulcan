@@ -1,6 +1,7 @@
-package gov.va.api.lighthouse.vulcan;
+package gov.va.api.lighthouse.vulcan.mappings;
 
-import gov.va.api.lighthouse.vulcan.DateMapping.PredicateFactory;
+import gov.va.api.lighthouse.vulcan.Mapping;
+import gov.va.api.lighthouse.vulcan.mappings.DateMapping.PredicateFactory;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;

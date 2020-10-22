@@ -1,5 +1,6 @@
-package gov.va.api.lighthouse.vulcan;
+package gov.va.api.lighthouse.vulcan.mappings;
 
+import gov.va.api.lighthouse.vulcan.SingleParameterMapping;
 import java.util.function.Function;
 import javax.servlet.http.HttpServletRequest;
 import lombok.Builder;
