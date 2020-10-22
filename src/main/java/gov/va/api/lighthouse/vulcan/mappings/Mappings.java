@@ -113,6 +113,35 @@ public class Mappings<EntityT> implements Supplier<List<Mapping<EntityT>>> {
             .build());
   }
 
+  public Mappings<EntityT> tokenList(
+      String parameterName,
+      String fieldName,
+      Predicate<TokenParameter> supportedToken,
+      Function<TokenParameter, Collection<String>> valueSelector) {
+    return tokenList(parameterName, t -> fieldName, supportedToken, valueSelector);
+  }
+
+  public Mappings<EntityT> tokenList(
+      String parameterAndFieldName,
+      Predicate<TokenParameter> supportedToken,
+      Function<TokenParameter, Collection<String>> valueSelector) {
+    return tokenList(parameterAndFieldName, parameterAndFieldName, supportedToken, valueSelector);
+  }
+
+  public Mappings<EntityT> tokenList(
+      String parameterName,
+      Function<TokenParameter, String> fieldNameSelector,
+      Predicate<TokenParameter> supportedToken,
+      Function<TokenParameter, Collection<String>> valueSelector) {
+    return add(
+        TokenCsvListMapping.<EntityT>builder()
+            .parameterName(parameterName)
+            .supportedToken(supportedToken)
+            .fieldNameSelector(fieldNameSelector)
+            .valueSelector(valueSelector)
+            .build());
+  }
+
   /** Create a value mapping where request and field name are the same. */
   public Mappings<EntityT> value(String parameterAndFieldName, Function<String, ?> converter) {
     return value(parameterAndFieldName, parameterAndFieldName, converter);

@@ -121,6 +121,6 @@ public class RequestContext<EntityT> {
         .filter(m -> m.appliesTo(request))
         .peek(m -> log.info("Applying {}", m))
         .map(m -> m.specificationFor(request))
-        .collect(Specifications.and());
+        .collect(Specifications.all());
   }
 }
