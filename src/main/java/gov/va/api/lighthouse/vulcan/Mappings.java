@@ -86,6 +86,18 @@ public class Mappings<EntityT> implements Supplier<List<Mapping<EntityT>>> {
     return value(parameterAndFieldName, parameterAndFieldName, converter);
   }
 
+  /** Create a value mapping where request and field name are the same with no value conversion. */
+  public Mappings<EntityT> value(String parameterAndFieldName) {
+    return value(parameterAndFieldName, parameterAndFieldName, Function.identity());
+  }
+
+  /**
+   * Create a value mapping where request and field name are different but with no value conversion.
+   */
+  public Mappings<EntityT> value(String parameterName, String fieldName) {
+    return value(parameterName, fieldName, Function.identity());
+  }
+
   /** Create a value mapping where request and field name are different. */
   public Mappings<EntityT> value(
       String parameterName, String fieldName, Function<String, ?> converter) {
