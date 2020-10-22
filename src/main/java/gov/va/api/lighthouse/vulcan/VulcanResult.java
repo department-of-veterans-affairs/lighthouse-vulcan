@@ -1,6 +1,7 @@
 package gov.va.api.lighthouse.vulcan;
 
 import java.util.Optional;
+import java.util.function.Function;
 import java.util.stream.Stream;
 import lombok.Builder;
 import lombok.Getter;
@@ -19,6 +20,11 @@ import lombok.Value;
 public class VulcanResult<EntityT> {
   @NonNull Stream<EntityT> entities;
   @NonNull Paging paging;
+
+  /** Convert this result into something else. */
+  public <T> T map(Function<VulcanResult<EntityT>, T> transform) {
+    return transform.apply(this);
+  }
 
   @Value
   @Builder
