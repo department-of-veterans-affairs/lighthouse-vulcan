@@ -29,11 +29,11 @@ public class TokenMapping<EntityT> implements SingleParameterMapping<EntityT> {
   public Specification<EntityT> specificationFor(HttpServletRequest request) {
     TokenParameter token =
         TokenParameter.parse(parameterName(), request.getParameter(parameterName()));
-    if (!supportedToken.test(token)) {
-      log.info("{} token is not supported: {}", parameterName, token);
+    if (!supportedToken().test(token)) {
+      log.info("{} token is not supported: {}", parameterName(), token);
       throw CircuitBreaker.noResultsWillBeFound(
-          parameterName, request.getParameter(parameterName()), "Token is not supported");
+          parameterName(), request.getParameter(parameterName()), "Token is not supported");
     }
-    return selectInList(fieldNameSelector.apply(token), valueSelector.apply(token));
+    return selectInList(fieldNameSelector().apply(token), valueSelector().apply(token));
   }
 }

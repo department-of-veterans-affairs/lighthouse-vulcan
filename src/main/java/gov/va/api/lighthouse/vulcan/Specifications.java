@@ -15,7 +15,7 @@ public class Specifications {
   /** Produces a specification than explicitly handles a lists of 0 and 1. */
   public static <E> Specification<E> selectInList(String fieldName, Collection<String> values) {
     if (values == null || values.isEmpty()) {
-      return (root, criteriaQuery, criteriaBuilder) -> null;
+      return null;
     }
     if (values.size() == 1) {
       return (root, criteriaQuery, criteriaBuilder) ->

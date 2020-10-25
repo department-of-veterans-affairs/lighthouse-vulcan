@@ -29,6 +29,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase.Replace;
@@ -123,6 +124,13 @@ class VulcanTest {
     return dto;
   }
 
+  @ParameterizedTest
+  @ValueSource(strings = {"/fugazi?foodtoken=|", "/fugazi?xdate=nope", "/fugazi?xdate=no2006"})
+  @SneakyThrows
+  void invalidParameterSearchs(String uri) {
+    mvc.perform(get(uri)).andExpect(status().isBadRequest());
+  }
+
   @SuppressWarnings("SpellCheckingInspection")
   @Test
   void mappingCsvList() {
@@ -176,6 +184,21 @@ class VulcanTest {
     assertThat(req("/fugazi?name:contains=")).isEmpty();
 
     assertThat(req("/fugazi?xname=nachos2005")).containsExactly(nachos2005);
+  }
+
+  @Test
+  void mappingToken() {
+    assertThat(req("/fugazi?foodtoken=")).isEmpty();
+    assertThat(req("/fugazi?foodtoken=PIZZA")).isEmpty();
+    assertThat(req("/fugazi?foodtoken=http://movie-theater|NACHOS")).isEmpty();
+    assertThat(req("/fugazi?foodtoken=NACHOS")).containsExactly(nachos2005);
+    assertThat(req("/fugazi?foodtoken=TACOS"))
+        .containsExactlyInAnyOrder(tacos2005, tacos2006, tacos2007, tacos2008);
+    assertThat(req("/fugazi?foodtoken=http://food|TACOS"))
+        .containsExactlyInAnyOrder(tacos2005, tacos2006, tacos2007, tacos2008);
+    assertThat(req("/fugazi?foodtoken=http://food|"))
+        .containsExactlyInAnyOrder(
+            nachos2005, moreNachos2005, tacos2005, tacos2006, tacos2007, tacos2008);
   }
 
   @SuppressWarnings("SpellCheckingInspection")

@@ -48,52 +48,56 @@ public class TokenParameterTest {
 
   @Test
   public void booleanSupport() {
-    assertThat(noSystemExplicitCodeToken.hasAnySystem()).isEqualTo(false);
-    assertThat(noSystemExplicitCodeToken.hasExplicitSystem()).isEqualTo(false);
-    assertThat(noSystemExplicitCodeToken.hasSupportedSystem("system")).isEqualTo(false);
-    assertThat(noSystemExplicitCodeToken.hasExplicitlyNoSystem()).isEqualTo(true);
-    assertThat(noSystemExplicitCodeToken.hasAnyCode()).isEqualTo(false);
-    assertThat(noSystemExplicitCodeToken.hasExplicitCode()).isEqualTo(true);
-    assertThat(noSystemExplicitCodeToken.hasSupportedCode("code")).isEqualTo(true);
-    assertThat(noSystemExplicitCodeToken.hasSupportedSystem("system")).isEqualTo(false);
-    assertThat(noSystemExplicitCodeToken.isSystemExplicitAndUnsupported("system")).isEqualTo(false);
-    assertThat(noSystemExplicitCodeToken.isCodeExplicitAndUnsupported("code")).isEqualTo(false);
-    assertThat(explicitSystemExplicitCodeToken.hasAnySystem()).isEqualTo(false);
-    assertThat(explicitSystemExplicitCodeToken.hasExplicitSystem()).isEqualTo(true);
-    assertThat(explicitSystemExplicitCodeToken.hasSupportedSystem("system")).isEqualTo(true);
-    assertThat(explicitSystemExplicitCodeToken.hasSupportedSystem("notsystem")).isEqualTo(false);
-    assertThat(explicitSystemExplicitCodeToken.hasExplicitlyNoSystem()).isEqualTo(false);
-    assertThat(explicitSystemExplicitCodeToken.hasAnyCode()).isEqualTo(false);
-    assertThat(explicitSystemExplicitCodeToken.hasExplicitCode()).isEqualTo(true);
-    assertThat(explicitSystemExplicitCodeToken.hasSupportedCode(("code"))).isEqualTo(true);
-    assertThat(explicitSystemExplicitCodeToken.hasSupportedSystem("system")).isEqualTo(true);
+    assertThat(noSystemExplicitCodeToken.hasAnySystem()).isFalse();
+    assertThat(noSystemExplicitCodeToken.hasExplicitSystem()).isFalse();
+    assertThat(noSystemExplicitCodeToken.hasSupportedSystem("system")).isFalse();
+    assertThat(noSystemExplicitCodeToken.hasExplicitlyNoSystem()).isTrue();
+    assertThat(noSystemExplicitCodeToken.hasAnyCode()).isFalse();
+    assertThat(noSystemExplicitCodeToken.hasExplicitCode()).isTrue();
+    assertThat(noSystemExplicitCodeToken.hasSupportedCode("code")).isTrue();
+    assertThat(noSystemExplicitCodeToken.hasSupportedSystem("system")).isFalse();
+    assertThat(noSystemExplicitCodeToken.isSystemExplicitAndUnsupported("system")).isFalse();
+    assertThat(noSystemExplicitCodeToken.isCodeExplicitAndUnsupported("code")).isFalse();
+    assertThat(noSystemExplicitCodeToken.isCodeExplicitlySetAndOneOf(Codes.code)).isTrue();
+    assertThat(noSystemExplicitCodeToken.isCodeExplicitlySetAndOneOf("code", "other"));
+    assertThat(noSystemExplicitCodeToken.isCodeExplicitlySetAndOneOf("nope", "other")).isFalse();
+    assertThat(explicitSystemExplicitCodeToken.hasAnySystem()).isFalse();
+    assertThat(explicitSystemExplicitCodeToken.hasExplicitSystem()).isTrue();
+    assertThat(explicitSystemExplicitCodeToken.hasSupportedSystem("system")).isTrue();
+    assertThat(explicitSystemExplicitCodeToken.hasSupportedSystem("notsystem")).isFalse();
+    assertThat(explicitSystemExplicitCodeToken.hasExplicitlyNoSystem()).isFalse();
+    assertThat(explicitSystemExplicitCodeToken.hasAnyCode()).isFalse();
+    assertThat(explicitSystemExplicitCodeToken.hasExplicitCode()).isTrue();
+    assertThat(explicitSystemExplicitCodeToken.hasSupportedCode(("code"))).isTrue();
+    assertThat(explicitSystemExplicitCodeToken.hasSupportedSystem("system")).isTrue();
     assertThat(explicitSystemExplicitCodeToken.isSystemExplicitAndUnsupported(("system")))
-        .isEqualTo(false);
-    assertThat(explicitSystemExplicitCodeToken.isCodeExplicitAndUnsupported("code"))
-        .isEqualTo(false);
-    assertThat(anySystemExplicitCodeToken.hasAnySystem()).isEqualTo(true);
-    assertThat(anySystemExplicitCodeToken.hasExplicitSystem()).isEqualTo(false);
-    assertThat(anySystemExplicitCodeToken.hasSupportedSystem("system")).isEqualTo(false);
-    assertThat(anySystemExplicitCodeToken.hasExplicitlyNoSystem()).isEqualTo(false);
-    assertThat(anySystemExplicitCodeToken.hasAnyCode()).isEqualTo(false);
-    assertThat(anySystemExplicitCodeToken.hasExplicitCode()).isEqualTo(true);
-    assertThat(anySystemExplicitCodeToken.hasSupportedCode("code")).isEqualTo(true);
-    assertThat(noSystemExplicitCodeToken.hasSupportedSystem("system")).isEqualTo(false);
-    assertThat(anySystemExplicitCodeToken.isSystemExplicitAndUnsupported("notsystem"))
-        .isEqualTo(false);
-    assertThat(noSystemExplicitCodeToken.isCodeExplicitAndUnsupported("notcode")).isEqualTo(true);
-    assertThat(explicitSystemAnyCodeToken.hasAnySystem()).isEqualTo(false);
-    assertThat(explicitSystemAnyCodeToken.hasExplicitSystem()).isEqualTo(true);
-    assertThat(explicitSystemAnyCodeToken.hasSupportedSystem("system")).isEqualTo(true);
-    assertThat(explicitSystemAnyCodeToken.hasSupportedSystem("notsystem")).isEqualTo(false);
-    assertThat(explicitSystemAnyCodeToken.hasExplicitlyNoSystem()).isEqualTo(false);
-    assertThat(explicitSystemAnyCodeToken.hasAnyCode()).isEqualTo(true);
-    assertThat(explicitSystemAnyCodeToken.hasExplicitCode()).isEqualTo(false);
-    assertThat(explicitSystemAnyCodeToken.hasSupportedCode("code")).isEqualTo(false);
-    assertThat(explicitSystemAnyCodeToken.hasSupportedSystem("system")).isEqualTo(true);
-    assertThat(explicitSystemAnyCodeToken.isSystemExplicitAndUnsupported("notsystem"))
-        .isEqualTo(true);
-    assertThat(explicitSystemAnyCodeToken.isCodeExplicitAndUnsupported("notcode")).isEqualTo(false);
+        .isFalse();
+    assertThat(explicitSystemExplicitCodeToken.isCodeExplicitAndUnsupported("code")).isFalse();
+    assertThat(explicitSystemExplicitCodeToken.isSystemExplicitlySetAndOneOf("system", "other"))
+        .isTrue();
+    assertThat(explicitSystemExplicitCodeToken.isSystemExplicitlySetAndOneOf("nope", "other"))
+        .isFalse();
+    assertThat(anySystemExplicitCodeToken.hasAnySystem()).isTrue();
+    assertThat(anySystemExplicitCodeToken.hasExplicitSystem()).isFalse();
+    assertThat(anySystemExplicitCodeToken.hasSupportedSystem("system")).isFalse();
+    assertThat(anySystemExplicitCodeToken.hasExplicitlyNoSystem()).isFalse();
+    assertThat(anySystemExplicitCodeToken.hasAnyCode()).isFalse();
+    assertThat(anySystemExplicitCodeToken.hasExplicitCode()).isTrue();
+    assertThat(anySystemExplicitCodeToken.hasSupportedCode("code")).isTrue();
+    assertThat(noSystemExplicitCodeToken.hasSupportedSystem("system")).isFalse();
+    assertThat(anySystemExplicitCodeToken.isSystemExplicitAndUnsupported("notsystem")).isFalse();
+    assertThat(noSystemExplicitCodeToken.isCodeExplicitAndUnsupported("notcode")).isTrue();
+    assertThat(explicitSystemAnyCodeToken.hasAnySystem()).isFalse();
+    assertThat(explicitSystemAnyCodeToken.hasExplicitSystem()).isTrue();
+    assertThat(explicitSystemAnyCodeToken.hasSupportedSystem("system")).isTrue();
+    assertThat(explicitSystemAnyCodeToken.hasSupportedSystem("notsystem")).isFalse();
+    assertThat(explicitSystemAnyCodeToken.hasExplicitlyNoSystem()).isFalse();
+    assertThat(explicitSystemAnyCodeToken.hasAnyCode()).isTrue();
+    assertThat(explicitSystemAnyCodeToken.hasExplicitCode()).isFalse();
+    assertThat(explicitSystemAnyCodeToken.hasSupportedCode("code")).isFalse();
+    assertThat(explicitSystemAnyCodeToken.hasSupportedSystem("system")).isTrue();
+    assertThat(explicitSystemAnyCodeToken.isSystemExplicitAndUnsupported("notsystem")).isTrue();
+    assertThat(explicitSystemAnyCodeToken.isCodeExplicitAndUnsupported("notcode")).isFalse();
   }
 
   @Test
@@ -176,5 +180,9 @@ public class TokenParameterTest {
     assertThat(TokenParameter.parse("x", "system|")).isEqualTo(explicitSystemAnyCodeToken);
     assertThat(TokenParameter.parse("x", "system|code")).isEqualTo(explicitSystemExplicitCodeToken);
     assertThat(TokenParameter.parse("x", "code")).isEqualTo(anySystemExplicitCodeToken);
+  }
+
+  enum Codes {
+    code;
   }
 }

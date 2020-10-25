@@ -188,7 +188,7 @@ public class DateMapping<EntityT, DateT> implements SingleParameterMapping<Entit
               criteriaBuilder.greaterThanOrEqualTo(field, approximation().expandLowerBound(date)),
               criteriaBuilder.lessThanOrEqualTo(field, approximation().expandUpperBound(date)));
         default:
-          throw new IllegalArgumentException("Unknown search operator: " + date.operator());
+          throw new InvalidParameter("Unknown date search operator: " + date.operator());
       }
     }
   }

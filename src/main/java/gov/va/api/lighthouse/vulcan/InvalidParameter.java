@@ -1,9 +1,13 @@
 package gov.va.api.lighthouse.vulcan;
 
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.ResponseStatus;
+
 /**
  * Indicate there parameter is not valid. This would indicate that a 404 Bad Request should be
  * returned to the user.
  */
+@ResponseStatus(code = HttpStatus.BAD_REQUEST)
 public class InvalidParameter extends IllegalArgumentException {
   public InvalidParameter(String message) {
     super(message);

@@ -76,36 +76,54 @@ public class TokenParameter {
     return mode == Mode.NO_SYSTEM_EXPLICIT_CODE;
   }
 
+  public <E extends Enum<E>> boolean hasSupportedCode(E supportedCode) {
+    return supportedCode.toString().equals(code);
+  }
+
   public boolean hasSupportedCode(String supportedCode) {
     return supportedCode.equals(code);
   }
 
-  public boolean hasSupportedCode(String... codes) {
-    return Arrays.stream(codes).anyMatch(this::hasSupportedCode);
+  public <E extends Enum<E>> boolean hasSupportedCode(E... supportedCodes) {
+    return Arrays.stream(supportedCodes).anyMatch(this::hasSupportedCode);
+  }
+
+  public boolean hasSupportedCode(String... supportedCodes) {
+    return Arrays.stream(supportedCodes).anyMatch(this::hasSupportedCode);
   }
 
   public boolean hasSupportedSystem(String supportedSystem) {
     return supportedSystem.equals(system);
   }
 
-  public boolean hasSupportedSystem(String... systems) {
-    return Arrays.stream(systems).anyMatch(this::hasSupportedSystem);
+  public boolean hasSupportedSystem(String... supportedSystems) {
+    return Arrays.stream(supportedSystems).anyMatch(this::hasSupportedSystem);
   }
 
-  public boolean isCodeExplicitAndUnsupported(String... codes) {
-    return hasExplicitCode() && !hasSupportedCode(codes);
+  public boolean isCodeExplicitAndUnsupported(String... supportedCodes) {
+    return hasExplicitCode() && !hasSupportedCode(supportedCodes);
   }
 
-  public boolean isCodeExplicitlySetAndOneOf(String... codes) {
-    return hasExplicitCode() && hasSupportedCode(codes);
+  @SafeVarargs
+  public final <E extends Enum<E>> boolean isCodeExplicitAndUnsupported(E... supportedCodes) {
+    return hasExplicitCode() && !hasSupportedCode(supportedCodes);
   }
 
-  public boolean isSystemExplicitAndUnsupported(String... systems) {
-    return hasExplicitSystem() && !hasSupportedSystem(systems);
+  @SafeVarargs
+  public final <E extends Enum<E>> boolean isCodeExplicitlySetAndOneOf(E... supportedCodes) {
+    return hasExplicitCode() && hasSupportedCode(supportedCodes);
   }
 
-  public boolean isSystemExplicitlySetAndOneOf(String... systems) {
-    return hasExplicitSystem() && hasSupportedSystem(systems);
+  public boolean isCodeExplicitlySetAndOneOf(String... supportedCodes) {
+    return hasExplicitCode() && hasSupportedCode(supportedCodes);
+  }
+
+  public boolean isSystemExplicitAndUnsupported(String... supportedSystems) {
+    return hasExplicitSystem() && !hasSupportedSystem(supportedSystems);
+  }
+
+  public boolean isSystemExplicitlySetAndOneOf(String... supportedSystems) {
+    return hasExplicitSystem() && hasSupportedSystem(supportedSystems);
   }
 
   public enum Mode {

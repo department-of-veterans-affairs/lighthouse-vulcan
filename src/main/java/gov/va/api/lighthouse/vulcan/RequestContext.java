@@ -2,6 +2,7 @@ package gov.va.api.lighthouse.vulcan;
 
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
+import java.util.Objects;
 import javax.servlet.http.HttpServletRequest;
 import lombok.Builder;
 import lombok.NonNull;
@@ -33,16 +34,14 @@ public class RequestContext<EntityT> {
     this.config = config;
     this.request = request;
     Specification<EntityT> maybeSpecification;
-    boolean maybeAbortSearch = false;
     try {
       maybeSpecification = specificationOf(request);
     } catch (CircuitBreaker e) {
       maybeSpecification = null;
-      maybeAbortSearch = true;
       log.info("Circuit breaker thrown, skipping search: {}", e.getMessage());
     }
     specification = maybeSpecification;
-    abortSearch = maybeAbortSearch;
+    abortSearch = (specification == null);
     page = pageValueOf(request);
     count = countValueOf(request);
     pageRequest = PageRequest.of(page - 1, Math.max(count, 1), config.paging().sort());
@@ -121,6 +120,7 @@ public class RequestContext<EntityT> {
         .filter(m -> m.appliesTo(request))
         .peek(m -> log.info("Applying {}", m))
         .map(m -> m.specificationFor(request))
+        .filter(Objects::nonNull)
         .collect(Specifications.all());
   }
 }
