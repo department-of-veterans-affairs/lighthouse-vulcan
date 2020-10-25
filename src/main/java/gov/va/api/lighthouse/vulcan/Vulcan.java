@@ -10,7 +10,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.validation.constraints.NotNull;
 import lombok.Builder;
 import lombok.NonNull;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 
@@ -20,7 +19,6 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
  * using AND semantics.
  */
 @Builder
-@Slf4j
 public class Vulcan<EntityT, JpaRepositoryT extends JpaSpecificationExecutor<EntityT>> {
 
   @NonNull private final JpaRepositoryT repository;
@@ -96,33 +94,11 @@ public class Vulcan<EntityT, JpaRepositoryT extends JpaSpecificationExecutor<Ent
     if (context.abortSearch()) {
       return resultsForAbortedSearch(context);
     }
-
-    log.info("specification {}", context.specification());
-    if (context.specification() == null) {
-      // TODO what to do when no request parameters were specified?
-      // TODO Select all
-      // TODO Select none
-      // TODO Configurable default specification?
-      // TODO Error?
-      return VulcanResult.<EntityT>builder()
-          .paging(
-              Paging.builder()
-                  .totalRecords(0)
-                  .totalPages(0)
-                  .firstPage(empty())
-                  .firstPageUrl(empty())
-                  .previousPage(empty())
-                  .previousPageUrl(empty())
-                  .thisPage(empty())
-                  .thisPageUrl(empty())
-                  .nextPage(empty())
-                  .nextPageUrl(empty())
-                  .lastPage(empty())
-                  .lastPageUrl(empty())
-                  .build())
-          .entities(Stream.empty())
-          .build();
-    }
+    // TODO what to do when no request parameters were specified?
+    // TODO Select all
+    // TODO Select none
+    // TODO Configurable default specification?
+    // TODO Error?
     if (context.countOnly()) {
       return resultsForCountOnly(context);
     }

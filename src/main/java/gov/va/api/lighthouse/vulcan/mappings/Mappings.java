@@ -13,6 +13,7 @@ import java.util.function.Supplier;
  * Mapping builder for an entity. This provides easy to use methods to creating the different types
  * of common mappings.
  */
+@SuppressWarnings("unused")
 public class Mappings<EntityT> implements Supplier<List<Mapping<EntityT>>> {
 
   private final List<Mapping<EntityT>> mappings = new ArrayList<>();
@@ -84,6 +85,7 @@ public class Mappings<EntityT> implements Supplier<List<Mapping<EntityT>>> {
         StringMapping.<EntityT>builder().parameterName(parameterName).fieldName(fieldName).build());
   }
 
+  /** Create a token list mapping where field name is constant . */
   public Mappings<EntityT> token(
       String parameterName,
       String fieldName,
@@ -92,6 +94,7 @@ public class Mappings<EntityT> implements Supplier<List<Mapping<EntityT>>> {
     return token(parameterName, t -> fieldName, supportedToken, valueSelector);
   }
 
+  /** Create a token list mapping where parameter and field name are the same. */
   public Mappings<EntityT> token(
       String parameterAndFieldName,
       Predicate<TokenParameter> supportedToken,
@@ -99,6 +102,7 @@ public class Mappings<EntityT> implements Supplier<List<Mapping<EntityT>>> {
     return token(parameterAndFieldName, parameterAndFieldName, supportedToken, valueSelector);
   }
 
+  /** Create a token mapping where all aspects are configurable. */
   public Mappings<EntityT> token(
       String parameterName,
       Function<TokenParameter, String> fieldNameSelector,
@@ -113,6 +117,7 @@ public class Mappings<EntityT> implements Supplier<List<Mapping<EntityT>>> {
             .build());
   }
 
+  /** Create a token list mapping where field name is constant . */
   public Mappings<EntityT> tokenList(
       String parameterName,
       String fieldName,
@@ -121,6 +126,7 @@ public class Mappings<EntityT> implements Supplier<List<Mapping<EntityT>>> {
     return tokenList(parameterName, t -> fieldName, supportedToken, valueSelector);
   }
 
+  /** Create a token list mapping where parameter and field name are the same. */
   public Mappings<EntityT> tokenList(
       String parameterAndFieldName,
       Predicate<TokenParameter> supportedToken,
@@ -128,6 +134,7 @@ public class Mappings<EntityT> implements Supplier<List<Mapping<EntityT>>> {
     return tokenList(parameterAndFieldName, parameterAndFieldName, supportedToken, valueSelector);
   }
 
+  /** Create a token list mapping where all aspects are configurable. */
   public Mappings<EntityT> tokenList(
       String parameterName,
       Function<TokenParameter, String> fieldNameSelector,

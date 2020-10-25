@@ -61,9 +61,6 @@ public class StringMapping<EntityT> implements Mapping<EntityT> {
 
   private Specification<EntityT> clauseForExactMatch(HttpServletRequest request) {
     String value = request.getParameter(asExactParameterName());
-    if (isBlank(value)) {
-      return null;
-    }
     return (Specification<EntityT>)
         (root, criteriaQuery, criteriaBuilder) -> criteriaBuilder.equal(root.get(fieldName), value);
   }

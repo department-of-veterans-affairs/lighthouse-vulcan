@@ -11,13 +11,11 @@ import lombok.Builder;
 import lombok.ToString;
 import lombok.ToString.Include;
 import lombok.Value;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.jpa.domain.Specification;
 
 @Value
 @ToString(onlyExplicitlyIncluded = true)
 @Builder
-@Slf4j
 public class TokenMapping<EntityT> implements SingleParameterMapping<EntityT> {
 
   @Include String parameterName;
@@ -30,7 +28,6 @@ public class TokenMapping<EntityT> implements SingleParameterMapping<EntityT> {
     TokenParameter token =
         TokenParameter.parse(parameterName(), request.getParameter(parameterName()));
     if (!supportedToken().test(token)) {
-      log.info("{} token is not supported: {}", parameterName(), token);
       throw CircuitBreaker.noResultsWillBeFound(
           parameterName(), request.getParameter(parameterName()), "Token is not supported");
     }

@@ -84,7 +84,9 @@ public class TokenParameter {
     return supportedCode.equals(code);
   }
 
-  public <E extends Enum<E>> boolean hasSupportedCode(E... supportedCodes) {
+  @SafeVarargs
+  @SuppressWarnings("varargs")
+  public final <E extends Enum<E>> boolean hasSupportedCode(E... supportedCodes) {
     return Arrays.stream(supportedCodes).anyMatch(this::hasSupportedCode);
   }
 
@@ -105,11 +107,13 @@ public class TokenParameter {
   }
 
   @SafeVarargs
+  @SuppressWarnings("varargs")
   public final <E extends Enum<E>> boolean isCodeExplicitAndUnsupported(E... supportedCodes) {
     return hasExplicitCode() && !hasSupportedCode(supportedCodes);
   }
 
   @SafeVarargs
+  @SuppressWarnings("varargs")
   public final <E extends Enum<E>> boolean isCodeExplicitlySetAndOneOf(E... supportedCodes) {
     return hasExplicitCode() && hasSupportedCode(supportedCodes);
   }
@@ -142,30 +146,18 @@ public class TokenParameter {
   public static class Behavior<T> {
     @NonNull TokenParameter token;
 
-    @Builder.Default
-    Function<String, T> onAnySystemAndExplicitCode =
-        s -> throwNotConfigured("onAnySystemAndExplicitCode");
+    Function<String, T> onAnySystemAndExplicitCode;
 
-    @Builder.Default
-    Function<String, T> onExplicitSystemAndAnyCode =
-        s -> throwNotConfigured("onExplicitSystemAndAnyCode");
+    Function<String, T> onExplicitSystemAndAnyCode;
 
-    @Builder.Default
-    BiFunction<String, String, T> onExplicitSystemAndExplicitCode =
-        (s, c) -> throwNotConfigured("onNoSystemAndExplicitCode");
+    BiFunction<String, String, T> onExplicitSystemAndExplicitCode;
 
-    @Builder.Default
-    Function<String, T> onNoSystemAndExplicitCode =
-        s -> throwNotConfigured("onNoSystemAndExplicitCode");
-
-    private static <T> T throwNotConfigured(String state) {
-      throw new IllegalStateException("Behavior not configured for state: " + state);
-    }
+    Function<String, T> onNoSystemAndExplicitCode;
 
     /** Check if behavior is specified before executing it. */
     public <T1> T1 check(T1 n) {
       if (n == null) {
-        throw new IllegalStateException("no handler specified for " + token.mode);
+        throw new IllegalStateException("no handler specified for " + token().mode);
       }
       return n;
     }
@@ -174,17 +166,17 @@ public class TokenParameter {
     @SuppressWarnings("UnnecessaryDefault")
     @SneakyThrows
     public T execute() {
-      switch (token.mode) {
+      switch (token().mode) {
         case ANY_SYSTEM_EXPLICIT_CODE:
-          return check(onAnySystemAndExplicitCode).apply(token.code);
+          return check(onAnySystemAndExplicitCode()).apply(token().code);
         case EXPLICIT_SYSTEM_ANY_CODE:
-          return check(onExplicitSystemAndAnyCode).apply(token.system);
+          return check(onExplicitSystemAndAnyCode()).apply(token().system);
         case EXPLICIT_SYSTEM_EXPLICIT_CODE:
-          return check(onExplicitSystemAndExplicitCode).apply(token.system, token.code);
+          return check(onExplicitSystemAndExplicitCode()).apply(token().system, token().code);
         case NO_SYSTEM_EXPLICIT_CODE:
-          return check(onNoSystemAndExplicitCode).apply(token.code);
+          return check(onNoSystemAndExplicitCode()).apply(token().code);
         default:
-          throw new IllegalStateException("TokenParameter in unsupported mode : " + token.mode);
+          throw new IllegalStateException("TokenParameter in unsupported mode : " + token().mode);
       }
     }
   }

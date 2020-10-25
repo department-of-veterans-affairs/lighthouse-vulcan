@@ -125,7 +125,14 @@ class VulcanTest {
   }
 
   @ParameterizedTest
-  @ValueSource(strings = {"/fugazi?foodtoken=|", "/fugazi?xdate=nope", "/fugazi?xdate=no2006"})
+  @ValueSource(
+      strings = {
+        "/fugazi?foodtoken=|",
+        "/fugazi?foodtokencsv=|",
+        "/fugazi?foodtokencsv=NACHOS,|",
+        "/fugazi?xdate=nope",
+        "/fugazi?xdate=no2006"
+      })
   @SneakyThrows
   void invalidParameterSearchs(String uri) {
     mvc.perform(get(uri)).andExpect(status().isBadRequest());
@@ -201,6 +208,28 @@ class VulcanTest {
             nachos2005, moreNachos2005, tacos2005, tacos2006, tacos2007, tacos2008);
   }
 
+  @Test
+  void mappingTokenList() {
+    assertThat(req("/fugazi?foodtokencsv=")).isEmpty();
+    assertThat(req("/fugazi?foodtokencsv=,")).isEmpty();
+    assertThat(req("/fugazi?foodtokencsv=PIZZA")).isEmpty();
+    assertThat(req("/fugazi?foodtokencsv=http://movie-theater|NACHOS")).isEmpty();
+    assertThat(req("/fugazi?foodtokencsv=NACHOS")).containsExactly(nachos2005);
+    assertThat(req("/fugazi?foodtokencsv=TACOS"))
+        .containsExactlyInAnyOrder(tacos2005, tacos2006, tacos2007, tacos2008);
+    assertThat(req("/fugazi?foodtokencsv=http://food|TACOS"))
+        .containsExactlyInAnyOrder(tacos2005, tacos2006, tacos2007, tacos2008);
+    assertThat(req("/fugazi?foodtokencsv=http://food|TACOS,http://nope|NACHOS"))
+        .containsExactlyInAnyOrder(tacos2005, tacos2006, tacos2007, tacos2008);
+    assertThat(req("/fugazi?foodtokencsv=http://food|TACOS,http://food|NACHOS"))
+        .containsExactlyInAnyOrder(tacos2005, tacos2006, tacos2007, tacos2008, nachos2005);
+    assertThat(req("/fugazi?foodtokencsv=http://food|TACOS,NACHOS"))
+        .containsExactlyInAnyOrder(tacos2005, tacos2006, tacos2007, tacos2008, nachos2005);
+    assertThat(req("/fugazi?foodtokencsv=http://food|"))
+        .containsExactlyInAnyOrder(
+            nachos2005, moreNachos2005, tacos2005, tacos2006, tacos2007, tacos2008);
+  }
+
   @SuppressWarnings("SpellCheckingInspection")
   @Test
   void mappingValue() {
@@ -213,6 +242,31 @@ class VulcanTest {
   @Test
   void multipleParametersAreCombinedWithAnd() {
     assertThat(req("/fugazi?food=NACHOS,TACOS&name:contains=nacho")).containsExactly(nachos2005);
+  }
+
+  @Test
+  void noQueryParameters() {
+    // TODO DECIDE WHAT THE BEHAVIOR FOR NO PARAMETERS SHOULD BE
+    var vulcan =
+        Vulcan.forRepo(repo)
+            .config(
+                VulcanConfiguration.forEntity(FugaziEntity.class)
+                    .paging(
+                        PagingConfiguration.builder()
+                            .pageParameter("page")
+                            .countParameter("count")
+                            .defaultCount(3)
+                            .maxCount(10)
+                            .sort(Sort.by("id").ascending())
+                            .baseUrlStrategy(useRequestUrl())
+                            .build())
+                    .mappings(Mappings.forEntity(FugaziEntity.class).string("name").get())
+                    .build())
+            .build();
+    var request = new MockHttpServletRequest();
+    request.setRequestURI("/fugazi");
+    var result = vulcan.forge(request);
+    assertThat(result.paging().totalRecords()).isEqualTo(0);
   }
 
   @ParameterizedTest

@@ -14,13 +14,11 @@ import lombok.Builder;
 import lombok.ToString;
 import lombok.ToString.Include;
 import lombok.Value;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.jpa.domain.Specification;
 
 @Value
 @ToString(onlyExplicitlyIncluded = true)
 @Builder
-@Slf4j
 public class TokenCsvListMapping<EntityT> implements SingleParameterMapping<EntityT> {
 
   @Include String parameterName;
@@ -34,25 +32,19 @@ public class TokenCsvListMapping<EntityT> implements SingleParameterMapping<Enti
     List<TokenParameter> supportedTokens =
         Stream.of(request.getParameter(parameterName()).split("\\s*,\\s*"))
             .map(value -> TokenParameter.parse(parameterName(), value))
-            .filter(supportedToken)
+            .filter(supportedToken())
             .collect(toList());
 
-    log.info("Supported tokens {}", supportedTokens);
-
     if (supportedTokens.isEmpty()) {
-      log.info(
-          "{} no tokens is not supported: {}",
-          parameterName,
-          request.getParameter(parameterName()));
       throw CircuitBreaker.noResultsWillBeFound(
-          parameterName, request.getParameter(parameterName()), "No tokens are not supported");
+          parameterName(), request.getParameter(parameterName()), "No tokens are not supported");
     }
 
     return supportedTokens.stream()
         .map(
             token ->
                 Specifications.<EntityT>selectInList(
-                    fieldNameSelector.apply(token), valueSelector.apply(token)))
+                    fieldNameSelector().apply(token), valueSelector().apply(token)))
         .collect(Specifications.any());
   }
 }

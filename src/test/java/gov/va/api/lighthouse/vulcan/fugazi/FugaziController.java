@@ -59,16 +59,20 @@ public class FugaziController {
             Mappings.forEntity(FugaziEntity.class)
                 .string("name")
                 .string("xname", "name")
+                .value("namevalue", "name")
                 .csvList("food")
                 .csvList("xfood", "food")
+                .value("namevalue", "name")
                 .value("millis", v -> Instant.parse(v).toEpochMilli())
                 .value("xmillis", "millis", v -> Instant.parse(v).toEpochMilli())
                 .dateAsInstant("xdate", "date")
                 .token("foodtoken", "food", this::foodIsSupported, this::foodValues)
+                .tokenList("foodtokencsv", "food", this::foodIsSupported, this::foodValues)
                 .get())
         .build();
   }
 
+  @SuppressWarnings("RedundantIfStatement")
   private boolean foodIsSupported(TokenParameter token) {
     if (token.isSystemExplicitAndUnsupported("http://food")
         || token.isCodeExplicitAndUnsupported(Food.values())

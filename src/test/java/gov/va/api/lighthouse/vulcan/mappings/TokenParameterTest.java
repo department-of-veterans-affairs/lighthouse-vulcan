@@ -1,12 +1,15 @@
 package gov.va.api.lighthouse.vulcan.mappings;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import gov.va.api.lighthouse.vulcan.InvalidParameter;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 public class TokenParameterTest {
   TokenParameter noSystemExplicitCodeToken =
@@ -172,6 +175,21 @@ public class TokenParameterTest {
   @Test
   public void parsePipe() {
     assertThrows(InvalidParameter.class, () -> TokenParameter.parse("x", "|"));
+  }
+
+  @ParameterizedTest
+  @ValueSource(strings = {"code", "|code", "system|code", "system|"})
+  public void throwsExceptionWhenBehaviorIsNotConfigured(String value) {
+    var token = TokenParameter.parse("x", value);
+    var behavior =
+        token
+            .behavior()
+            .onNoSystemAndExplicitCode(null)
+            .onExplicitSystemAndExplicitCode(null)
+            .onExplicitSystemAndAnyCode(null)
+            .onAnySystemAndExplicitCode(null)
+            .build();
+    assertThatExceptionOfType(IllegalStateException.class).isThrownBy(() -> behavior.execute());
   }
 
   @Test
