@@ -58,7 +58,6 @@ class RequestContextTest {
 
   @Test
   void defaultQueryIsUsedIfNoSpecificationsAreBuiltFromTheRequestParameters() {
-
     @SuppressWarnings("unchecked")
     Specification<FugaziEntity> specification = mock(Specification.class);
     var config =
@@ -84,13 +83,13 @@ class RequestContextTest {
   @ParameterizedTest
   @ValueSource(strings = {"-1", "21", "nope"})
   void exceptionIsThrownForInvalidCount(String count) {
-    assertThatExceptionOfType(InvalidParameter.class).isThrownBy(() -> context("1", count));
+    assertThatExceptionOfType(InvalidRequest.class).isThrownBy(() -> context("1", count));
   }
 
   @ParameterizedTest
   @ValueSource(strings = {"-1", "0", "nope"})
   void exceptionIsThrownForInvalidPage(String page) {
-    assertThatExceptionOfType(InvalidParameter.class).isThrownBy(() -> context(page, "10"));
+    assertThatExceptionOfType(InvalidRequest.class).isThrownBy(() -> context(page, "10"));
   }
 
   @ParameterizedTest
@@ -106,5 +105,35 @@ class RequestContextTest {
     assertThat(ctx.pageRequest().getPageSize())
         .as("page request page size")
         .isEqualTo(expectedCount);
+  }
+
+  @Test
+  void rulesWillRejectTheRequest() {
+    @SuppressWarnings("unchecked")
+    Specification<FugaziEntity> specification = mock(Specification.class);
+    var config =
+        VulcanConfiguration.forEntity(FugaziEntity.class)
+            .paging(
+                PagingConfiguration.builder()
+                    .pageParameter("page")
+                    .countParameter("count")
+                    .defaultCount(10)
+                    .maxCount(20)
+                    .sort(Sort.unsorted())
+                    .baseUrlStrategy(useRequestUrl())
+                    .build())
+            .mappings(Mappings.forEntity(FugaziEntity.class).string("name").get())
+            .defaultQuery(returnNothing())
+            .rule(r -> {})
+            .rule(r -> {})
+            .rule(
+                r -> {
+                  throw new InvalidRequest("fugazi");
+                })
+            .build();
+
+    HttpServletRequest req = mock(HttpServletRequest.class);
+    assertThatExceptionOfType(InvalidRequest.class)
+        .isThrownBy(() -> RequestContext.forConfig(config).request(req).build());
   }
 }

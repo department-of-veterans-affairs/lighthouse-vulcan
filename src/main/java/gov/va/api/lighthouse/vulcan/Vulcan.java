@@ -32,7 +32,7 @@ public class Vulcan<EntityT, JpaRepositoryT extends JpaSpecificationExecutor<Ent
   /** Default query option that throws an InvalidParameter exception. */
   public static <E> Function<HttpServletRequest, Specification<E>> rejectRequest() {
     return r -> {
-      throw InvalidParameter.noParametersSpecified();
+      throw InvalidRequest.noParametersSpecified();
     };
   }
 

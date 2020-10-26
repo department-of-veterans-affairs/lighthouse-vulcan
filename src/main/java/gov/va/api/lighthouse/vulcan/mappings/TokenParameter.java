@@ -2,7 +2,7 @@ package gov.va.api.lighthouse.vulcan.mappings;
 
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
-import gov.va.api.lighthouse.vulcan.InvalidParameter;
+import gov.va.api.lighthouse.vulcan.InvalidRequest;
 import java.util.Arrays;
 import java.util.function.BiFunction;
 import java.util.function.Function;
@@ -24,7 +24,7 @@ public class TokenParameter {
   @SneakyThrows
   public static TokenParameter parse(String parameterName, String value) {
     if (isBlank(value) || value.equals("|")) {
-      throw InvalidParameter.badValue(
+      throw InvalidRequest.badParameter(
           parameterName, value, "Expected value, system|value, |value, or system|");
     }
     if (value.startsWith("|")) {

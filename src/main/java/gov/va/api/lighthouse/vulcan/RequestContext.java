@@ -33,6 +33,10 @@ public class RequestContext<EntityT> {
       @NonNull VulcanConfiguration<EntityT> config, @NonNull HttpServletRequest request) {
     this.config = config;
     this.request = request;
+    page = pageValueOf(request);
+    count = countValueOf(request);
+    pageRequest = PageRequest.of(page - 1, Math.max(count, 1), config.paging().sort());
+    checkRules();
     Specification<EntityT> maybeSpecification;
     try {
       maybeSpecification = specificationOf(request);
@@ -42,13 +46,24 @@ public class RequestContext<EntityT> {
     }
     specification = maybeSpecification;
     abortSearch = (specification == null);
-    page = pageValueOf(request);
-    count = countValueOf(request);
-    pageRequest = PageRequest.of(page - 1, Math.max(count, 1), config.paging().sort());
   }
 
   public static <E> RequestContextBuilder<E> forConfig(VulcanConfiguration<E> configuration) {
     return RequestContext.<E>builder().config(configuration);
+  }
+
+  private void checkRules() {
+    config
+        .rules()
+        .forEach(
+            r -> {
+              try {
+                r.check(request);
+              } catch (InvalidRequest e) {
+                log.info("Rejecting request: {}", e.getMessage());
+                throw e;
+              }
+            });
   }
 
   public boolean countOnly() {
@@ -76,15 +91,15 @@ public class RequestContext<EntityT> {
     }
   }
 
-  private InvalidParameter invalidCountParameter(String value) {
-    return InvalidParameter.badValue(
+  private InvalidRequest invalidCountParameter(String value) {
+    return InvalidRequest.badParameter(
         config.paging().countParameter(),
         value,
         "Expected number between 0 and " + config.paging().maxCount());
   }
 
-  private InvalidParameter invalidPageParameter(String value) {
-    return InvalidParameter.badValue(
+  private InvalidRequest invalidPageParameter(String value) {
+    return InvalidRequest.badParameter(
         config.paging().pageParameter(), value, "Expected number greater than or equal to 1");
   }
 

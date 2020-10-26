@@ -4,7 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import gov.va.api.lighthouse.vulcan.InvalidParameter;
+import gov.va.api.lighthouse.vulcan.InvalidRequest;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import org.junit.jupiter.api.Test;
@@ -164,17 +164,17 @@ public class TokenParameterTest {
 
   @Test
   public void parseBlank() {
-    assertThrows(InvalidParameter.class, () -> TokenParameter.parse("x", ""));
+    assertThrows(InvalidRequest.class, () -> TokenParameter.parse("x", ""));
   }
 
   @Test
   public void parseNull() {
-    assertThrows(InvalidParameter.class, () -> TokenParameter.parse("x", null));
+    assertThrows(InvalidRequest.class, () -> TokenParameter.parse("x", null));
   }
 
   @Test
   public void parsePipe() {
-    assertThrows(InvalidParameter.class, () -> TokenParameter.parse("x", "|"));
+    assertThrows(InvalidRequest.class, () -> TokenParameter.parse("x", "|"));
   }
 
   @ParameterizedTest

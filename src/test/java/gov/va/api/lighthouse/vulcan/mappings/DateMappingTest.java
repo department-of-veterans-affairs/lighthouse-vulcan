@@ -6,7 +6,7 @@ import static org.junit.jupiter.params.provider.Arguments.arguments;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import gov.va.api.lighthouse.vulcan.InvalidParameter;
+import gov.va.api.lighthouse.vulcan.InvalidRequest;
 import gov.va.api.lighthouse.vulcan.fugazi.FugaziEntity;
 import gov.va.api.lighthouse.vulcan.mappings.DateMapping.DateFidelity;
 import gov.va.api.lighthouse.vulcan.mappings.DateMapping.DateOperator;
@@ -171,7 +171,7 @@ class DateMappingTest {
       })
   @NullAndEmptySource
   void parsedParametersThrowExceptionForIllegalValues(String parameterValue) {
-    assertThatExceptionOfType(InvalidParameter.class)
+    assertThatExceptionOfType(InvalidRequest.class)
         .isThrownBy(
             () -> {
               var sd = new SearchableDate("x", parameterValue);
@@ -183,7 +183,7 @@ class DateMappingTest {
   void specificationForThrowsExceptionIfParameterIsRepeatedMoreThanTwice() {
     var r = mock(HttpServletRequest.class);
     when(r.getParameterValues("date")).thenReturn(new String[] {"1", "2", "3"});
-    assertThatExceptionOfType(InvalidParameter.class)
+    assertThatExceptionOfType(InvalidRequest.class)
         .isThrownBy(
             () ->
                 DateMapping.<FugaziEntity, Long>builder()

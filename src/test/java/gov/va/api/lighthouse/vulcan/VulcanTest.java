@@ -172,7 +172,7 @@ class VulcanTest {
             .build();
     var request = new MockHttpServletRequest();
     request.setRequestURI("/fugazi");
-    assertThatExceptionOfType(InvalidParameter.class).isThrownBy(() -> vulcan.forge(request));
+    assertThatExceptionOfType(InvalidRequest.class).isThrownBy(() -> vulcan.forge(request));
   }
 
   @ParameterizedTest

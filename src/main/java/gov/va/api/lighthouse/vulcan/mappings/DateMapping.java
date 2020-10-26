@@ -3,7 +3,7 @@ package gov.va.api.lighthouse.vulcan.mappings;
 import static gov.va.api.lighthouse.vulcan.Predicates.andUsing;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
-import gov.va.api.lighthouse.vulcan.InvalidParameter;
+import gov.va.api.lighthouse.vulcan.InvalidRequest;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.OffsetDateTime;
@@ -61,7 +61,7 @@ public class DateMapping<EntityT, DateT> implements SingleParameterMapping<Entit
   public Specification<EntityT> specificationFor(HttpServletRequest request) {
     String[] dates = request.getParameterValues(parameterName());
     if (dates.length > 2) {
-      throw InvalidParameter.repeatedTooManyTimes(parameterName(), 2, dates.length);
+      throw InvalidRequest.repeatedTooManyTimes(parameterName(), 2, dates.length);
     }
     return (root, criteriaQuery, criteriaBuilder) -> {
       Path<DateT> field = root.get(fieldName());
@@ -188,7 +188,7 @@ public class DateMapping<EntityT, DateT> implements SingleParameterMapping<Entit
               criteriaBuilder.greaterThanOrEqualTo(field, approximation().expandLowerBound(date)),
               criteriaBuilder.lessThanOrEqualTo(field, approximation().expandUpperBound(date)));
         default:
-          throw new InvalidParameter("Unknown date search operator: " + date.operator());
+          throw new InvalidRequest("Unknown date search operator: " + date.operator());
       }
     }
   }
@@ -318,8 +318,8 @@ public class DateMapping<EntityT, DateT> implements SingleParameterMapping<Entit
       }
     }
 
-    private InvalidParameter invalidParameterValue() {
-      return InvalidParameter.badValue(
+    private InvalidRequest invalidParameterValue() {
+      return InvalidRequest.badParameter(
           parameterName,
           operatorAndDate,
           "Expected: [EQ|NE|GT|LT|GE|LE|SA|EB|AP]YYYY[-MM][-DD]['T'HH:MM:SS][Z|(+|-)HH:MM]");
