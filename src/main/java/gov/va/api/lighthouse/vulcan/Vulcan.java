@@ -11,6 +11,7 @@ import javax.validation.constraints.NotNull;
 import lombok.Builder;
 import lombok.NonNull;
 import org.springframework.data.domain.Page;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 
 /**
@@ -20,13 +21,29 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
  */
 @Builder
 public class Vulcan<EntityT, JpaRepositoryT extends JpaSpecificationExecutor<EntityT>> {
-
   @NonNull private final JpaRepositoryT repository;
 
   @NotNull private final VulcanConfiguration<EntityT> config;
 
   public static <E, R extends JpaSpecificationExecutor<E>> VulcanBuilder<E, R> forRepo(R repo) {
     return Vulcan.<E, R>builder().repository(repo);
+  }
+
+  /** Default query option that throws an InvalidParameter exception. */
+  public static <E> Function<HttpServletRequest, Specification<E>> rejectRequest() {
+    return r -> {
+      throw InvalidParameter.noParametersSpecified();
+    };
+  }
+
+  /**
+   * Default query option that returns an empty (no results found) response, without searching the
+   * database.
+   */
+  public static <E> Function<HttpServletRequest, Specification<E>> returnNothing() {
+    return r -> {
+      throw CircuitBreaker.noParametersSpecified();
+    };
   }
 
   /** When making paging links, use the request URL from the HttpServletRequest object. */
@@ -69,28 +86,22 @@ public class Vulcan<EntityT, JpaRepositoryT extends JpaSpecificationExecutor<Ent
 
   /** Process there request and return a non-null list of database entities that apply. */
   public VulcanResult<EntityT> forge(HttpServletRequest request) {
-
     // TODO parameter rules
     // TODO - at least one of
     // TODO - only one onf
     // TODO - required groups of parameters (e.g. if "a" is specified then must specify "b")
-
     // TODO configurable behavior if no parameters are specified
     // TODO - throw error
     // TODO - select all
     // TODO - return empty (select none)
     // TODO - select with default parameters
-
     // TODO make paging option so that when executed the JPA Page isn't provided
     // TODO to support Observation query hack
-
     // TODO prototype usage
     // TODO procedure has superman hack
     // TODO observation has select all hack
     // TODO location/organization has address
-
     RequestContext<EntityT> context = RequestContext.forConfig(config).request(request).build();
-
     if (context.abortSearch()) {
       return resultsForAbortedSearch(context);
     }
@@ -122,9 +133,7 @@ public class Vulcan<EntityT, JpaRepositoryT extends JpaSpecificationExecutor<Ent
     Integer lastPage = hasPages ? searchResult.getTotalPages() : null;
     Integer previousPage = hasPages && thisPage > 1 && thisPage <= lastPage ? (thisPage - 1) : null;
     Integer nextPage = hasPages && thisPage < lastPage ? (thisPage + 1) : null;
-
     PageLinkBuilder links = PageLinkBuilder.of(context);
-
     return VulcanResult.<EntityT>builder()
         .paging(
             Paging.builder()

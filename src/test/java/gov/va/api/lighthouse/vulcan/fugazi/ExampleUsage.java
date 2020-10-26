@@ -1,5 +1,6 @@
 package gov.va.api.lighthouse.vulcan.fugazi;
 
+import static gov.va.api.lighthouse.vulcan.Vulcan.rejectRequest;
 import static gov.va.api.lighthouse.vulcan.Vulcan.useUrl;
 import static java.util.stream.Collectors.toList;
 
@@ -45,6 +46,7 @@ public class ExampleUsage {
                 .value("millis", v -> Instant.parse(v).toEpochMilli())
                 .dateAsInstant("when", "date")
                 .get())
+        .defaultQuery(rejectRequest())
         .build();
   }
 

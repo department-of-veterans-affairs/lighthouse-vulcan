@@ -19,6 +19,11 @@ public class InvalidParameter extends IllegalArgumentException {
   }
 
   /** Create a new exception for a parameter that has been repeated to much. */
+  public static InvalidParameter noParametersSpecified() {
+    return new InvalidParameter("No parameters specified.");
+  }
+
+  /** Create a new exception for a parameter that has been repeated to much. */
   public static InvalidParameter repeatedTooManyTimes(String parameter, int max, int actual) {
     return new InvalidParameter(
         String.format(

@@ -6,9 +6,13 @@ package gov.va.api.lighthouse.vulcan;
  * the database that no results will be found.
  */
 public class CircuitBreaker extends RuntimeException {
-
   public CircuitBreaker(String message) {
     super(message);
+  }
+
+  /** Create a new exception for a parameter that has been repeated to much. */
+  public static CircuitBreaker noParametersSpecified() {
+    return new CircuitBreaker("No parameters specified.");
   }
 
   /** Create a new exception for bad value, like a number that cannot be parsed. */

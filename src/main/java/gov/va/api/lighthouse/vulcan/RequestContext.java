@@ -116,11 +116,13 @@ public class RequestContext<EntityT> {
   }
 
   private Specification<EntityT> specificationOf(HttpServletRequest request) {
-    return config.mappings().stream()
-        .filter(m -> m.appliesTo(request))
-        .peek(m -> log.info("Applying {}", m))
-        .map(m -> m.specificationFor(request))
-        .filter(Objects::nonNull)
-        .collect(Specifications.all());
+    Specification<EntityT> all =
+        config.mappings().stream()
+            .filter(m -> m.appliesTo(request))
+            .peek(m -> log.info("Applying {}", m))
+            .map(m -> m.specificationFor(request))
+            .filter(Objects::nonNull)
+            .collect(Specifications.all());
+    return all == null ? config.defaultQuery().apply(request) : all;
   }
 }

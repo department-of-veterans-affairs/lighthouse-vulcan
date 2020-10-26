@@ -1,7 +1,9 @@
 package gov.va.api.lighthouse.vulcan;
 
+import static gov.va.api.lighthouse.vulcan.Vulcan.returnNothing;
 import static gov.va.api.lighthouse.vulcan.Vulcan.useRequestUrl;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -124,6 +126,55 @@ class VulcanTest {
     return dto;
   }
 
+  @Test
+  void defaultQueryCausesEmptyResult() {
+    var vulcan =
+        Vulcan.forRepo(repo)
+            .config(
+                VulcanConfiguration.forEntity(FugaziEntity.class)
+                    .paging(
+                        PagingConfiguration.builder()
+                            .pageParameter("page")
+                            .countParameter("count")
+                            .defaultCount(3)
+                            .maxCount(10)
+                            .sort(Sort.by("id").ascending())
+                            .baseUrlStrategy(useRequestUrl())
+                            .build())
+                    .mappings(Mappings.forEntity(FugaziEntity.class).string("name").get())
+                    .defaultQuery(Vulcan.returnNothing())
+                    .build())
+            .build();
+    var request = new MockHttpServletRequest();
+    request.setRequestURI("/fugazi");
+    var result = vulcan.forge(request);
+    assertThat(result.paging().totalRecords()).isEqualTo(0);
+  }
+
+  @Test
+  void defaultQueryCausesInvalidParametersException() {
+    var vulcan =
+        Vulcan.forRepo(repo)
+            .config(
+                VulcanConfiguration.forEntity(FugaziEntity.class)
+                    .paging(
+                        PagingConfiguration.builder()
+                            .pageParameter("page")
+                            .countParameter("count")
+                            .defaultCount(3)
+                            .maxCount(10)
+                            .sort(Sort.by("id").ascending())
+                            .baseUrlStrategy(useRequestUrl())
+                            .build())
+                    .mappings(Mappings.forEntity(FugaziEntity.class).string("name").get())
+                    .defaultQuery(Vulcan.rejectRequest())
+                    .build())
+            .build();
+    var request = new MockHttpServletRequest();
+    request.setRequestURI("/fugazi");
+    assertThatExceptionOfType(InvalidParameter.class).isThrownBy(() -> vulcan.forge(request));
+  }
+
   @ParameterizedTest
   @ValueSource(
       strings = {
@@ -244,31 +295,6 @@ class VulcanTest {
     assertThat(req("/fugazi?food=NACHOS,TACOS&name:contains=nacho")).containsExactly(nachos2005);
   }
 
-  @Test
-  void noQueryParameters() {
-    // TODO DECIDE WHAT THE BEHAVIOR FOR NO PARAMETERS SHOULD BE
-    var vulcan =
-        Vulcan.forRepo(repo)
-            .config(
-                VulcanConfiguration.forEntity(FugaziEntity.class)
-                    .paging(
-                        PagingConfiguration.builder()
-                            .pageParameter("page")
-                            .countParameter("count")
-                            .defaultCount(3)
-                            .maxCount(10)
-                            .sort(Sort.by("id").ascending())
-                            .baseUrlStrategy(useRequestUrl())
-                            .build())
-                    .mappings(Mappings.forEntity(FugaziEntity.class).string("name").get())
-                    .build())
-            .build();
-    var request = new MockHttpServletRequest();
-    request.setRequestURI("/fugazi");
-    var result = vulcan.forge(request);
-    assertThat(result.paging().totalRecords()).isEqualTo(0);
-  }
-
   @ParameterizedTest
   @MethodSource
   void pageAndCount(
@@ -296,6 +322,7 @@ class VulcanTest {
                             .baseUrlStrategy(useRequestUrl())
                             .build())
                     .mappings(Mappings.forEntity(FugaziEntity.class).string("name").get())
+                    .defaultQuery(returnNothing())
                     .build())
             .build();
 

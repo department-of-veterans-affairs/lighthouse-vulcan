@@ -1,5 +1,6 @@
 package gov.va.api.lighthouse.vulcan;
 
+import static gov.va.api.lighthouse.vulcan.Vulcan.returnNothing;
 import static gov.va.api.lighthouse.vulcan.Vulcan.useRequestUrl;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
@@ -12,11 +13,13 @@ import gov.va.api.lighthouse.vulcan.fugazi.FugaziEntity;
 import gov.va.api.lighthouse.vulcan.mappings.Mappings;
 import java.util.stream.Stream;
 import javax.servlet.http.HttpServletRequest;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 
 class RequestContextTest {
 
@@ -41,6 +44,7 @@ class RequestContextTest {
                 .baseUrlStrategy(useRequestUrl())
                 .build())
         .mappings(Mappings.forEntity(FugaziEntity.class).string("name").get())
+        .defaultQuery(returnNothing())
         .build();
   }
 
@@ -50,6 +54,31 @@ class RequestContextTest {
     when(req.getParameter("count")).thenReturn(count);
     when(req.getParameter("page")).thenReturn(page);
     return RequestContext.forConfig(config).request(req).build();
+  }
+
+  @Test
+  void defaultQueryIsUsedIfNoSpecificationsAreBuiltFromTheRequestParameters() {
+
+    @SuppressWarnings("unchecked")
+    Specification<FugaziEntity> specification = mock(Specification.class);
+    var config =
+        VulcanConfiguration.forEntity(FugaziEntity.class)
+            .paging(
+                PagingConfiguration.builder()
+                    .pageParameter("page")
+                    .countParameter("count")
+                    .defaultCount(10)
+                    .maxCount(20)
+                    .sort(Sort.unsorted())
+                    .baseUrlStrategy(useRequestUrl())
+                    .build())
+            .mappings(Mappings.forEntity(FugaziEntity.class).string("name").get())
+            .defaultQuery(r -> specification)
+            .build();
+
+    HttpServletRequest req = mock(HttpServletRequest.class);
+    assertThat(RequestContext.forConfig(config).request(req).build().specification())
+        .isSameAs(specification);
   }
 
   @ParameterizedTest

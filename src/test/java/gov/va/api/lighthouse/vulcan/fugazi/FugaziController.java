@@ -69,6 +69,7 @@ public class FugaziController {
                 .token("foodtoken", "food", this::foodIsSupported, this::foodValues)
                 .tokenList("foodtokencsv", "food", this::foodIsSupported, this::foodValues)
                 .get())
+        .defaultQuery(Vulcan.returnNothing())
         .build();
   }
 
