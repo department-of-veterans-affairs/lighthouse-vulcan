@@ -1,5 +1,10 @@
 package gov.va.api.lighthouse.vulcan.fugazi;
 
+import static gov.va.api.lighthouse.vulcan.Rules.atLeastOneParameterOf;
+import static gov.va.api.lighthouse.vulcan.Rules.forbiddenParameters;
+import static gov.va.api.lighthouse.vulcan.Rules.ifParameter;
+import static gov.va.api.lighthouse.vulcan.Rules.parametersAlwaysSpecifiedTogether;
+import static gov.va.api.lighthouse.vulcan.Rules.parametersNeverSpecifiedTogether;
 import static gov.va.api.lighthouse.vulcan.Vulcan.rejectRequest;
 import static gov.va.api.lighthouse.vulcan.Vulcan.useUrl;
 import static java.util.stream.Collectors.toList;
@@ -47,6 +52,12 @@ public class ExampleUsage {
                 .dateAsInstant("when", "date")
                 .get())
         .defaultQuery(rejectRequest())
+        .rule(atLeastOneParameterOf("patient", "_id"))
+        .rule(parametersNeverSpecifiedTogether("patient", "_id"))
+        .rule(forbiddenParameters("client-key"))
+        .rule(ifParameter("patient").thenAlsoAtLeastOneParameterOf("category", "code"))
+        .rule(ifParameter("category").thenForbidParameters("code"))
+        .rule(parametersAlwaysSpecifiedTogether("latitude", "longitude"))
         .build();
   }
 

@@ -15,18 +15,25 @@ public class InvalidRequest extends IllegalArgumentException {
 
   /** Create a new exception for bad value, like a number that cannot be parsed. */
   public static InvalidRequest badParameter(String parameter, String value, String message) {
-    return new InvalidRequest(String.format("%s = %s : %s", parameter, value, message));
+    return because("bad parameter: %s = %s : %s", parameter, value, message);
+  }
+
+  public static InvalidRequest because(String message) {
+    return new InvalidRequest(message);
+  }
+
+  @SuppressWarnings("AnnotateFormatMethod")
+  public static InvalidRequest because(String format, Object... messageValues) {
+    return new InvalidRequest(String.format(format, messageValues));
   }
 
   /** Create a new exception for a parameter that has been repeated to much. */
   public static InvalidRequest noParametersSpecified() {
-    return new InvalidRequest("No parameters specified.");
+    return because("No parameters specified.");
   }
 
   /** Create a new exception for a parameter that has been repeated to much. */
   public static InvalidRequest repeatedTooManyTimes(String parameter, int max, int actual) {
-    return new InvalidRequest(
-        String.format(
-            "%s specified too many %d times, up to %d is allowed", parameter, actual, max));
+    return because("%s specified too many %d times, up to %d is allowed", parameter, actual, max);
   }
 }
