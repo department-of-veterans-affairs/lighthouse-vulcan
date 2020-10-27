@@ -1,9 +1,9 @@
-package gov.va.api.lighthouse.vulcan;
+package gov.va.api.lighthouse.vulcan.mappings;
 
+import static gov.va.api.lighthouse.vulcan.Specifications.selectInList;
 import static java.util.stream.Collectors.toSet;
 
 import java.util.stream.Stream;
-import javax.persistence.criteria.CriteriaBuilder.In;
 import javax.servlet.http.HttpServletRequest;
 import lombok.Builder;
 import lombok.Value;
@@ -34,10 +34,6 @@ public class CsvListMapping<EntityT> implements SingleParameterMapping<EntityT> 
         Stream.of(request.getParameter(parameterName()).split("\\s*,\\s*"))
             .filter(StringUtils::isNotBlank)
             .collect(toSet());
-    return (root, criteriaQuery, criteriaBuilder) -> {
-      In<String> in = criteriaBuilder.in(root.get(fieldName()));
-      values.forEach(in::value);
-      return criteriaBuilder.or(in);
-    };
+    return selectInList(fieldName(), values);
   }
 }

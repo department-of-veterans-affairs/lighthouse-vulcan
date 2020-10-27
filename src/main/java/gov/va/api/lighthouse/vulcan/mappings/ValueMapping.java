@@ -1,10 +1,9 @@
-package gov.va.api.lighthouse.vulcan;
+package gov.va.api.lighthouse.vulcan.mappings;
 
 import java.util.function.Function;
 import javax.servlet.http.HttpServletRequest;
 import lombok.Builder;
 import lombok.Value;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.jpa.domain.Specification;
 
 /**
@@ -13,7 +12,6 @@ import org.springframework.data.jpa.domain.Specification;
  */
 @Value
 @Builder
-@Slf4j
 public class ValueMapping<EntityT> implements SingleParameterMapping<EntityT> {
 
   String parameterName;
@@ -25,7 +23,6 @@ public class ValueMapping<EntityT> implements SingleParameterMapping<EntityT> {
   @Override
   public Specification<EntityT> specificationFor(HttpServletRequest request) {
     var value = converter.apply(request.getParameter(parameterName()));
-    log.info("lt {}", value);
     return (root, criteriaQuery, criteriaBuilder) ->
         criteriaBuilder.equal(root.get(fieldName()), value);
   }

@@ -1,14 +1,20 @@
 package gov.va.api.lighthouse.vulcan.fugazi;
 
+import static gov.va.api.lighthouse.vulcan.Rules.atLeastOneParameterOf;
+import static gov.va.api.lighthouse.vulcan.Rules.forbiddenParameters;
+import static gov.va.api.lighthouse.vulcan.Rules.ifParameter;
+import static gov.va.api.lighthouse.vulcan.Rules.parametersAlwaysSpecifiedTogether;
+import static gov.va.api.lighthouse.vulcan.Rules.parametersNeverSpecifiedTogether;
+import static gov.va.api.lighthouse.vulcan.Vulcan.rejectRequest;
 import static gov.va.api.lighthouse.vulcan.Vulcan.useUrl;
 import static java.util.stream.Collectors.toList;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import gov.va.api.health.autoconfig.configuration.JacksonConfig;
-import gov.va.api.lighthouse.vulcan.Mappings;
 import gov.va.api.lighthouse.vulcan.Vulcan;
 import gov.va.api.lighthouse.vulcan.VulcanConfiguration;
 import gov.va.api.lighthouse.vulcan.VulcanConfiguration.PagingConfiguration;
+import gov.va.api.lighthouse.vulcan.mappings.Mappings;
 import java.time.Instant;
 import java.util.List;
 import javax.servlet.http.HttpServletRequest;
@@ -45,6 +51,13 @@ public class ExampleUsage {
                 .value("millis", v -> Instant.parse(v).toEpochMilli())
                 .dateAsInstant("when", "date")
                 .get())
+        .defaultQuery(rejectRequest())
+        .rule(atLeastOneParameterOf("patient", "_id"))
+        .rule(parametersNeverSpecifiedTogether("patient", "_id"))
+        .rule(forbiddenParameters("client-key"))
+        .rule(ifParameter("patient").thenAlsoAtLeastOneParameterOf("category", "code"))
+        .rule(ifParameter("category").thenForbidParameters("code"))
+        .rule(parametersAlwaysSpecifiedTogether("latitude", "longitude"))
         .build();
   }
 

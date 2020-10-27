@@ -2,6 +2,7 @@ package gov.va.api.lighthouse.vulcan;
 
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
+import java.util.Objects;
 import javax.servlet.http.HttpServletRequest;
 import lombok.Builder;
 import lombok.NonNull;
@@ -25,20 +26,44 @@ public class RequestContext<EntityT> {
   int page;
   int count;
   PageRequest pageRequest;
+  boolean abortSearch;
 
   @Builder
   private RequestContext(
       @NonNull VulcanConfiguration<EntityT> config, @NonNull HttpServletRequest request) {
     this.config = config;
     this.request = request;
-    specification = specificationOf(request);
     page = pageValueOf(request);
     count = countValueOf(request);
     pageRequest = PageRequest.of(page - 1, Math.max(count, 1), config.paging().sort());
+    checkRules();
+    Specification<EntityT> maybeSpecification;
+    try {
+      maybeSpecification = specificationOf(request);
+    } catch (CircuitBreaker e) {
+      maybeSpecification = null;
+      log.info("Circuit breaker thrown, skipping search: {}", e.getMessage());
+    }
+    specification = maybeSpecification;
+    abortSearch = (specification == null);
   }
 
   public static <E> RequestContextBuilder<E> forConfig(VulcanConfiguration<E> configuration) {
     return RequestContext.<E>builder().config(configuration);
+  }
+
+  private void checkRules() {
+    config
+        .rules()
+        .forEach(
+            r -> {
+              try {
+                r.check(request);
+              } catch (InvalidRequest e) {
+                log.info("Rejecting request: {}", e.getMessage());
+                throw e;
+              }
+            });
   }
 
   public boolean countOnly() {
@@ -66,15 +91,15 @@ public class RequestContext<EntityT> {
     }
   }
 
-  private InvalidParameter invalidCountParameter(String value) {
-    return InvalidParameter.badValue(
+  private InvalidRequest invalidCountParameter(String value) {
+    return InvalidRequest.badParameter(
         config.paging().countParameter(),
         value,
         "Expected number between 0 and " + config.paging().maxCount());
   }
 
-  private InvalidParameter invalidPageParameter(String value) {
-    return InvalidParameter.badValue(
+  private InvalidRequest invalidPageParameter(String value) {
+    return InvalidRequest.badParameter(
         config.paging().pageParameter(), value, "Expected number greater than or equal to 1");
   }
 
@@ -106,10 +131,13 @@ public class RequestContext<EntityT> {
   }
 
   private Specification<EntityT> specificationOf(HttpServletRequest request) {
-    return config.mappings().stream()
-        .filter(m -> m.appliesTo(request))
-        .peek(m -> log.info("Applying {}", m))
-        .map(m -> m.specificationFor(request))
-        .collect(Specifications.and());
+    Specification<EntityT> all =
+        config.mappings().stream()
+            .filter(m -> m.appliesTo(request))
+            .peek(m -> log.info("Applying {}", m))
+            .map(m -> m.specificationFor(request))
+            .filter(Objects::nonNull)
+            .collect(Specifications.all());
+    return all == null ? config.defaultQuery().apply(request) : all;
   }
 }

@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <FindBugsFilter>
-  <!-- [ERROR] Synchronization performed on java.util.concurrent.atomic.AtomicReference in gov.va.api.lighthouse.vulcan.DateMapping$SearchableDate.fidelity() [gov.va.api.lighthouse.vulcan.DateMapping$SearchableDate] At DateMapping.java:[line 235] JLM_JSR166_UTILCONCURRENT_MONITORENTER -->
+  <!-- [ERROR] Synchronization performed on java.util.concurrent.atomic.AtomicReference in gov.va.api.lighthouse.vulcan.mappings.DateMapping$SearchableDate.fidelity() [gov.va.api.lighthouse.vulcan.mappings.DateMapping$SearchableDate] At DateMapping.java:[line 235] JLM_JSR166_UTILCONCURRENT_MONITORENTER -->
   <!--
     Lombok generated lazy getters
   -->
   <Match>
-    <Class name="gov.va.api.lighthouse.vulcan.DateMapping$SearchableDate"/>
+    <Class name="gov.va.api.lighthouse.vulcan.mappings.DateMapping$SearchableDate"/>
     <Bug pattern="JLM_JSR166_UTILCONCURRENT_MONITORENTER"/>
   </Match>
 </FindBugsFilter>

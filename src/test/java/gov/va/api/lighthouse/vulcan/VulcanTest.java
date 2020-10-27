@@ -1,7 +1,9 @@
 package gov.va.api.lighthouse.vulcan;
 
+import static gov.va.api.lighthouse.vulcan.Vulcan.returnNothing;
 import static gov.va.api.lighthouse.vulcan.Vulcan.useRequestUrl;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -16,6 +18,7 @@ import gov.va.api.lighthouse.vulcan.fugazi.FugaziDto;
 import gov.va.api.lighthouse.vulcan.fugazi.FugaziDto.Food;
 import gov.va.api.lighthouse.vulcan.fugazi.FugaziEntity;
 import gov.va.api.lighthouse.vulcan.fugazi.FugaziRepository;
+import gov.va.api.lighthouse.vulcan.mappings.Mappings;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
@@ -28,6 +31,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase.Replace;
@@ -122,6 +126,69 @@ class VulcanTest {
     return dto;
   }
 
+  @Test
+  void defaultQueryCausesEmptyResult() {
+    var vulcan =
+        Vulcan.forRepo(repo)
+            .config(
+                VulcanConfiguration.forEntity(FugaziEntity.class)
+                    .paging(
+                        PagingConfiguration.builder()
+                            .pageParameter("page")
+                            .countParameter("count")
+                            .defaultCount(3)
+                            .maxCount(10)
+                            .sort(Sort.by("id").ascending())
+                            .baseUrlStrategy(useRequestUrl())
+                            .build())
+                    .mappings(Mappings.forEntity(FugaziEntity.class).string("name").get())
+                    .defaultQuery(Vulcan.returnNothing())
+                    .build())
+            .build();
+    var request = new MockHttpServletRequest();
+    request.setRequestURI("/fugazi");
+    var result = vulcan.forge(request);
+    assertThat(result.paging().totalRecords()).isEqualTo(0);
+  }
+
+  @Test
+  void defaultQueryCausesInvalidParametersException() {
+    var vulcan =
+        Vulcan.forRepo(repo)
+            .config(
+                VulcanConfiguration.forEntity(FugaziEntity.class)
+                    .paging(
+                        PagingConfiguration.builder()
+                            .pageParameter("page")
+                            .countParameter("count")
+                            .defaultCount(3)
+                            .maxCount(10)
+                            .sort(Sort.by("id").ascending())
+                            .baseUrlStrategy(useRequestUrl())
+                            .build())
+                    .mappings(Mappings.forEntity(FugaziEntity.class).string("name").get())
+                    .defaultQuery(Vulcan.rejectRequest())
+                    .build())
+            .build();
+    var request = new MockHttpServletRequest();
+    request.setRequestURI("/fugazi");
+    assertThatExceptionOfType(InvalidRequest.class).isThrownBy(() -> vulcan.forge(request));
+  }
+
+  @ParameterizedTest
+  @ValueSource(
+      strings = {
+        "/fugazi?foodtoken=|",
+        "/fugazi?foodtokencsv=|",
+        "/fugazi?foodtokencsv=NACHOS,|",
+        "/fugazi?xdate=nope",
+        "/fugazi?xdate=no2006"
+      })
+  @SneakyThrows
+  void invalidParameterSearchs(String uri) {
+    mvc.perform(get(uri)).andExpect(status().isBadRequest());
+  }
+
   @SuppressWarnings("SpellCheckingInspection")
   @Test
   void mappingCsvList() {
@@ -177,6 +244,43 @@ class VulcanTest {
     assertThat(req("/fugazi?xname=nachos2005")).containsExactly(nachos2005);
   }
 
+  @Test
+  void mappingToken() {
+    assertThat(req("/fugazi?foodtoken=")).isEmpty();
+    assertThat(req("/fugazi?foodtoken=PIZZA")).isEmpty();
+    assertThat(req("/fugazi?foodtoken=http://movie-theater|NACHOS")).isEmpty();
+    assertThat(req("/fugazi?foodtoken=NACHOS")).containsExactly(nachos2005);
+    assertThat(req("/fugazi?foodtoken=TACOS"))
+        .containsExactlyInAnyOrder(tacos2005, tacos2006, tacos2007, tacos2008);
+    assertThat(req("/fugazi?foodtoken=http://food|TACOS"))
+        .containsExactlyInAnyOrder(tacos2005, tacos2006, tacos2007, tacos2008);
+    assertThat(req("/fugazi?foodtoken=http://food|"))
+        .containsExactlyInAnyOrder(
+            nachos2005, moreNachos2005, tacos2005, tacos2006, tacos2007, tacos2008);
+  }
+
+  @Test
+  void mappingTokenList() {
+    assertThat(req("/fugazi?foodtokencsv=")).isEmpty();
+    assertThat(req("/fugazi?foodtokencsv=,")).isEmpty();
+    assertThat(req("/fugazi?foodtokencsv=PIZZA")).isEmpty();
+    assertThat(req("/fugazi?foodtokencsv=http://movie-theater|NACHOS")).isEmpty();
+    assertThat(req("/fugazi?foodtokencsv=NACHOS")).containsExactly(nachos2005);
+    assertThat(req("/fugazi?foodtokencsv=TACOS"))
+        .containsExactlyInAnyOrder(tacos2005, tacos2006, tacos2007, tacos2008);
+    assertThat(req("/fugazi?foodtokencsv=http://food|TACOS"))
+        .containsExactlyInAnyOrder(tacos2005, tacos2006, tacos2007, tacos2008);
+    assertThat(req("/fugazi?foodtokencsv=http://food|TACOS,http://nope|NACHOS"))
+        .containsExactlyInAnyOrder(tacos2005, tacos2006, tacos2007, tacos2008);
+    assertThat(req("/fugazi?foodtokencsv=http://food|TACOS,http://food|NACHOS"))
+        .containsExactlyInAnyOrder(tacos2005, tacos2006, tacos2007, tacos2008, nachos2005);
+    assertThat(req("/fugazi?foodtokencsv=http://food|TACOS,NACHOS"))
+        .containsExactlyInAnyOrder(tacos2005, tacos2006, tacos2007, tacos2008, nachos2005);
+    assertThat(req("/fugazi?foodtokencsv=http://food|"))
+        .containsExactlyInAnyOrder(
+            nachos2005, moreNachos2005, tacos2005, tacos2006, tacos2007, tacos2008);
+  }
+
   @SuppressWarnings("SpellCheckingInspection")
   @Test
   void mappingValue() {
@@ -218,6 +322,7 @@ class VulcanTest {
                             .baseUrlStrategy(useRequestUrl())
                             .build())
                     .mappings(Mappings.forEntity(FugaziEntity.class).string("name").get())
+                    .defaultQuery(returnNothing())
                     .build())
             .build();
 
