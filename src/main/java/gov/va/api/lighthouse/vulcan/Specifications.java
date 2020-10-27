@@ -73,12 +73,12 @@ public class Specifications {
   private static class MatchesAnySpecifications<E> {
     @Getter Specification<E> specification;
 
-    MatchesAnySpecifications<E> add(Specification<E> andMe) {
-      if (andMe != null) {
+    MatchesAnySpecifications<E> add(Specification<E> orMe) {
+      if (orMe != null) {
         if (specification == null) {
-          specification = andMe;
+          specification = orMe;
         } else {
-          specification = specification.or(andMe);
+          specification = specification.or(orMe);
         }
       }
       return this;

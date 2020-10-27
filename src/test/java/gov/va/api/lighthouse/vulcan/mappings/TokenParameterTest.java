@@ -2,7 +2,6 @@ package gov.va.api.lighthouse.vulcan.mappings;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import gov.va.api.lighthouse.vulcan.InvalidRequest;
 import java.util.function.BiFunction;
@@ -105,17 +104,17 @@ public class TokenParameterTest {
 
   @Test
   public void checkNullThrowsIllegalState() {
-    assertThrows(
-        IllegalStateException.class,
-        () ->
-            anySystemExplicitCodeToken
-                .behavior()
-                .onAnySystemAndExplicitCode(null)
-                .onExplicitSystemAndAnyCode(null)
-                .onExplicitSystemAndExplicitCode(null)
-                .onNoSystemAndExplicitCode(null)
-                .build()
-                .execute());
+    assertThatExceptionOfType(IllegalStateException.class)
+        .isThrownBy(
+            () ->
+                anySystemExplicitCodeToken
+                    .behavior()
+                    .onAnySystemAndExplicitCode(null)
+                    .onExplicitSystemAndAnyCode(null)
+                    .onExplicitSystemAndExplicitCode(null)
+                    .onNoSystemAndExplicitCode(null)
+                    .build()
+                    .execute());
   }
 
   @Test
@@ -164,17 +163,19 @@ public class TokenParameterTest {
 
   @Test
   public void parseBlank() {
-    assertThrows(InvalidRequest.class, () -> TokenParameter.parse("x", ""));
+    assertThatExceptionOfType(InvalidRequest.class).isThrownBy(() -> TokenParameter.parse("x", ""));
   }
 
   @Test
   public void parseNull() {
-    assertThrows(InvalidRequest.class, () -> TokenParameter.parse("x", null));
+    assertThatExceptionOfType(InvalidRequest.class)
+        .isThrownBy(() -> TokenParameter.parse("x", null));
   }
 
   @Test
   public void parsePipe() {
-    assertThrows(InvalidRequest.class, () -> TokenParameter.parse("x", "|"));
+    assertThatExceptionOfType(InvalidRequest.class)
+        .isThrownBy(() -> TokenParameter.parse("x", "|"));
   }
 
   @ParameterizedTest
