@@ -22,6 +22,7 @@ import javax.servlet.http.HttpServletRequest;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Singular;
+import lombok.ToString.Exclude;
 import lombok.Value;
 import org.springframework.data.jpa.domain.Specification;
 
@@ -41,7 +42,7 @@ public class DateMapping<EntityT, DateT> implements SingleParameterMapping<Entit
 
   String fieldName;
 
-  PredicateFactory<DateT> predicates;
+  @Exclude PredicateFactory<DateT> predicates;
 
   /**
    * Default date approximate will used fixed amounts that increased based on the fidelity of the
