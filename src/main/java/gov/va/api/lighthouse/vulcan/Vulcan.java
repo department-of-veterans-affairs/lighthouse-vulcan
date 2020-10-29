@@ -122,7 +122,7 @@ public class Vulcan<EntityT, JpaRepositoryT extends JpaSpecificationExecutor<Ent
         .build();
   }
 
-  /** Process there request and return a non-null list of database entities that apply. */
+  /** Process the request and return a non-null list of database entities that apply. */
   public VulcanResult<EntityT> search(HttpServletRequest request) {
 
     RequestContext<EntityT> context = RequestContext.forConfig(config).request(request).build();
