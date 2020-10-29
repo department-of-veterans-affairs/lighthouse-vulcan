@@ -147,7 +147,7 @@ class VulcanTest {
             .build();
     var request = new MockHttpServletRequest();
     request.setRequestURI("/fugazi");
-    var result = vulcan.forge(request);
+    var result = vulcan.search(request);
     assertThat(result.paging().totalRecords()).isEqualTo(0);
   }
 
@@ -172,7 +172,7 @@ class VulcanTest {
             .build();
     var request = new MockHttpServletRequest();
     request.setRequestURI("/fugazi");
-    assertThatExceptionOfType(InvalidRequest.class).isThrownBy(() -> vulcan.forge(request));
+    assertThatExceptionOfType(InvalidRequest.class).isThrownBy(() -> vulcan.search(request));
   }
 
   @ParameterizedTest
@@ -352,7 +352,7 @@ class VulcanTest {
     request.addParameter("page", requestPage);
     request.addParameter("count", requestCount);
     request.setRequestURI("/fugazi");
-    var result = vulcan.forge(request);
+    var result = vulcan.search(request);
     assertThat(result.paging()).isEqualTo(expectedPaging);
   }
 

@@ -84,20 +84,6 @@ public class Vulcan<EntityT, JpaRepositoryT extends JpaSpecificationExecutor<Ent
         .build();
   }
 
-  /** Process there request and return a non-null list of database entities that apply. */
-  public VulcanResult<EntityT> forge(HttpServletRequest request) {
-
-    RequestContext<EntityT> context = RequestContext.forConfig(config).request(request).build();
-    if (context.abortSearch()) {
-      return resultsForAbortedSearch(context);
-    }
-
-    if (context.countOnly()) {
-      return resultsForCountOnly(context);
-    }
-    return resultsForPageOfRecords(context);
-  }
-
   private VulcanResult<EntityT> resultsForAbortedSearch(RequestContext<EntityT> context) {
     return emptyVulcanResult(context, 0);
   }
@@ -134,6 +120,20 @@ public class Vulcan<EntityT, JpaRepositoryT extends JpaSpecificationExecutor<Ent
                 .build())
         .entities(searchResult.stream())
         .build();
+  }
+
+  /** Process there request and return a non-null list of database entities that apply. */
+  public VulcanResult<EntityT> search(HttpServletRequest request) {
+
+    RequestContext<EntityT> context = RequestContext.forConfig(config).request(request).build();
+    if (context.abortSearch()) {
+      return resultsForAbortedSearch(context);
+    }
+
+    if (context.countOnly()) {
+      return resultsForCountOnly(context);
+    }
+    return resultsForPageOfRecords(context);
   }
 
   public interface BaseUrlStrategy extends Function<HttpServletRequest, String> {}

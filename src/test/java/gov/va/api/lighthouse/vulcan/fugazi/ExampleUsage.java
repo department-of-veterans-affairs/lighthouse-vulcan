@@ -64,7 +64,7 @@ public class ExampleUsage {
   @GetMapping
   public ResponseEntity<List<FugaziDto>> get(HttpServletRequest request) {
     // Invoke Vulcan to perform determine and perform the approriate query
-    var result = Vulcan.forRepo(repo).config(configuration()).build().forge(request);
+    var result = Vulcan.forRepo(repo).config(configuration()).build().search(request);
 
     // Process the entities anyway you want. Here we'll map them a DTO.
     var body = result.entities().map(this::asFoo).collect(toList());

@@ -112,7 +112,7 @@ public class FugaziController {
     return Vulcan.forRepo(repo)
         .config(configuration())
         .build()
-        .forge(request)
+        .search(request)
         .entities()
         .map(this::asFoo)
         .collect(toList());
