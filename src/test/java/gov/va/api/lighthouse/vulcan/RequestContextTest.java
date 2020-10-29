@@ -29,7 +29,8 @@ class RequestContextTest {
         arguments(null, null, 1, 10),
         arguments("", "", 1, 10),
         arguments("1", "11", 1, 11),
-        arguments("2", "20", 2, 20));
+        arguments("2", "20", 2, 20),
+        arguments("2", "21", 2, 20));
   }
 
   private VulcanConfiguration<FugaziEntity> config() {
@@ -81,7 +82,7 @@ class RequestContextTest {
   }
 
   @ParameterizedTest
-  @ValueSource(strings = {"-1", "21", "nope"})
+  @ValueSource(strings = {"-1", "nope"})
   void exceptionIsThrownForInvalidCount(String count) {
     assertThatExceptionOfType(InvalidRequest.class).isThrownBy(() -> context("1", count));
   }

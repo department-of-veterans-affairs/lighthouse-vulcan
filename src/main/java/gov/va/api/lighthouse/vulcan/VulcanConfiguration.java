@@ -41,5 +41,10 @@ public class VulcanConfiguration<EntityT> {
     @Builder.Default int maxCount = 20;
     @NotNull Sort sort;
     @NonNull Vulcan.BaseUrlStrategy baseUrlStrategy;
+
+    /** Return true if the given parameter is either the page or count parameter. */
+    public boolean isPagingRelatedParameter(String param) {
+      return pageParameter().equals(param) || countParameter().equals(param);
+    }
   }
 }

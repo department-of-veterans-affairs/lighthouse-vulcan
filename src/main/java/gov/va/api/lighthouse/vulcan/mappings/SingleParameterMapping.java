@@ -3,6 +3,7 @@ package gov.va.api.lighthouse.vulcan.mappings;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
 import gov.va.api.lighthouse.vulcan.Mapping;
+import java.util.List;
 import javax.servlet.http.HttpServletRequest;
 
 /**
@@ -19,4 +20,9 @@ public interface SingleParameterMapping<EntityT> extends Mapping<EntityT> {
 
   /** The HTTP request parameter name. */
   String parameterName();
+
+  @Override
+  default List<String> supportedParameterNames() {
+    return List.of(parameterName());
+  }
 }

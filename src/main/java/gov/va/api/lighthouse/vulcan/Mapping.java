@@ -1,5 +1,6 @@
 package gov.va.api.lighthouse.vulcan;
 
+import java.util.List;
 import javax.servlet.http.HttpServletRequest;
 import org.springframework.data.jpa.domain.Specification;
 
@@ -14,6 +15,7 @@ import org.springframework.data.jpa.domain.Specification;
  * @param <EntityT> The database entity this mapping will apply to.
  */
 public interface Mapping<EntityT> {
+
   /**
    * Return true if this mapping should be included in the processing of this request. This method
    * is guaranteed to be invoked BEFORE specificationFor.
@@ -27,4 +29,7 @@ public interface Mapping<EntityT> {
    * using AND or OR semantics. Implementations not assume which.
    */
   Specification<EntityT> specificationFor(HttpServletRequest request);
+
+  /** Return a list of parameter names that are supported by this mapping. */
+  List<String> supportedParameterNames();
 }

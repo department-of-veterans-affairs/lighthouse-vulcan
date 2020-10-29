@@ -53,12 +53,13 @@ public class RequestContext<EntityT> {
   }
 
   private void checkRules() {
+    RuleContext ruleContext = new ProtectedRuleContext();
     config
         .rules()
         .forEach(
             r -> {
               try {
-                r.check(request);
+                r.check(ruleContext);
               } catch (InvalidRequest e) {
                 log.info("Rejecting request: {}", e.getMessage());
                 throw e;
@@ -82,8 +83,11 @@ public class RequestContext<EntityT> {
     }
     try {
       int count = Integer.parseInt(value);
-      if (count < 0 || count > config.paging().maxCount()) {
+      if (count < 0) {
         throw invalidCountParameter(value);
+      }
+      if (count > config.paging().maxCount()) {
+        return config.paging().maxCount();
       }
       return count;
     } catch (NumberFormatException e) {
@@ -101,12 +105,6 @@ public class RequestContext<EntityT> {
   private InvalidRequest invalidPageParameter(String value) {
     return InvalidRequest.badParameter(
         config.paging().pageParameter(), value, "Expected number greater than or equal to 1");
-  }
-
-  /** Return true if the given parameter is either the page or count parameter. */
-  public boolean isPagingRelatedParameter(String param) {
-    return config().paging().pageParameter().equals(param)
-        || config().paging().countParameter().equals(param);
   }
 
   /**
@@ -139,5 +137,22 @@ public class RequestContext<EntityT> {
             .filter(Objects::nonNull)
             .collect(Specifications.all());
     return all == null ? config.defaultQuery().apply(request) : all;
+  }
+
+  /**
+   * Since rules are checked _before_ RequestContext is fully constructed, we do not want to leak a
+   * partially created RequestContext to whatever is implementing rules.
+   */
+  private class ProtectedRuleContext implements RuleContext {
+
+    @Override
+    public VulcanConfiguration<?> config() {
+      return config;
+    }
+
+    @Override
+    public HttpServletRequest request() {
+      return request;
+    }
   }
 }

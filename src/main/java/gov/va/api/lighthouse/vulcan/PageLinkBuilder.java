@@ -35,7 +35,7 @@ class PageLinkBuilder {
     Map<String, String[]> parameters = context.request().getParameterMap();
     String queryString =
         parameters.entrySet().stream()
-            .filter(entry -> !context.isPagingRelatedParameter(entry.getKey()))
+            .filter(entry -> !context.config().paging().isPagingRelatedParameter(entry.getKey()))
             .sorted(comparingByKey())
             .flatMap(this::asQueryParameters)
             .collect(joining("&"));
