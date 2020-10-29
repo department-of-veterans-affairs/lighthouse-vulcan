@@ -86,7 +86,7 @@ public class Rules {
     };
   }
 
-  /** Create a rule that prevents parameters from being specified togethectx.request(). */
+  /** Create a rule that prevents parameters from being specified together. */
   public Rule parametersNeverSpecifiedTogether(String... parameter) {
     return (ctx) -> {
       int specified = 0;
