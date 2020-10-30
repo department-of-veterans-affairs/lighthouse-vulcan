@@ -1,8 +1,16 @@
 package gov.va.api.lighthouse.vulcan;
 
+import static gov.va.api.lighthouse.vulcan.Vulcan.useRequestUrl;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 
+import gov.va.api.lighthouse.vulcan.VulcanConfiguration.PagingConfiguration;
+import gov.va.api.lighthouse.vulcan.fugazi.FugaziEntity;
+import gov.va.api.lighthouse.vulcan.mappings.Mappings;
+import javax.servlet.http.HttpServletRequest;
+import lombok.RequiredArgsConstructor;
+import lombok.Value;
 import org.junit.jupiter.api.Test;
+import org.springframework.data.domain.Sort;
 import org.springframework.mock.web.MockHttpServletRequest;
 
 class RulesTest {
@@ -15,6 +23,18 @@ class RulesTest {
     assertThatExceptionOfType(InvalidRequest.class)
         .isThrownBy(
             () -> Rules.atLeastOneParameterOf("foo", "bar").check(requestWithParameters("nope")));
+  }
+
+  @Test
+  void forbidUnknownParameters() {
+    Rules.forbidUnknownParameters().check(requestWithParameters("foo"));
+    Rules.forbidUnknownParameters().check(requestWithParameters("bar"));
+    Rules.forbidUnknownParameters().check(requestWithParameters("page"));
+    Rules.forbidUnknownParameters().check(requestWithParameters("count"));
+    Rules.forbidUnknownParameters().check(requestWithParameters());
+    assertThatExceptionOfType(InvalidRequest.class)
+        .isThrownBy(
+            () -> Rules.forbidUnknownParameters().check(requestWithParameters("foo", "nope")));
   }
 
   @Test
@@ -104,11 +124,32 @@ class RulesTest {
                     .check(requestWithParameters("foo", "bar")));
   }
 
-  private MockHttpServletRequest requestWithParameters(String... parameters) {
-    MockHttpServletRequest req = new MockHttpServletRequest();
+  private FugaziRuleContext requestWithParameters(String... parameters) {
+    var req = new MockHttpServletRequest();
     for (String p : parameters) {
       req.addParameter(p, "value of " + p);
     }
-    return req;
+    var config =
+        VulcanConfiguration.forEntity(FugaziEntity.class)
+            .paging(
+                PagingConfiguration.builder()
+                    .countParameter("count")
+                    .pageParameter("page")
+                    .sort(Sort.unsorted())
+                    .maxCount(20)
+                    .defaultCount(10)
+                    .baseUrlStrategy(useRequestUrl())
+                    .build())
+            .defaultQuery(Vulcan.returnNothing())
+            .mappings(Mappings.forEntity(FugaziEntity.class).value("foo").value("bar").get())
+            .build();
+    return new FugaziRuleContext(req, config);
+  }
+
+  @Value
+  @RequiredArgsConstructor
+  private static class FugaziRuleContext implements RuleContext {
+    HttpServletRequest request;
+    VulcanConfiguration<?> config;
   }
 }

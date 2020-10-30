@@ -3,6 +3,7 @@ package gov.va.api.lighthouse.vulcan.mappings;
 import java.util.function.Function;
 import javax.servlet.http.HttpServletRequest;
 import lombok.Builder;
+import lombok.ToString.Exclude;
 import lombok.Value;
 import org.springframework.data.jpa.domain.Specification;
 
@@ -18,7 +19,7 @@ public class ValueMapping<EntityT> implements SingleParameterMapping<EntityT> {
 
   String fieldName;
 
-  @Builder.Default Function<String, ?> converter = Function.identity();
+  @Exclude @Builder.Default Function<String, ?> converter = Function.identity();
 
   @Override
   public Specification<EntityT> specificationFor(HttpServletRequest request) {

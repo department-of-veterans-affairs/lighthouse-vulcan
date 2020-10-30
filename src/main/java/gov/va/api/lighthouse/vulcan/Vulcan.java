@@ -84,38 +84,6 @@ public class Vulcan<EntityT, JpaRepositoryT extends JpaSpecificationExecutor<Ent
         .build();
   }
 
-  /** Process there request and return a non-null list of database entities that apply. */
-  public VulcanResult<EntityT> forge(HttpServletRequest request) {
-    // TODO parameter rules
-    // TODO - at least one of
-    // TODO - only one onf
-    // TODO - required groups of parameters (e.g. if "a" is specified then must specify "b")
-    // TODO configurable behavior if no parameters are specified
-    // TODO - throw error
-    // TODO - select all
-    // TODO - return empty (select none)
-    // TODO - select with default parameters
-    // TODO make paging option so that when executed the JPA Page isn't provided
-    // TODO to support Observation query hack
-    // TODO prototype usage
-    // TODO procedure has superman hack
-    // TODO observation has select all hack
-    // TODO location/organization has address
-    RequestContext<EntityT> context = RequestContext.forConfig(config).request(request).build();
-    if (context.abortSearch()) {
-      return resultsForAbortedSearch(context);
-    }
-    // TODO what to do when no request parameters were specified?
-    // TODO Select all
-    // TODO Select none
-    // TODO Configurable default specification?
-    // TODO Error?
-    if (context.countOnly()) {
-      return resultsForCountOnly(context);
-    }
-    return resultsForPageOfRecords(context);
-  }
-
   private VulcanResult<EntityT> resultsForAbortedSearch(RequestContext<EntityT> context) {
     return emptyVulcanResult(context, 0);
   }
@@ -152,6 +120,20 @@ public class Vulcan<EntityT, JpaRepositoryT extends JpaSpecificationExecutor<Ent
                 .build())
         .entities(searchResult.stream())
         .build();
+  }
+
+  /** Process the request and return a non-null list of database entities that apply. */
+  public VulcanResult<EntityT> search(HttpServletRequest request) {
+
+    RequestContext<EntityT> context = RequestContext.forConfig(config).request(request).build();
+    if (context.abortSearch()) {
+      return resultsForAbortedSearch(context);
+    }
+
+    if (context.countOnly()) {
+      return resultsForCountOnly(context);
+    }
+    return resultsForPageOfRecords(context);
   }
 
   public interface BaseUrlStrategy extends Function<HttpServletRequest, String> {}

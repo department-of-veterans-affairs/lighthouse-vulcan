@@ -4,6 +4,7 @@ import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
 import gov.va.api.lighthouse.vulcan.Mapping;
+import java.util.List;
 import java.util.Locale;
 import javax.servlet.http.HttpServletRequest;
 import lombok.Builder;
@@ -90,5 +91,10 @@ public class StringMapping<EntityT> implements Mapping<EntityT> {
       throw new IllegalStateException("query parameters do not match any clause type");
     }
     return specification;
+  }
+
+  @Override
+  public List<String> supportedParameterNames() {
+    return List.of(asExactParameterName(), asContainsParameterName(), asStartsWithParameterName());
   }
 }
