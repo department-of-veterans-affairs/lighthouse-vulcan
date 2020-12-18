@@ -23,7 +23,7 @@ public class TokenCsvListMapping<EntityT> implements SingleParameterMapping<Enti
 
   @Include String parameterName;
   Predicate<TokenParameter> supportedToken;
-  Function<TokenParameter, String> fieldNameSelector;
+  Function<TokenParameter, Collection<String>> fieldNameSelector;
   Function<TokenParameter, Collection<String>> valueSelector;
 
   @Override
@@ -37,14 +37,23 @@ public class TokenCsvListMapping<EntityT> implements SingleParameterMapping<Enti
 
     if (supportedTokens.isEmpty()) {
       throw CircuitBreaker.noResultsWillBeFound(
-          parameterName(), request.getParameter(parameterName()), "No tokens are not supported");
+          parameterName(), request.getParameter(parameterName()), "No tokens are not supported.");
     }
 
-    return supportedTokens.stream()
-        .map(
-            token ->
-                Specifications.<EntityT>selectInList(
-                    fieldNameSelector().apply(token), valueSelector().apply(token)))
-        .collect(Specifications.any());
+    Stream<Specification<EntityT>> specifications = Stream.empty();
+    for (TokenParameter token : supportedTokens) {
+      Collection<String> fieldNames = fieldNameSelector().apply(token);
+      if (fieldNames.isEmpty()) {
+        throw CircuitBreaker.noResultsWillBeFound(
+            parameterName(), request.getParameter(parameterName()), "No database column defined.");
+      }
+      Collection<String> values = valueSelector().apply(token);
+      specifications =
+          Stream.concat(
+              specifications,
+              fieldNames.stream()
+                  .map(field -> Specifications.<EntityT>selectInList(field, values)));
+    }
+    return specifications.collect(Specifications.any());
   }
 }

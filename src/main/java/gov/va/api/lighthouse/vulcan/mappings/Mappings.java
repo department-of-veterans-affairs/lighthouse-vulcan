@@ -1,5 +1,7 @@
 package gov.va.api.lighthouse.vulcan.mappings;
 
+import static java.util.Collections.singletonList;
+
 import gov.va.api.lighthouse.vulcan.Mapping;
 import gov.va.api.lighthouse.vulcan.mappings.DateMapping.PredicateFactory;
 import java.util.ArrayList;
@@ -91,7 +93,7 @@ public class Mappings<EntityT> implements Supplier<List<Mapping<EntityT>>> {
       String fieldName,
       Predicate<TokenParameter> supportedToken,
       Function<TokenParameter, Collection<String>> valueSelector) {
-    return token(parameterName, t -> fieldName, supportedToken, valueSelector);
+    return token(parameterName, t -> singletonList(fieldName), supportedToken, valueSelector);
   }
 
   /** Create a token list mapping where parameter and field name are the same. */
@@ -105,7 +107,7 @@ public class Mappings<EntityT> implements Supplier<List<Mapping<EntityT>>> {
   /** Create a token mapping where all aspects are configurable. */
   public Mappings<EntityT> token(
       String parameterName,
-      Function<TokenParameter, String> fieldNameSelector,
+      Function<TokenParameter, Collection<String>> fieldNameSelector,
       Predicate<TokenParameter> supportedToken,
       Function<TokenParameter, Collection<String>> valueSelector) {
     return add(
@@ -123,7 +125,7 @@ public class Mappings<EntityT> implements Supplier<List<Mapping<EntityT>>> {
       String fieldName,
       Predicate<TokenParameter> supportedToken,
       Function<TokenParameter, Collection<String>> valueSelector) {
-    return tokenList(parameterName, t -> fieldName, supportedToken, valueSelector);
+    return tokenList(parameterName, t -> singletonList(fieldName), supportedToken, valueSelector);
   }
 
   /** Create a token list mapping where parameter and field name are the same. */
@@ -137,7 +139,7 @@ public class Mappings<EntityT> implements Supplier<List<Mapping<EntityT>>> {
   /** Create a token list mapping where all aspects are configurable. */
   public Mappings<EntityT> tokenList(
       String parameterName,
-      Function<TokenParameter, String> fieldNameSelector,
+      Function<TokenParameter, Collection<String>> fieldNameSelector,
       Predicate<TokenParameter> supportedToken,
       Function<TokenParameter, Collection<String>> valueSelector) {
     return add(

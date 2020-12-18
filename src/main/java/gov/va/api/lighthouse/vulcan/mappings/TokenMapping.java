@@ -1,8 +1,7 @@
 package gov.va.api.lighthouse.vulcan.mappings;
 
-import static gov.va.api.lighthouse.vulcan.Specifications.selectInList;
-
 import gov.va.api.lighthouse.vulcan.CircuitBreaker;
+import gov.va.api.lighthouse.vulcan.Specifications;
 import java.util.Collection;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -20,7 +19,7 @@ public class TokenMapping<EntityT> implements SingleParameterMapping<EntityT> {
 
   @Include String parameterName;
   Predicate<TokenParameter> supportedToken;
-  Function<TokenParameter, String> fieldNameSelector;
+  Function<TokenParameter, Collection<String>> fieldNameSelector;
   Function<TokenParameter, Collection<String>> valueSelector;
 
   @Override
@@ -29,8 +28,16 @@ public class TokenMapping<EntityT> implements SingleParameterMapping<EntityT> {
         TokenParameter.parse(parameterName(), request.getParameter(parameterName()));
     if (!supportedToken().test(token)) {
       throw CircuitBreaker.noResultsWillBeFound(
-          parameterName(), request.getParameter(parameterName()), "Token is not supported");
+          parameterName(), request.getParameter(parameterName()), "Token is not supported.");
     }
-    return selectInList(fieldNameSelector().apply(token), valueSelector().apply(token));
+    Collection<String> fieldNames = fieldNameSelector().apply(token);
+    if (fieldNames.isEmpty()) {
+      throw CircuitBreaker.noResultsWillBeFound(
+          parameterName(), request.getParameter(parameterName()), "No database column defined.");
+    }
+    Collection<String> values = valueSelector().apply(token);
+    return fieldNames.stream()
+        .map(field -> Specifications.<EntityT>selectInList(field, values))
+        .collect(Specifications.any());
   }
 }
