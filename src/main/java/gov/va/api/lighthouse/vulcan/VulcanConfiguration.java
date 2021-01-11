@@ -1,8 +1,12 @@
 package gov.va.api.lighthouse.vulcan;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import javax.servlet.http.HttpServletRequest;
+import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import lombok.Builder;
 import lombok.NonNull;
@@ -15,13 +19,36 @@ import org.springframework.data.jpa.domain.Specification;
 @Builder
 public class VulcanConfiguration<EntityT> {
   @NonNull PagingConfiguration paging;
+
+  ParameterConfiguration parameters;
+
   @Singular @NonNull List<Mapping<EntityT>> mappings;
+
   @NonNull Function<HttpServletRequest, Specification<EntityT>> defaultQuery;
+
   @Singular List<Rule> rules;
 
   public static <E> VulcanConfigurationBuilder<E> forEntity(
       @SuppressWarnings("unused") Class<E> repo) {
     return VulcanConfiguration.builder();
+  }
+
+  /** Return allowed parameters, both learned (from mappings) and given (via builder). */
+  public List<String> allowedParameters() {
+    if (parameters == null) {
+      return determineParametersFromMappings();
+    }
+    return Stream.concat(
+            determineParametersFromMappings().stream(), parameters.parameters().stream())
+        .filter(Objects::nonNull)
+        .distinct()
+        .collect(Collectors.toList());
+  }
+
+  private List<String> determineParametersFromMappings() {
+    return mappings().stream()
+        .flatMap(m -> m.supportedParameterNames().stream())
+        .collect(Collectors.toList());
   }
 
   /** Return the immutable list of rules. */
@@ -34,12 +61,23 @@ public class VulcanConfiguration<EntityT> {
 
   @Value
   @Builder
+  public static class ParameterConfiguration {
+    @Singular @NotEmpty List<String> parameters;
+  }
+
+  @Value
+  @Builder
   public static class PagingConfiguration {
     @NonNull String pageParameter;
+
     @NotNull String countParameter;
+
     @Builder.Default int defaultCount = 10;
+
     @Builder.Default int maxCount = 20;
+
     @NotNull Sort sort;
+
     @NonNull Vulcan.BaseUrlStrategy baseUrlStrategy;
 
     /** Return true if the given parameter is either the page or count parameter. */
