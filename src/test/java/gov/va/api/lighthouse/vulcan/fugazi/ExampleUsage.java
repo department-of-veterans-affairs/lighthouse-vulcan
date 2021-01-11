@@ -14,6 +14,7 @@ import gov.va.api.health.autoconfig.configuration.JacksonConfig;
 import gov.va.api.lighthouse.vulcan.Vulcan;
 import gov.va.api.lighthouse.vulcan.VulcanConfiguration;
 import gov.va.api.lighthouse.vulcan.VulcanConfiguration.PagingConfiguration;
+import gov.va.api.lighthouse.vulcan.VulcanConfiguration.ParameterConfiguration;
 import gov.va.api.lighthouse.vulcan.mappings.Mappings;
 import java.time.Instant;
 import java.util.List;
@@ -51,6 +52,7 @@ public class ExampleUsage {
                 .value("millis", v -> Instant.parse(v).toEpochMilli())
                 .dateAsInstant("when", "date")
                 .get())
+        .parameters(ParameterConfiguration.builder().parameter("_lastUpdated").build())
         .defaultQuery(rejectRequest())
         .rule(atLeastOneParameterOf("patient", "_id"))
         .rule(parametersNeverSpecifiedTogether("patient", "_id"))

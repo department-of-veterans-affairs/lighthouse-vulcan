@@ -69,10 +69,15 @@ class VulcanTest {
   ObjectMapper mapper = JacksonConfig.createMapper();
 
   private FugaziDto nachos2005;
+
   private FugaziDto moreNachos2005;
+
   private FugaziDto tacos2005;
+
   private FugaziDto tacos2006;
+
   private FugaziDto tacos2007;
+
   private FugaziDto tacos2008;
 
   @SuppressWarnings("unused")
@@ -87,17 +92,14 @@ class VulcanTest {
     // Integer thisPage,
     // Integer nextPage,
     // Integer lastPage
-    return Stream.of(
-        // pages of results
+    return Stream.of( // pages of results
         arguments("a", "1", "10", 6, 1, 1, null, 1, null, 1),
         arguments("a", "2", "10", 6, 1, 1, null, 2, null, 1),
         arguments("a", "1", "2", 6, 3, 1, null, 1, 2, 3),
         arguments("a", "2", "2", 6, 3, 1, 1, 2, 3, 3),
         arguments("a", "3", "2", 6, 3, 1, 2, 3, null, 3),
-        arguments("a", "2", "5", 6, 2, 1, 1, 2, null, 2),
-        // no records found
-        arguments("nope", "1", "5", 0, 0, null, null, 1, null, null),
-        // count only results
+        arguments("a", "2", "5", 6, 2, 1, 1, 2, null, 2), // no records found
+        arguments("nope", "1", "5", 0, 0, null, null, 1, null, null), // count only results
         arguments("a", "1", "0", 6, 0, null, null, 1, null, null));
   }
 
@@ -202,7 +204,6 @@ class VulcanTest {
     assertThat(req("/fugazi?food=NACHOS,,TACOS,TACOS"))
         .containsExactlyInAnyOrder(nachos2005, tacos2005, tacos2006, tacos2007, tacos2008);
     assertThat(req("/fugazi?food=NACHOS,NOPE")).containsExactly(nachos2005);
-
     assertThat(req("/fugazi?xfood=NACHOS")).containsExactly(nachos2005);
   }
 
@@ -240,7 +241,6 @@ class VulcanTest {
     assertThat(req("/fugazi?name:contains=nachos"))
         .containsExactlyInAnyOrder(nachos2005, moreNachos2005);
     assertThat(req("/fugazi?name:contains=")).isEmpty();
-
     assertThat(req("/fugazi?xname=nachos2005")).containsExactly(nachos2005);
   }
 
@@ -286,7 +286,6 @@ class VulcanTest {
   void mappingValue() {
     assertThat(req("/fugazi?millis=")).isEmpty();
     assertThat(req("/fugazi?millis=2006-01-21T07:57:00Z")).containsExactly(tacos2006);
-
     assertThat(req("/fugazi?xmillis=2006-01-21T07:57:00Z")).containsExactly(tacos2006);
   }
 
@@ -325,7 +324,6 @@ class VulcanTest {
                     .defaultQuery(returnNothing())
                     .build())
             .build();
-
     String url =
         "http://localhost/fugazi?name:contains="
             + requestName
@@ -365,5 +363,38 @@ class VulcanTest {
             .getResponse()
             .getContentAsString();
     return mapper.readValue(json, new TypeReference<>() {});
+  }
+
+  @Test
+  void unknownParametersAreRemovedFromLinks() {
+    var vulcan =
+        Vulcan.forRepo(repo)
+            .config(
+                VulcanConfiguration.forEntity(FugaziEntity.class)
+                    .paging(
+                        PagingConfiguration.builder()
+                            .pageParameter("page")
+                            .countParameter("count")
+                            .defaultCount(3)
+                            .maxCount(10)
+                            .sort(Sort.by("id").ascending())
+                            .baseUrlStrategy(useRequestUrl())
+                            .build())
+                    .mappings(Mappings.forEntity(FugaziEntity.class).string("name").get())
+                    .parameters(
+                        VulcanConfiguration.ParameterConfiguration.builder()
+                            .parameter("pet")
+                            .build())
+                    .defaultQuery(Vulcan.rejectRequest())
+                    .build())
+            .build();
+    var request = new MockHttpServletRequest();
+    request.addParameter("name:contains", "a");
+    request.addParameter("pet", "dog");
+    request.addParameter("season", "fall");
+    request.setRequestURI("/fugazi");
+    var result = vulcan.search(request);
+    assertThat(result.paging().thisPageUrl().orElse(null))
+        .isEqualTo("http://localhost/fugazi?name:contains=a&pet=dog&count=3&page=1");
   }
 }
