@@ -98,9 +98,9 @@ class VulcanTest {
         arguments("a", "1", "2", 6, 3, 1, null, 1, 2, 3),
         arguments("a", "2", "2", 6, 3, 1, 1, 2, 3, 3),
         arguments("a", "3", "2", 6, 3, 1, 2, 3, null, 3),
-        arguments("a", "2", "5", 6, 2, 1, 1, 2, null, 2), 
+        arguments("a", "2", "5", 6, 2, 1, 1, 2, null, 2),
         // no records found
-        arguments("nope", "1", "5", 0, 0, null, null, 1, null, null), 
+        arguments("nope", "1", "5", 0, 0, null, null, 1, null, null),
         // count only results
         arguments("a", "1", "0", 6, 0, null, null, 1, null, null));
   }
