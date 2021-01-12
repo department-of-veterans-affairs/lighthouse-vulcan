@@ -9,7 +9,6 @@ import gov.va.api.health.autoconfig.configuration.JacksonConfig;
 import gov.va.api.lighthouse.vulcan.Vulcan;
 import gov.va.api.lighthouse.vulcan.VulcanConfiguration;
 import gov.va.api.lighthouse.vulcan.VulcanConfiguration.PagingConfiguration;
-import gov.va.api.lighthouse.vulcan.VulcanConfiguration.ParameterConfiguration;
 import gov.va.api.lighthouse.vulcan.fugazi.FugaziDto.Food;
 import gov.va.api.lighthouse.vulcan.mappings.Mappings;
 import gov.va.api.lighthouse.vulcan.mappings.TokenParameter;
@@ -70,7 +69,6 @@ public class FugaziController {
                 .token("foodtoken", "food", this::foodIsSupported, this::foodValues)
                 .tokenList("foodtokencsv", "food", this::foodIsSupported, this::foodValues)
                 .get())
-        .parameters(ParameterConfiguration.builder().parameter("pet").build())
         .defaultQuery(Vulcan.returnNothing())
         .build();
   }

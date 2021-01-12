@@ -381,20 +381,15 @@ class VulcanTest {
                             .baseUrlStrategy(useRequestUrl())
                             .build())
                     .mappings(Mappings.forEntity(FugaziEntity.class).string("name").get())
-                    .parameters(
-                        VulcanConfiguration.ParameterConfiguration.builder()
-                            .parameter("pet")
-                            .build())
                     .defaultQuery(Vulcan.rejectRequest())
                     .build())
             .build();
     var request = new MockHttpServletRequest();
     request.addParameter("name:contains", "a");
     request.addParameter("pet", "dog");
-    request.addParameter("season", "fall");
     request.setRequestURI("/fugazi");
     var result = vulcan.search(request);
     assertThat(result.paging().thisPageUrl().orElse(null))
-        .isEqualTo("http://localhost/fugazi?name:contains=a&pet=dog&count=3&page=1");
+        .isEqualTo("http://localhost/fugazi?name:contains=a&count=3&page=1");
   }
 }
