@@ -33,18 +33,6 @@ public class VulcanConfiguration<EntityT> {
     return VulcanConfiguration.builder();
   }
 
-  /** Return allowed parameters, both learned (from mappings) and given (via builder). */
-  public List<String> allowedParameters() {
-    if (parameters == null) {
-      return determineParametersFromMappings();
-    }
-    return Stream.concat(
-            determineParametersFromMappings().stream(), parameters.parameters().stream())
-        .filter(Objects::nonNull)
-        .distinct()
-        .collect(Collectors.toList());
-  }
-
   private List<String> determineParametersFromMappings() {
     return mappings().stream()
         .flatMap(m -> m.supportedParameterNames().stream())
@@ -57,6 +45,18 @@ public class VulcanConfiguration<EntityT> {
       return List.of();
     }
     return rules;
+  }
+
+  /** Return all supported parameters, both learned (from mappings) and given (via builder). */
+  public List<String> supportedParameters() {
+    if (parameters == null) {
+      return determineParametersFromMappings();
+    }
+    return Stream.concat(
+            determineParametersFromMappings().stream(), parameters.parameters().stream())
+        .filter(Objects::nonNull)
+        .distinct()
+        .collect(Collectors.toList());
   }
 
   @Value

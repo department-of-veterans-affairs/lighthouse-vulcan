@@ -29,7 +29,7 @@ public class Rules {
   /** Requires that all parameters be known by some mapping. */
   public Rule forbidUnknownParameters() {
     return (ctx) -> {
-      var knownParameters = ctx.config().allowedParameters();
+      var knownParameters = ctx.config().supportedParameters();
       var unknownParameters =
           ctx.request().getParameterMap().keySet().stream()
               .filter(p -> !ctx.config().paging().isPagingRelatedParameter(p))

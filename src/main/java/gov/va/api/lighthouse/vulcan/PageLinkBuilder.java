@@ -34,7 +34,7 @@ class PageLinkBuilder {
         new StringBuilder(context.config().paging().baseUrlStrategy().apply(context.request()))
             .append('?');
     Map<String, String[]> parameters = context.request().getParameterMap();
-    List<String> allowedParameters = context.config().allowedParameters();
+    List<String> allowedParameters = context.config().supportedParameters();
     String queryString =
         parameters.entrySet().stream()
             .filter(entry -> !context.config().paging().isPagingRelatedParameter(entry.getKey()))
