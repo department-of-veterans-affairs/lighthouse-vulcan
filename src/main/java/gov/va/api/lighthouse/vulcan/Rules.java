@@ -1,7 +1,6 @@
 package gov.va.api.lighthouse.vulcan;
 
 import static java.util.stream.Collectors.toList;
-import static java.util.stream.Collectors.toSet;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
 import java.util.Arrays;
@@ -14,7 +13,6 @@ import lombok.experimental.UtilityClass;
  */
 @UtilityClass
 public class Rules {
-
   /** Requires that at least on of the parameters be specified. */
   public Rule atLeastOneParameterOf(String... parameter) {
     return (ctx) -> {
@@ -31,10 +29,7 @@ public class Rules {
   /** Requires that all parameters be known by some mapping. */
   public Rule forbidUnknownParameters() {
     return (ctx) -> {
-      var knownParameters =
-          ctx.config().mappings().stream()
-              .flatMap(m -> m.supportedParameterNames().stream())
-              .collect(toSet());
+      var knownParameters = ctx.config().supportedParameters();
       var unknownParameters =
           ctx.request().getParameterMap().keySet().stream()
               .filter(p -> !ctx.config().paging().isPagingRelatedParameter(p))

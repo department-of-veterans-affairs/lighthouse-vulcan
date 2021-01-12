@@ -6,6 +6,7 @@ import static java.util.stream.Collectors.joining;
 
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Stream;
@@ -33,9 +34,11 @@ class PageLinkBuilder {
         new StringBuilder(context.config().paging().baseUrlStrategy().apply(context.request()))
             .append('?');
     Map<String, String[]> parameters = context.request().getParameterMap();
+    List<String> allowedParameters = context.config().supportedParameters();
     String queryString =
         parameters.entrySet().stream()
             .filter(entry -> !context.config().paging().isPagingRelatedParameter(entry.getKey()))
+            .filter(entry -> allowedParameters.contains(entry.getKey()))
             .sorted(comparingByKey())
             .flatMap(this::asQueryParameters)
             .collect(joining("&"));
