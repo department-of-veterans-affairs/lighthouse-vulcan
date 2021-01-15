@@ -77,6 +77,35 @@ public class Mappings<EntityT> implements Supplier<List<Mapping<EntityT>>> {
     return mappings;
   }
 
+  /** Create a reference mapping where field name is constant. */
+  public Mappings<EntityT> reference(
+      String parameterName,
+      Set<String> allowedResourceTypes,
+      String fieldName,
+      Predicate<ReferenceParameter> isSupported,
+      Function<ReferenceParameter, String> valueSelector) {
+    return reference(
+        parameterName,
+        t -> singletonList(fieldName),
+        allowedResourceTypes,
+        isSupported,
+        valueSelector);
+  }
+
+  /** Create a reference mapping where parameterName and fieldName are equal. */
+  public Mappings<EntityT> reference(
+      String parameterAndFieldName,
+      Set<String> allowedResourceTypes,
+      Predicate<ReferenceParameter> isSupported,
+      Function<ReferenceParameter, String> valueSelector) {
+    return reference(
+        parameterAndFieldName,
+        allowedResourceTypes,
+        parameterAndFieldName,
+        isSupported,
+        valueSelector);
+  }
+
   /** Create a reference mapping that is totally configurable. */
   public Mappings<EntityT> reference(
       String parameterName,

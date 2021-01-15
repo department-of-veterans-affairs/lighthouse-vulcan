@@ -5,6 +5,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import lombok.Builder;
 import lombok.Value;
+import org.apache.commons.lang3.StringUtils;
 
 @Value
 @Builder
@@ -17,6 +18,11 @@ public class ReferenceParameter {
 
   /** Create a ReferenceParameter from a reference search parameter. */
   public static ReferenceParameter parse(String parameterName, String parameterValue) {
+
+    if (StringUtils.isBlank(parameterValue)) {
+      throw InvalidRequest.noParametersSpecified();
+    }
+
     /*
      xxx=https://good.com/Patient/123
      xxx=https://good.com/fhir/v0/r4/Patient?name=123 -> allow through as valid url, but isSupported will explode on type=r4
@@ -38,15 +44,16 @@ public class ReferenceParameter {
           throw InvalidRequest.badParameter(
               parameterName, parameterValue, "Reference URL is not parsable.");
         }
-      } catch (MalformedURLException ignored) {
-        // Do nothing if we can't parse the URL, test for other reference structures
+      } catch (MalformedURLException e) {
+        throw new IllegalStateException(
+            String.format("Bad reference url: %s %s. %s", parameterName, parameterValue, e));
       }
     }
     // xxx:Patient=123
     if (parameterName.matches("^[a-zA-Z-]*:[a-zA-Z]*$")) {
       var referenceParts = parameterName.split(":", -1);
       return ReferenceParameter.builder()
-          .parameterName(referenceParts[0])
+          .parameterName(parameterName)
           .value(parameterValue)
           .type(referenceParts[1])
           .publicId(parameterValue)
