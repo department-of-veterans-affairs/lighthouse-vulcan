@@ -13,7 +13,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 public class ReferenceParameterTest {
   private static Stream<Arguments> validParse() {
     return Stream.of(
-        Arguments.of("patient", "123", "patient", "123", "123", null),
+        Arguments.of("patient", "123", "Patient", "123", "123", null),
         Arguments.of("subject", "Patient/123", "Patient", "Patient/123", "123", null),
         Arguments.of("subject:Patient", "123", "Patient", "123", "123", null),
         Arguments.of(
@@ -30,7 +30,7 @@ public class ReferenceParameterTest {
             "https://good.com/fhir/v0/r4/Patient/123",
             "123",
             "https://good.com/fhir/v0/r4/Patient/123"),
-        Arguments.of("xxx", "123.456", "xxx", "123.456", "123.456", null));
+        Arguments.of("xxx", "123.456", "Xxx", "123.456", "123.456", null));
   }
 
   @Test
