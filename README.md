@@ -199,3 +199,27 @@ The `DateMapping` class allows for extensible customization. It divides the resp
 - `SearchableDate` provides parameter parsing and normalizes values as `Instant`, determines `DateOperation`,and `DateFidelity` of the search.
 - `PredicateFactory` creates the JPA `Predicate` instances for a specific field type (or class). For example, the `InstantPredicateFactory` is suitable for JPA entities with `Instant` parameters. It cannot work with other types, such as epoch millis stored as `long` values. In that case a `LongPredicateFactory` is required.
 - `DateApproximation` provides logic for expanding the search parameter values. A preconfigured `FixedAmountDateApproximation` instance is available to be used as a default choice.
+
+### `reference(name, allowedResourceTypes, fieldNameSelector, isSupported, valueSelector)`
+
+- `name [String]`: the parameter name
+- `allowedResourceTypes [Set<String>]` : the set of allowed reference types
+- `fieldNameSelector [Function<ReferenceParameter, Collection>]` : Function responsible for selecting the appropriate searchable DB column
+- `isSupported [Predicate<ReferenceParameter>]` : Predicate that determines validity of your token (e.g. resource type validation, base-url validation, etc...)
+- `valueSelector [Function<ReferenceParameter, String]` : translate public ids to searchable values
+
+Notes:
+- isSupported == false --> returns empty collection
+
+cases:
+- xxx=123
+- xxx=Patient/123
+- xxx=https://good.com/Patient/123
+- xxx=https://bad.com/Patient/123 --> empty bundle
+
+- xxx:Patient=123
+- xxx=Patient/123/_history/666 --> 400 we can't even ...
+
+- xxx:identifier=http://ssn.gov|123-456-7890 --> holding off on this for now
+
+    
