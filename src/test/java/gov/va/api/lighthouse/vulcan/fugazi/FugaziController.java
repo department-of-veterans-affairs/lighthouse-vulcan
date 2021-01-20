@@ -117,12 +117,4 @@ public class FugaziController {
         .map(this::asFoo)
         .collect(toList());
   }
-
-  private boolean refIsSupported(ReferenceParameter referenceParameter) {
-    return referenceParameter.type() == "food";
-  }
-
-  private String refValues(ReferenceParameter referenceParameter) {
-    return referenceParameter.value();
-  }
 }
