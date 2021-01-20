@@ -11,7 +11,6 @@ import gov.va.api.lighthouse.vulcan.VulcanConfiguration;
 import gov.va.api.lighthouse.vulcan.VulcanConfiguration.PagingConfiguration;
 import gov.va.api.lighthouse.vulcan.fugazi.FugaziDto.Food;
 import gov.va.api.lighthouse.vulcan.mappings.Mappings;
-import gov.va.api.lighthouse.vulcan.mappings.ReferenceParameter;
 import gov.va.api.lighthouse.vulcan.mappings.TokenParameter;
 import java.time.Instant;
 import java.util.Collection;

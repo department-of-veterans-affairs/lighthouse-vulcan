@@ -1,5 +1,7 @@
 package gov.va.api.lighthouse.vulcan.mappings;
 
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
+
 import gov.va.api.lighthouse.vulcan.CircuitBreaker;
 import gov.va.api.lighthouse.vulcan.InvalidRequest;
 import gov.va.api.lighthouse.vulcan.Mapping;
@@ -16,7 +18,6 @@ import lombok.Builder;
 import lombok.ToString;
 import lombok.ToString.Include;
 import lombok.Value;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.jpa.domain.Specification;
 
 @Value
@@ -37,11 +38,16 @@ public class ReferenceMapping<EntityT> implements Mapping<EntityT> {
 
   @Override
   public boolean appliesTo(HttpServletRequest request) {
-    return asParametersWithTypeModifier().anyMatch(StringUtils::isNotBlank);
+    return isNotBlank(request.getParameter(asStartsWithParameterName()))
+        || asParametersWithTypeModifier().anyMatch(p -> isNotBlank(request.getParameter(p)));
   }
 
   private Stream<String> asParametersWithTypeModifier() {
     return allowedReferenceTypes().stream().map(type -> parameterName() + ":" + type);
+  }
+
+  private String asStartsWithParameterName() {
+    return parameterName;
   }
 
   @Override
