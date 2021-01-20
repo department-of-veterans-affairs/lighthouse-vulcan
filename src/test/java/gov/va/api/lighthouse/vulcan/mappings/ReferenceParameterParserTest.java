@@ -44,7 +44,9 @@ public class ReferenceParameterParserTest {
             "https://good.com/fhir/v0/r4/Patient/123",
             "123",
             "https://good.com/fhir/v0/r4/Patient/123"),
-        Arguments.of("xxx", "123.456", "Xxx", Set.of("Xxx"), "Xxx", "123.456", "123.456", null));
+        Arguments.of("xxx", "123.456", "Xxx", Set.of("Xxx"), "Xxx", "123.456", "123.456", null),
+        Arguments.of(
+            "Patient", "123", "Patient", Set.of("Patient"), "Patient", "123", "123", null));
   }
 
   @Test
