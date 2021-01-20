@@ -124,7 +124,7 @@ public class Mappings<EntityT> implements Supplier<List<Mapping<EntityT>>> {
             .fieldNameSelector(fieldNameSelector)
             .defaultResourceType(defaultResourceType)
             .allowedReferenceTypes(allowedResourceTypes)
-            .isSupported(isSupported)
+            .supportedReference(isSupported)
             .valueSelector(valueSelector)
             .build());
   }

@@ -11,6 +11,7 @@ import gov.va.api.lighthouse.vulcan.VulcanConfiguration;
 import gov.va.api.lighthouse.vulcan.VulcanConfiguration.PagingConfiguration;
 import gov.va.api.lighthouse.vulcan.fugazi.FugaziDto.Food;
 import gov.va.api.lighthouse.vulcan.mappings.Mappings;
+import gov.va.api.lighthouse.vulcan.mappings.ReferenceParameter;
 import gov.va.api.lighthouse.vulcan.mappings.TokenParameter;
 import java.time.Instant;
 import java.util.Collection;
@@ -34,7 +35,6 @@ import org.springframework.web.bind.annotation.RestController;
     value = {"/fugazi"},
     produces = {"application/json"})
 public class FugaziController {
-
   final ObjectMapper mapper = JacksonConfig.createMapper();
 
   @Autowired FugaziRepository repo;
@@ -68,6 +68,13 @@ public class FugaziController {
                 .dateAsInstant("xdate", "date")
                 .token("foodtoken", "food", this::foodIsSupported, this::foodValues)
                 .tokenList("foodtokencsv", "food", this::foodIsSupported, this::foodValues)
+                .reference(
+                    "foodref",
+                    "food",
+                    Set.of("foodref"),
+                    "food",
+                    this::refIsSupported,
+                    this::refValues)
                 .get())
         .defaultQuery(Vulcan.returnNothing())
         .build();
@@ -116,5 +123,13 @@ public class FugaziController {
         .entities()
         .map(this::asFoo)
         .collect(toList());
+  }
+
+  private boolean refIsSupported(ReferenceParameter referenceParameter) {
+    return referenceParameter.type() == "food";
+  }
+
+  private String refValues(ReferenceParameter referenceParameter) {
+    return referenceParameter.value();
   }
 }

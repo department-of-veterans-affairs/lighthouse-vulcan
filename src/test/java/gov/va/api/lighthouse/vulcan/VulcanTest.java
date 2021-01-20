@@ -92,16 +92,15 @@ class VulcanTest {
     // Integer thisPage,
     // Integer nextPage,
     // Integer lastPage
-    return Stream.of( // pages of results
+    return // pages of results
+    Stream.of(
         arguments("a", "1", "10", 6, 1, 1, null, 1, null, 1),
         arguments("a", "2", "10", 6, 1, 1, null, 2, null, 1),
         arguments("a", "1", "2", 6, 3, 1, null, 1, 2, 3),
         arguments("a", "2", "2", 6, 3, 1, 1, 2, 3, 3),
         arguments("a", "3", "2", 6, 3, 1, 2, 3, null, 3),
-        arguments("a", "2", "5", 6, 2, 1, 1, 2, null, 2),
-        // no records found
-        arguments("nope", "1", "5", 0, 0, null, null, 1, null, null),
-        // count only results
+        arguments("a", "2", "5", 6, 2, 1, 1, 2, null, 2), // no records found
+        arguments("nope", "1", "5", 0, 0, null, null, 1, null, null), // count only results
         arguments("a", "1", "0", 6, 0, null, null, 1, null, null));
   }
 
@@ -354,6 +353,11 @@ class VulcanTest {
     request.setRequestURI("/fugazi");
     var result = vulcan.search(request);
     assertThat(result.paging()).isEqualTo(expectedPaging);
+  }
+
+  @Test
+  void reference() {
+    assertThat(req("/fugazi?foodref=")).isEmpty();
   }
 
   @SneakyThrows

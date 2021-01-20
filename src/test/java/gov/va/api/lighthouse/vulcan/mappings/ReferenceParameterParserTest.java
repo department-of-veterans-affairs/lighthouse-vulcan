@@ -13,6 +13,10 @@ import org.junit.jupiter.params.provider.MethodSource;
 
 public class ReferenceParameterParserTest {
   private static Stream<Arguments> validParse() {
+    /*
+    Arguments.of(parameterName, parameterValue, defaultResourceType, allowedReferenceTypes,
+    expectedType, expectedValue, expectedPublicId, expectedUrl)
+    */
     return Stream.of(
         Arguments.of("patient", "123", "Patient", Set.of("Patient"), "Patient", "123", "123", null),
         Arguments.of(
@@ -50,7 +54,7 @@ public class ReferenceParameterParserTest {
   }
 
   @Test
-  public void parseBadReferenceUrl() {
+  void parseBadReferenceUrl() {
     assertThatExceptionOfType(InvalidRequest.class)
         .isThrownBy(
             () ->
@@ -70,7 +74,7 @@ public class ReferenceParameterParserTest {
   }
 
   @Test
-  public void parseBlank() {
+  void parseBlank() {
     assertThatExceptionOfType(InvalidRequest.class)
         .isThrownBy(
             () ->
@@ -82,9 +86,23 @@ public class ReferenceParameterParserTest {
   }
 
   @Test
-  public void parseNull() {
+  void parseNull() {
     assertThatExceptionOfType(InvalidRequest.class)
         .isThrownBy(() -> ReferenceParameterParser.builder().parameterName("x").build().parse());
+  }
+
+  @Test
+  void parseValueReferenceForMultipleTypesWhenTypeModifierIsNotExplicitThrowsInvalidRequest() {
+    assertThatExceptionOfType(InvalidRequest.class)
+        .isThrownBy(
+            () ->
+                ReferenceParameterParser.builder()
+                    .parameterName("recorder")
+                    .parameterValue("123")
+                    .allowedReferenceTypes(Set.of("Organization", "Practitioner"))
+                    .defaultResourceType("Organization")
+                    .build()
+                    .parse());
   }
 
   @ParameterizedTest

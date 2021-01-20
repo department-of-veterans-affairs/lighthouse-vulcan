@@ -17,7 +17,7 @@ public class ReferenceParameterParser {
       List.of(
           new AbsoluteUrlFormat(),
           new RelativeUrlFormat(),
-          new ResourceTypeAndValueFormat(),
+          new TypeModifierAndValueFormat(),
           new ValueOnlyFormat());
 
   private final String parameterName;
@@ -53,7 +53,7 @@ public class ReferenceParameterParser {
     @Override
     public String help() {
       return "AbsoluteUrl format: "
-          + "?param=http(s)://reference.com/ReferencePath/ReferenceResource/123";
+          + "?param=http(s)://reference.com/ReferencePath/ReferenceType/123";
     }
 
     @Override
@@ -86,7 +86,7 @@ public class ReferenceParameterParser {
   class RelativeUrlFormat implements ReferenceFormat {
     @Override
     public String help() {
-      return "RelativeUrl format: ?parameter=ReferenceResource/id";
+      return "RelativeUrl format: ?parameter=ReferenceType/id";
     }
 
     @Override
@@ -104,10 +104,10 @@ public class ReferenceParameterParser {
     }
   }
 
-  class ResourceTypeAndValueFormat implements ReferenceFormat {
+  class TypeModifierAndValueFormat implements ReferenceFormat {
     @Override
     public String help() {
-      return "ResourceTypeAndValue format: ?param:ReferencedResource=id";
+      return "TypeModifierAndValue format: ?param:ReferenceType=id";
     }
 
     @Override
@@ -128,11 +128,18 @@ public class ReferenceParameterParser {
   class ValueOnlyFormat implements ReferenceFormat {
     @Override
     public String help() {
-      return "ValueOnly format: ?resource=id";
+      return "ValueOnly format: ?reference=id";
     }
 
     @Override
     public ReferenceParameter tryParse() {
+      if (allowedReferenceTypes.size() > 1) {
+        throw InvalidRequest.badParameter(
+            parameterName,
+            parameterValue,
+            "Cannot search by value on a reference that allows more than 1 type. To do so,"
+                + " explicitly use the type modifier... ?param:ReferencedResource=id ");
+      }
       String resourceType;
       if (allowedReferenceTypes.contains(parameterName) && allowedReferenceTypes.size() == 1) {
         resourceType = parameterName;

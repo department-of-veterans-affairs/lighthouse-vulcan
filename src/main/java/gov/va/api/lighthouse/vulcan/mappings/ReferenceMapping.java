@@ -31,16 +31,16 @@ public class ReferenceMapping<EntityT> implements Mapping<EntityT> {
 
   Function<ReferenceParameter, Collection<String>> fieldNameSelector;
 
-  Predicate<ReferenceParameter> isSupported;
+  Predicate<ReferenceParameter> supportedReference;
 
   Function<ReferenceParameter, String> valueSelector;
 
   @Override
   public boolean appliesTo(HttpServletRequest request) {
-    return asParameterWithType().anyMatch(StringUtils::isNotBlank);
+    return asParametersWithTypeModifier().anyMatch(StringUtils::isNotBlank);
   }
 
-  private Stream<String> asParameterWithType() {
+  private Stream<String> asParametersWithTypeModifier() {
     return allowedReferenceTypes().stream().map(type -> parameterName() + ":" + type);
   }
 
@@ -61,7 +61,7 @@ public class ReferenceMapping<EntityT> implements Mapping<EntityT> {
               "ReferenceParameter type [%s] is not legal as per the spec. Allowed types are: %s",
               referenceParameter.type(), allowedReferenceTypes()));
     }
-    if (isSupported().test(referenceParameter)) {
+    if (supportedReference().test(referenceParameter)) {
       throw CircuitBreaker.noResultsWillBeFound(
           parameterName(), request.getParameter(parameterName()), "Reference is not supported.");
     }
@@ -82,7 +82,7 @@ public class ReferenceMapping<EntityT> implements Mapping<EntityT> {
 
   @Override
   public List<String> supportedParameterNames() {
-    return Stream.concat(Stream.of(parameterName()), asParameterWithType())
+    return Stream.concat(Stream.of(parameterName()), asParametersWithTypeModifier())
         .collect(Collectors.toList());
   }
 }
