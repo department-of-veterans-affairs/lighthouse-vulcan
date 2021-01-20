@@ -290,10 +290,18 @@ class VulcanTest {
     assertThat(req("/fugazi?xmillis=2006-01-21T07:57:00Z")).containsExactly(tacos2006);
   }
 
+
+  @Test
+  void mappingReference() {
+    // TODO: all reference formats
+    assertThat(req("/fugazi?foodref=")).isEmpty();
+  }
+
   @Test
   void multipleParametersAreCombinedWithAnd() {
     assertThat(req("/fugazi?food=NACHOS,TACOS&name:contains=nacho")).containsExactly(nachos2005);
   }
+
 
   @ParameterizedTest
   @MethodSource

@@ -88,7 +88,7 @@ public class ReferenceMapping<EntityT> implements Mapping<EntityT> {
 
   @Override
   public List<String> supportedParameterNames() {
-    return Stream.concat(Stream.of(parameterName()), asParametersWithTypeModifier())
+    return Stream.concat(Stream.of(asStartsWithParameterName()), asParametersWithTypeModifier())
         .collect(Collectors.toList());
   }
 }

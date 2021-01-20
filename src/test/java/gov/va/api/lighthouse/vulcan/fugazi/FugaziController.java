@@ -11,6 +11,7 @@ import gov.va.api.lighthouse.vulcan.VulcanConfiguration;
 import gov.va.api.lighthouse.vulcan.VulcanConfiguration.PagingConfiguration;
 import gov.va.api.lighthouse.vulcan.fugazi.FugaziDto.Food;
 import gov.va.api.lighthouse.vulcan.mappings.Mappings;
+import gov.va.api.lighthouse.vulcan.mappings.ReferenceParameter;
 import gov.va.api.lighthouse.vulcan.mappings.TokenParameter;
 import java.time.Instant;
 import java.util.Collection;
@@ -67,6 +68,13 @@ public class FugaziController {
                 .dateAsInstant("xdate", "date")
                 .token("foodtoken", "food", this::foodIsSupported, this::foodValues)
                 .tokenList("foodtokencsv", "food", this::foodIsSupported, this::foodValues)
+                .reference(
+                    "foodref",
+                    "food",
+                    Set.of("foodref"),
+                    "foodref",
+                    this::foodReferenceIsSupported,
+                    this::foodReferenceValues)
                 .get())
         .defaultQuery(Vulcan.returnNothing())
         .build();
@@ -80,6 +88,14 @@ public class FugaziController {
       return false;
     }
     return true;
+  }
+
+  private boolean foodReferenceIsSupported(ReferenceParameter referenceParameter) {
+    return referenceParameter.type().equals("foodref");
+  }
+
+  private String foodReferenceValues(ReferenceParameter referenceParameter) {
+    return referenceParameter.publicId();
   }
 
   private Collection<String> foodValues(TokenParameter token) {
