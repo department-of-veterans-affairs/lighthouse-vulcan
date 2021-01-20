@@ -68,13 +68,6 @@ public class FugaziController {
                 .dateAsInstant("xdate", "date")
                 .token("foodtoken", "food", this::foodIsSupported, this::foodValues)
                 .tokenList("foodtokencsv", "food", this::foodIsSupported, this::foodValues)
-                .reference(
-                    "foodref",
-                    "food",
-                    Set.of("foodref"),
-                    "food",
-                    this::refIsSupported,
-                    this::refValues)
                 .get())
         .defaultQuery(Vulcan.returnNothing())
         .build();

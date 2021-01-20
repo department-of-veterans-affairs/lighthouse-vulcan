@@ -83,14 +83,14 @@ public class Mappings<EntityT> implements Supplier<List<Mapping<EntityT>>> {
       String fieldName,
       Set<String> allowedResourceTypes,
       String defaultResourceType,
-      Predicate<ReferenceParameter> isSupported,
+      Predicate<ReferenceParameter> supportedReference,
       Function<ReferenceParameter, String> valueSelector) {
     return reference(
         parameterName,
         t -> singletonList(fieldName),
         allowedResourceTypes,
         defaultResourceType,
-        isSupported,
+        supportedReference,
         valueSelector);
   }
 
@@ -99,14 +99,14 @@ public class Mappings<EntityT> implements Supplier<List<Mapping<EntityT>>> {
       String parameterAndFieldName,
       Set<String> allowedResourceTypes,
       String defaultResourceType,
-      Predicate<ReferenceParameter> isSupported,
+      Predicate<ReferenceParameter> supportedReference,
       Function<ReferenceParameter, String> valueSelector) {
     return reference(
         parameterAndFieldName,
         parameterAndFieldName,
         allowedResourceTypes,
         defaultResourceType,
-        isSupported,
+        supportedReference,
         valueSelector);
   }
 
@@ -116,7 +116,7 @@ public class Mappings<EntityT> implements Supplier<List<Mapping<EntityT>>> {
       Function<ReferenceParameter, Collection<String>> fieldNameSelector,
       Set<String> allowedResourceTypes,
       String defaultResourceType,
-      Predicate<ReferenceParameter> isSupported,
+      Predicate<ReferenceParameter> supportedReference,
       Function<ReferenceParameter, String> valueSelector) {
     return add(
         ReferenceMapping.<EntityT>builder()
@@ -124,7 +124,7 @@ public class Mappings<EntityT> implements Supplier<List<Mapping<EntityT>>> {
             .fieldNameSelector(fieldNameSelector)
             .defaultResourceType(defaultResourceType)
             .allowedReferenceTypes(allowedResourceTypes)
-            .supportedReference(isSupported)
+            .supportedReference(supportedReference)
             .valueSelector(valueSelector)
             .build());
   }

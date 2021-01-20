@@ -355,11 +355,6 @@ class VulcanTest {
     assertThat(result.paging()).isEqualTo(expectedPaging);
   }
 
-  @Test
-  void reference() {
-    assertThat(req("/fugazi?foodref=")).isEmpty();
-  }
-
   @SneakyThrows
   List<FugaziDto> req(String uri) {
     var json =
