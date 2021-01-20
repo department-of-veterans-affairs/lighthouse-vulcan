@@ -233,9 +233,9 @@ class VulcanTest {
   @Test
   void mappingReference() {
     // TODO: all reference formats
-    assertThat(req("/fugazi?food=")).isEmpty();
-    assertThat(req("/fugazi?food=nachos2005")).containsExactly(nachos2005);
-    // assertThat(req("/fugazi?food:foodref=nachos2005")).containsExactly(nachos2005);
+    assertThat(req("/fugazi?foodref=")).isEmpty();
+    assertThat(req("/fugazi?foodref=nachos2005")).containsExactly(nachos2005);
+    assertThat(req("/fugazi?foodref:mexican=nachos2005")).containsExactly(nachos2005);
   }
 
   @SuppressWarnings("SpellCheckingInspection")

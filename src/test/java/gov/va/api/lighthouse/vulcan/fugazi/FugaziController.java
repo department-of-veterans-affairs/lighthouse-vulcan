@@ -70,10 +70,10 @@ public class FugaziController {
                 .token("foodtoken", "food", this::foodIsSupported, this::foodValues)
                 .tokenList("foodtokencsv", "food", this::foodIsSupported, this::foodValues)
                 .reference(
-                    "food",
-                    "name",
-                    Set.of("foodref"),
                     "foodref",
+                    "name",
+                    Set.of("mexican"),
+                    "mexican",
                     this::foodReferenceIsSupported,
                     this::foodReferenceValues)
                 .get())
@@ -98,7 +98,7 @@ public class FugaziController {
         referenceParameter.type(),
         referenceParameter.value(),
         referenceParameter.publicId());
-    return StringUtils.equals("foodref", referenceParameter.type());
+    return StringUtils.equals("mexican", referenceParameter.type());
   }
 
   private String foodReferenceValues(ReferenceParameter referenceParameter) {
