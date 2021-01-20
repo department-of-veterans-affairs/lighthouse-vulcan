@@ -2,6 +2,7 @@ package gov.va.api.lighthouse.vulcan.mappings;
 
 import gov.va.api.lighthouse.vulcan.CircuitBreaker;
 import gov.va.api.lighthouse.vulcan.InvalidRequest;
+import gov.va.api.lighthouse.vulcan.Mapping;
 import gov.va.api.lighthouse.vulcan.Specifications;
 import java.util.Collection;
 import java.util.List;
@@ -15,15 +16,18 @@ import lombok.Builder;
 import lombok.ToString;
 import lombok.ToString.Include;
 import lombok.Value;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.jpa.domain.Specification;
 
 @Value
 @ToString(onlyExplicitlyIncluded = true)
 @Builder
-public class ReferenceMapping<EntityT> implements SingleParameterMapping<EntityT> {
+public class ReferenceMapping<EntityT> implements Mapping<EntityT> {
   @Include String parameterName;
 
-  Set<String> allowedResourceTypes;
+  String defaultResourceType;
+
+  Set<String> allowedReferenceTypes;
 
   Function<ReferenceParameter, Collection<String>> fieldNameSelector;
 
@@ -31,20 +35,31 @@ public class ReferenceMapping<EntityT> implements SingleParameterMapping<EntityT
 
   Function<ReferenceParameter, String> valueSelector;
 
+  @Override
+  public boolean appliesTo(HttpServletRequest request) {
+    return asParameterWithType().anyMatch(StringUtils::isNotBlank);
+  }
+
   private Stream<String> asParameterWithType() {
-    return allowedResourceTypes().stream().map(type -> parameterName() + ":" + type);
+    return allowedReferenceTypes().stream().map(type -> parameterName() + ":" + type);
   }
 
   @Override
   public Specification<EntityT> specificationFor(HttpServletRequest request) {
     ReferenceParameter referenceParameter =
-        ReferenceParameter.parse(parameterName(), request.getParameter(parameterName()));
+        ReferenceParameterParser.builder()
+            .parameterName(parameterName)
+            .parameterValue(request.getParameter(parameterName))
+            .allowedReferenceTypes(allowedReferenceTypes)
+            .defaultResourceType(defaultResourceType)
+            .build()
+            .parse();
     if (!referenceParameter.type().isBlank()
-        && !allowedResourceTypes.contains(referenceParameter.type())) {
+        && !allowedReferenceTypes.contains(referenceParameter.type())) {
       throw InvalidRequest.because(
           String.format(
               "ReferenceParameter type [%s] is not legal as per the spec. Allowed types are: %s",
-              referenceParameter.type(), allowedResourceTypes()));
+              referenceParameter.type(), allowedReferenceTypes()));
     }
     if (isSupported().test(referenceParameter)) {
       throw CircuitBreaker.noResultsWillBeFound(

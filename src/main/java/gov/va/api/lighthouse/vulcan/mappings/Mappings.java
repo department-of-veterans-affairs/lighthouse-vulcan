@@ -80,14 +80,16 @@ public class Mappings<EntityT> implements Supplier<List<Mapping<EntityT>>> {
   /** Create a reference mapping where field name is constant. */
   public Mappings<EntityT> reference(
       String parameterName,
-      Set<String> allowedResourceTypes,
       String fieldName,
+      Set<String> allowedResourceTypes,
+      String defaultResourceType,
       Predicate<ReferenceParameter> isSupported,
       Function<ReferenceParameter, String> valueSelector) {
     return reference(
         parameterName,
         t -> singletonList(fieldName),
         allowedResourceTypes,
+        defaultResourceType,
         isSupported,
         valueSelector);
   }
@@ -96,12 +98,14 @@ public class Mappings<EntityT> implements Supplier<List<Mapping<EntityT>>> {
   public Mappings<EntityT> reference(
       String parameterAndFieldName,
       Set<String> allowedResourceTypes,
+      String defaultResourceType,
       Predicate<ReferenceParameter> isSupported,
       Function<ReferenceParameter, String> valueSelector) {
     return reference(
         parameterAndFieldName,
-        allowedResourceTypes,
         parameterAndFieldName,
+        allowedResourceTypes,
+        defaultResourceType,
         isSupported,
         valueSelector);
   }
@@ -111,13 +115,15 @@ public class Mappings<EntityT> implements Supplier<List<Mapping<EntityT>>> {
       String parameterName,
       Function<ReferenceParameter, Collection<String>> fieldNameSelector,
       Set<String> allowedResourceTypes,
+      String defaultResourceType,
       Predicate<ReferenceParameter> isSupported,
       Function<ReferenceParameter, String> valueSelector) {
     return add(
         ReferenceMapping.<EntityT>builder()
             .parameterName(parameterName)
             .fieldNameSelector(fieldNameSelector)
-            .allowedResourceTypes(allowedResourceTypes)
+            .defaultResourceType(defaultResourceType)
+            .allowedReferenceTypes(allowedResourceTypes)
             .isSupported(isSupported)
             .valueSelector(valueSelector)
             .build());
