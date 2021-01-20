@@ -98,9 +98,9 @@ class VulcanTest {
         arguments("a", "2", "10", 6, 1, 1, null, 2, null, 1),
         arguments("a", "1", "2", 6, 3, 1, null, 1, 2, 3),
         arguments("a", "2", "2", 6, 3, 1, 1, 2, 3, 3),
-        arguments("a", "3", "2", 6, 3, 1, 2, 3, null, 3),
-        arguments("a", "2", "5", 6, 2, 1, 1, 2, null, 2), // no records found
-        arguments("nope", "1", "5", 0, 0, null, null, 1, null, null), // count only results
+        arguments("a", "3", "2", 6, 3, 1, 2, 3, null, 3), // no records found
+        arguments("a", "2", "5", 6, 2, 1, 1, 2, null, 2), // count only results
+        arguments("nope", "1", "5", 0, 0, null, null, 1, null, null),
         arguments("a", "1", "0", 6, 0, null, null, 1, null, null));
   }
 
@@ -230,6 +230,14 @@ class VulcanTest {
         .containsExactlyInAnyOrder(nachos2005, tacos2005, moreNachos2005);
   }
 
+  @Test
+  void mappingReference() {
+    // TODO: all reference formats
+    assertThat(req("/fugazi?food=")).isEmpty();
+    assertThat(req("/fugazi?food=nachos2005")).containsExactly(nachos2005);
+    // assertThat(req("/fugazi?food:foodref=nachos2005")).containsExactly(nachos2005);
+  }
+
   @SuppressWarnings("SpellCheckingInspection")
   @Test
   void mappingString() {
@@ -290,18 +298,10 @@ class VulcanTest {
     assertThat(req("/fugazi?xmillis=2006-01-21T07:57:00Z")).containsExactly(tacos2006);
   }
 
-
-  @Test
-  void mappingReference() {
-    // TODO: all reference formats
-    assertThat(req("/fugazi?foodref=")).isEmpty();
-  }
-
   @Test
   void multipleParametersAreCombinedWithAnd() {
     assertThat(req("/fugazi?food=NACHOS,TACOS&name:contains=nacho")).containsExactly(nachos2005);
   }
-
 
   @ParameterizedTest
   @MethodSource

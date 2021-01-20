@@ -3,7 +3,6 @@ package gov.va.api.lighthouse.vulcan.mappings;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
 import gov.va.api.lighthouse.vulcan.CircuitBreaker;
-import gov.va.api.lighthouse.vulcan.InvalidRequest;
 import gov.va.api.lighthouse.vulcan.Mapping;
 import gov.va.api.lighthouse.vulcan.Specifications;
 import java.util.Collection;
@@ -18,11 +17,13 @@ import lombok.Builder;
 import lombok.ToString;
 import lombok.ToString.Include;
 import lombok.Value;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.jpa.domain.Specification;
 
 @Value
 @ToString(onlyExplicitlyIncluded = true)
 @Builder
+@Slf4j
 public class ReferenceMapping<EntityT> implements Mapping<EntityT> {
   @Include String parameterName;
 
@@ -38,16 +39,12 @@ public class ReferenceMapping<EntityT> implements Mapping<EntityT> {
 
   @Override
   public boolean appliesTo(HttpServletRequest request) {
-    return isNotBlank(request.getParameter(asStartsWithParameterName()))
+    return isNotBlank(request.getParameter(parameterName()))
         || asParametersWithTypeModifier().anyMatch(p -> isNotBlank(request.getParameter(p)));
   }
 
   private Stream<String> asParametersWithTypeModifier() {
     return allowedReferenceTypes().stream().map(type -> parameterName() + ":" + type);
-  }
-
-  private String asStartsWithParameterName() {
-    return parameterName;
   }
 
   @Override
@@ -60,14 +57,8 @@ public class ReferenceMapping<EntityT> implements Mapping<EntityT> {
             .defaultResourceType(defaultResourceType)
             .build()
             .parse();
-    if (!referenceParameter.type().isBlank()
-        && !allowedReferenceTypes.contains(referenceParameter.type())) {
-      throw InvalidRequest.because(
-          String.format(
-              "ReferenceParameter type [%s] is not legal as per the spec. Allowed types are: %s",
-              referenceParameter.type(), allowedReferenceTypes()));
-    }
-    if (supportedReference().test(referenceParameter)) {
+
+    if (!supportedReference().test(referenceParameter)) {
       throw CircuitBreaker.noResultsWillBeFound(
           parameterName(), request.getParameter(parameterName()), "Reference is not supported.");
     }
@@ -77,6 +68,8 @@ public class ReferenceMapping<EntityT> implements Mapping<EntityT> {
           parameterName(), request.getParameter(parameterName()), "No database column defined.");
     }
     String value = valueSelector().apply(referenceParameter);
+    log.info(
+            "field: {}, value: {}", fieldNames, value);
     return fieldNames.stream()
         .map(
             field ->
@@ -88,7 +81,7 @@ public class ReferenceMapping<EntityT> implements Mapping<EntityT> {
 
   @Override
   public List<String> supportedParameterNames() {
-    return Stream.concat(Stream.of(asStartsWithParameterName()), asParametersWithTypeModifier())
+    return Stream.concat(Stream.of(parameterName()), asParametersWithTypeModifier())
         .collect(Collectors.toList());
   }
 }

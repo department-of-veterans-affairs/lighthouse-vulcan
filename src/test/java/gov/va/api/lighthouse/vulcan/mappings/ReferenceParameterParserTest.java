@@ -49,8 +49,25 @@ public class ReferenceParameterParserTest {
             "123",
             "https://good.com/fhir/v0/r4/Patient/123"),
         Arguments.of("xxx", "123.456", "Xxx", Set.of("Xxx"), "Xxx", "123.456", "123.456", null),
+        Arguments.of("Patient", "123", "Patient", Set.of("Patient"), "Patient", "123", "123", null),
         Arguments.of(
-            "Patient", "123", "Patient", Set.of("Patient"), "Patient", "123", "123", null));
+            "recorder:Organization",
+            "123",
+            "Organization",
+            Set.of("Organization", "Practitioner"),
+            "Organization",
+            "123",
+            "123",
+            null),
+        Arguments.of(
+            "recorder:Practitioner",
+            "123",
+            "Organization",
+            Set.of("Organization", "Practitioner"),
+            "Practitioner",
+            "123",
+            "123",
+            null));
   }
 
   @Test
@@ -61,6 +78,7 @@ public class ReferenceParameterParserTest {
                 ReferenceParameterParser.builder()
                     .parameterName("x")
                     .parameterValue("http://Patient435")
+                    .defaultResourceType("x")
                     .build()
                     .parse());
     assertThatExceptionOfType(IllegalStateException.class)
@@ -69,6 +87,7 @@ public class ReferenceParameterParserTest {
                 ReferenceParameterParser.builder()
                     .parameterName("x")
                     .parameterValue("httpq")
+                    .defaultResourceType("x")
                     .build()
                     .parse());
   }
@@ -81,6 +100,7 @@ public class ReferenceParameterParserTest {
                 ReferenceParameterParser.builder()
                     .parameterName("x")
                     .parameterValue("")
+                    .defaultResourceType("x")
                     .build()
                     .parse());
   }
@@ -88,7 +108,13 @@ public class ReferenceParameterParserTest {
   @Test
   void parseNull() {
     assertThatExceptionOfType(InvalidRequest.class)
-        .isThrownBy(() -> ReferenceParameterParser.builder().parameterName("x").build().parse());
+        .isThrownBy(
+            () ->
+                ReferenceParameterParser.builder()
+                    .parameterName("x")
+                    .defaultResourceType("x")
+                    .build()
+                    .parse());
   }
 
   @Test

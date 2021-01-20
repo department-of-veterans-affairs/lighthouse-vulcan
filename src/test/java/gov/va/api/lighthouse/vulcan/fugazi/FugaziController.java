@@ -21,6 +21,7 @@ import java.util.Set;
 import javax.servlet.http.HttpServletRequest;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.validation.annotation.Validated;
@@ -69,8 +70,8 @@ public class FugaziController {
                 .token("foodtoken", "food", this::foodIsSupported, this::foodValues)
                 .tokenList("foodtokencsv", "food", this::foodIsSupported, this::foodValues)
                 .reference(
-                    "foodref",
                     "food",
+                    "name",
                     Set.of("foodref"),
                     "foodref",
                     this::foodReferenceIsSupported,
@@ -91,7 +92,13 @@ public class FugaziController {
   }
 
   private boolean foodReferenceIsSupported(ReferenceParameter referenceParameter) {
-    return referenceParameter.type().equals("foodref");
+    log.info(
+        "Name: {}, Type: {}, Value: {}, ID: {}",
+        referenceParameter.parameterName(),
+        referenceParameter.type(),
+        referenceParameter.value(),
+        referenceParameter.publicId());
+    return StringUtils.equals("foodref", referenceParameter.type());
   }
 
   private String foodReferenceValues(ReferenceParameter referenceParameter) {
