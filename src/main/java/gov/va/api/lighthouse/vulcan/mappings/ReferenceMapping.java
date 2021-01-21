@@ -1,8 +1,10 @@
 package gov.va.api.lighthouse.vulcan.mappings;
 
+import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
 import gov.va.api.lighthouse.vulcan.CircuitBreaker;
+import gov.va.api.lighthouse.vulcan.InvalidRequest;
 import gov.va.api.lighthouse.vulcan.Mapping;
 import gov.va.api.lighthouse.vulcan.Specifications;
 import java.util.Collection;
@@ -17,13 +19,11 @@ import lombok.Builder;
 import lombok.ToString;
 import lombok.ToString.Include;
 import lombok.Value;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.jpa.domain.Specification;
 
 @Value
 @ToString(onlyExplicitlyIncluded = true)
 @Builder
-@Slf4j
 public class ReferenceMapping<EntityT> implements Mapping<EntityT> {
   @Include String parameterName;
 
@@ -49,12 +49,26 @@ public class ReferenceMapping<EntityT> implements Mapping<EntityT> {
 
   @Override
   public Specification<EntityT> specificationFor(HttpServletRequest request) {
+    String parameterName = null;
+    String parameterValue = null;
+    for (String n : supportedParameterNames()) {
+      parameterValue = request.getParameter(n);
+      if (isNotBlank(parameterValue)) {
+        parameterName = n;
+        break;
+      }
+    }
+    if (isBlank(parameterValue) || isBlank(parameterName)) {
+      throw InvalidRequest.noParametersSpecified();
+    }
+
     ReferenceParameter referenceParameter =
         ReferenceParameterParser.builder()
             .parameterName(parameterName)
-            .parameterValue(request.getParameter(parameterName))
-            .allowedReferenceTypes(allowedReferenceTypes)
-            .defaultResourceType(defaultResourceType)
+            .parameterValue(parameterValue)
+            .allowedReferenceTypes(allowedReferenceTypes())
+            .defaultResourceType(defaultResourceType())
+            .formats(ReferenceParameterParser.standardFormatsForResource(defaultResourceType()))
             .build()
             .parse();
 
@@ -68,8 +82,6 @@ public class ReferenceMapping<EntityT> implements Mapping<EntityT> {
           parameterName(), request.getParameter(parameterName()), "No database column defined.");
     }
     String value = valueSelector().apply(referenceParameter);
-    log.info(
-            "field: {}, value: {}", fieldNames, value);
     return fieldNames.stream()
         .map(
             field ->
