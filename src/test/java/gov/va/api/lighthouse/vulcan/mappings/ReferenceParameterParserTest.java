@@ -78,7 +78,6 @@ public class ReferenceParameterParserTest {
                 ReferenceParameterParser.builder()
                     .parameterName("x")
                     .parameterValue("http://Patient435")
-                    .defaultResourceType("x")
                     .formats(ReferenceParameterParser.standardFormatsForResource("x"))
                     .build()
                     .parse());
@@ -88,7 +87,6 @@ public class ReferenceParameterParserTest {
                 ReferenceParameterParser.builder()
                     .parameterName("x")
                     .parameterValue("httpq")
-                    .defaultResourceType("x")
                     .formats(ReferenceParameterParser.standardFormatsForResource("x"))
                     .build()
                     .parse());
@@ -102,7 +100,6 @@ public class ReferenceParameterParserTest {
                 ReferenceParameterParser.builder()
                     .parameterName("x")
                     .parameterValue("")
-                    .defaultResourceType("x")
                     .formats(ReferenceParameterParser.standardFormatsForResource("x"))
                     .build()
                     .parse());
@@ -115,8 +112,21 @@ public class ReferenceParameterParserTest {
             () ->
                 ReferenceParameterParser.builder()
                     .parameterName("x")
-                    .defaultResourceType("x")
                     .formats(ReferenceParameterParser.standardFormatsForResource("x"))
+                    .build()
+                    .parse());
+  }
+
+  @Test
+  void parseReferenceWhenTypeIsNotAllowed() {
+    assertThatExceptionOfType(InvalidRequest.class)
+        .isThrownBy(
+            () ->
+                ReferenceParameterParser.builder()
+                    .parameterName("recorder")
+                    .parameterValue("123")
+                    .allowedReferenceTypes(Set.of("Practitioner"))
+                    .formats(ReferenceParameterParser.standardFormatsForResource("Organization"))
                     .build()
                     .parse());
   }
@@ -130,10 +140,15 @@ public class ReferenceParameterParserTest {
                     .parameterName("recorder")
                     .parameterValue("123")
                     .allowedReferenceTypes(Set.of("Organization", "Practitioner"))
-                    .defaultResourceType("Organization")
                     .formats(ReferenceParameterParser.standardFormatsForResource("Organization"))
                     .build()
                     .parse());
+  }
+
+  @Test
+  void standardFormatsThrowsIllegalStateWhenResourceIsNotProvided() {
+    assertThatExceptionOfType(IllegalStateException.class)
+        .isThrownBy(() -> ReferenceParameterParser.standardFormatsForResource(null));
   }
 
   @ParameterizedTest
@@ -151,7 +166,6 @@ public class ReferenceParameterParserTest {
             ReferenceParameterParser.builder()
                 .parameterName(parameterName)
                 .parameterValue(parameterValue)
-                .defaultResourceType(defaultResourceType)
                 .allowedReferenceTypes(allowedReferenceTypes)
                 .formats(ReferenceParameterParser.standardFormatsForResource(defaultResourceType))
                 .build()

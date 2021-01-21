@@ -3,6 +3,7 @@ package gov.va.api.lighthouse.vulcan.fugazi;
 import static gov.va.api.lighthouse.vulcan.Vulcan.useUrl;
 import static java.util.stream.Collectors.toList;
 import static org.apache.commons.lang3.StringUtils.isBlank;
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import gov.va.api.health.autoconfig.configuration.JacksonConfig;
@@ -93,12 +94,17 @@ public class FugaziController {
 
   private boolean foodReferenceIsSupported(ReferenceParameter referenceParameter) {
     log.info(
-        "Name: {}, Type: {}, Value: {}, ID: {}",
+        "Name: {}, Type: {}, Value: {}, ID: {}, URL: {}",
         referenceParameter.parameterName(),
         referenceParameter.type(),
         referenceParameter.value(),
-        referenceParameter.publicId());
-    return StringUtils.equals("mexican", referenceParameter.type());
+        referenceParameter.publicId(),
+        referenceParameter.url());
+    var isSafeUrl = true;
+    if (isNotBlank(referenceParameter.url())) {
+      isSafeUrl = referenceParameter.url().startsWith("https://goodfood.com/mexican");
+    }
+    return StringUtils.equals("mexican", referenceParameter.type()) && isSafeUrl;
   }
 
   private String foodReferenceValues(ReferenceParameter referenceParameter) {

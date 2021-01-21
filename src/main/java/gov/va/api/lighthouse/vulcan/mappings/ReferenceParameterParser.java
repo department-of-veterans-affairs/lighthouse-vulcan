@@ -19,7 +19,6 @@ public class ReferenceParameterParser {
   private final String parameterName;
   private final String parameterValue;
   private final Set<String> allowedReferenceTypes;
-  private final String defaultResourceType;
   private final Collection<ReferenceFormat> formats;
 
   /** Get a set of standard formatters for a fhir resource reference. */

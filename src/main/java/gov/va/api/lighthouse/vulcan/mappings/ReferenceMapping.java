@@ -67,7 +67,6 @@ public class ReferenceMapping<EntityT> implements Mapping<EntityT> {
             .parameterName(parameterName)
             .parameterValue(parameterValue)
             .allowedReferenceTypes(allowedReferenceTypes())
-            .defaultResourceType(defaultResourceType())
             .formats(ReferenceParameterParser.standardFormatsForResource(defaultResourceType()))
             .build()
             .parse();
