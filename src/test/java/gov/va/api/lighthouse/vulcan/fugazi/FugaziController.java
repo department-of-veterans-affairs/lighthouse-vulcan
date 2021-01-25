@@ -98,7 +98,7 @@ public class FugaziController {
         referenceParameter.type(),
         referenceParameter.value(),
         referenceParameter.publicId(),
-        referenceParameter.url());
+        referenceParameter.url().isPresent() ? referenceParameter.url().get() : "no url");
     var isSafeUrl = true;
     if (referenceParameter.url().isPresent()) {
       isSafeUrl =

@@ -17,9 +17,9 @@ import lombok.NonNull;
 @Builder
 public class ReferenceParameterParser {
 
-  private final String parameterName;
-  private final String parameterValue;
-  private final Set<String> allowedReferenceTypes;
+  @NonNull private final String parameterName;
+  @NonNull private final String parameterValue;
+  @NonNull private final Set<String> allowedReferenceTypes;
   @NonNull private final Collection<ReferenceFormat> formats;
 
   /** Get a set of standard formatters for a fhir resource reference. */

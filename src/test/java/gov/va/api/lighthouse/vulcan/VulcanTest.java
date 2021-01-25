@@ -82,24 +82,28 @@ class VulcanTest {
 
   @SuppressWarnings("unused")
   static Stream<Arguments> pageAndCount() {
-    // String requestName,
-    // String requestPage,
-    // String requestCount,
-    // int totalRecords,
-    // int totalPages,
-    // Integer firstPage,
-    // Integer previousPage,
-    // Integer thisPage,
-    // Integer nextPage,
-    // Integer lastPage
-    return // pages of results
-    Stream.of(
+    /*
+    String requestName,
+    String requestPage,
+    String requestCount,
+    int totalRecords,
+    int totalPages,
+    Integer firstPage,
+    Integer previousPage,
+    Integer thisPage,
+    Integer nextPage,
+    Integer lastPage
+    */
+
+    return Stream.of(
         arguments("a", "1", "10", 6, 1, 1, null, 1, null, 1),
         arguments("a", "2", "10", 6, 1, 1, null, 2, null, 1),
         arguments("a", "1", "2", 6, 3, 1, null, 1, 2, 3),
         arguments("a", "2", "2", 6, 3, 1, 1, 2, 3, 3),
-        arguments("a", "3", "2", 6, 3, 1, 2, 3, null, 3), // no records found
-        arguments("a", "2", "5", 6, 2, 1, 1, 2, null, 2), // count only results
+        // no records found
+        arguments("a", "3", "2", 6, 3, 1, 2, 3, null, 3),
+        // count only results
+        arguments("a", "2", "5", 6, 2, 1, 1, 2, null, 2),
         arguments("nope", "1", "5", 0, 0, null, null, 1, null, null),
         arguments("a", "1", "0", 6, 0, null, null, 1, null, null));
   }
