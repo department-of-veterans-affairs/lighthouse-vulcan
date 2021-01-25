@@ -11,6 +11,7 @@ import gov.va.api.lighthouse.vulcan.VulcanConfiguration;
 import gov.va.api.lighthouse.vulcan.VulcanConfiguration.PagingConfiguration;
 import gov.va.api.lighthouse.vulcan.fugazi.FugaziDto.Food;
 import gov.va.api.lighthouse.vulcan.mappings.Mappings;
+import gov.va.api.lighthouse.vulcan.mappings.ReferenceParameter;
 import gov.va.api.lighthouse.vulcan.mappings.TokenParameter;
 import java.time.Instant;
 import java.util.Collection;
@@ -20,6 +21,7 @@ import java.util.Set;
 import javax.servlet.http.HttpServletRequest;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.validation.annotation.Validated;
@@ -34,7 +36,6 @@ import org.springframework.web.bind.annotation.RestController;
     value = {"/fugazi"},
     produces = {"application/json"})
 public class FugaziController {
-
   final ObjectMapper mapper = JacksonConfig.createMapper();
 
   @Autowired FugaziRepository repo;
@@ -68,6 +69,13 @@ public class FugaziController {
                 .dateAsInstant("xdate", "date")
                 .token("foodtoken", "food", this::foodIsSupported, this::foodValues)
                 .tokenList("foodtokencsv", "food", this::foodIsSupported, this::foodValues)
+                .reference(
+                    "foodref",
+                    "name",
+                    Set.of("mexican", "italian"),
+                    "mexican",
+                    this::foodReferenceIsSupported,
+                    this::foodReferenceValues)
                 .get())
         .defaultQuery(Vulcan.returnNothing())
         .build();
@@ -81,6 +89,31 @@ public class FugaziController {
       return false;
     }
     return true;
+  }
+
+  private boolean foodReferenceIsSupported(ReferenceParameter referenceParameter) {
+    log.info(
+        "Name: {}, Type: {}, Value: {}, ID: {}, URL: {}",
+        referenceParameter.parameterName(),
+        referenceParameter.type(),
+        referenceParameter.value(),
+        referenceParameter.publicId(),
+        referenceParameter.url().isPresent() ? referenceParameter.url().get() : "no url");
+    var isSafeUrl = true;
+    if (referenceParameter.url().isPresent()) {
+      isSafeUrl =
+          referenceParameter
+              .url()
+              .get()
+              .equals("https://goodfood.com/mexican/" + referenceParameter.publicId());
+    }
+    return (StringUtils.equals("mexican", referenceParameter.type())
+            || StringUtils.equals("italian", referenceParameter.type()))
+        && isSafeUrl;
+  }
+
+  private String foodReferenceValues(ReferenceParameter referenceParameter) {
+    return referenceParameter.publicId();
   }
 
   private Collection<String> foodValues(TokenParameter token) {

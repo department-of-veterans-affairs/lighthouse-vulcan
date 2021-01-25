@@ -7,6 +7,7 @@ import gov.va.api.lighthouse.vulcan.mappings.DateMapping.PredicateFactory;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
@@ -74,6 +75,58 @@ public class Mappings<EntityT> implements Supplier<List<Mapping<EntityT>>> {
   @Override
   public List<Mapping<EntityT>> get() {
     return mappings;
+  }
+
+  /** Create a reference mapping where field name is constant. */
+  public Mappings<EntityT> reference(
+      String parameterName,
+      String fieldName,
+      Set<String> allowedResourceTypes,
+      String defaultResourceType,
+      Predicate<ReferenceParameter> supportedReference,
+      Function<ReferenceParameter, String> valueSelector) {
+    return reference(
+        parameterName,
+        t -> singletonList(fieldName),
+        allowedResourceTypes,
+        defaultResourceType,
+        supportedReference,
+        valueSelector);
+  }
+
+  /** Create a reference mapping where parameterName and fieldName are equal. */
+  public Mappings<EntityT> reference(
+      String parameterAndFieldName,
+      Set<String> allowedResourceTypes,
+      String defaultResourceType,
+      Predicate<ReferenceParameter> supportedReference,
+      Function<ReferenceParameter, String> valueSelector) {
+    return reference(
+        parameterAndFieldName,
+        parameterAndFieldName,
+        allowedResourceTypes,
+        defaultResourceType,
+        supportedReference,
+        valueSelector);
+  }
+
+  /** Create a reference mapping that is totally configurable. */
+  public Mappings<EntityT> reference(
+      String parameterName,
+      Function<ReferenceParameter, Collection<String>> fieldNameSelector,
+      Set<String> allowedResourceTypes,
+      String defaultResourceType,
+      Predicate<ReferenceParameter> supportedReference,
+      Function<ReferenceParameter, String> valueSelector) {
+    return add(
+        ReferenceMapping.<EntityT>builder()
+            .parameterName(parameterName)
+            .fieldNameSelector(fieldNameSelector)
+            .defaultResourceType(defaultResourceType)
+            .allowedReferenceTypes(allowedResourceTypes)
+            .supportedReference(supportedReference)
+            .valueSelector(valueSelector)
+            .build());
   }
 
   /** Create a string mapping where request and field name are the same. */

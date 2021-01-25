@@ -82,26 +82,29 @@ class VulcanTest {
 
   @SuppressWarnings("unused")
   static Stream<Arguments> pageAndCount() {
-    // String requestName,
-    // String requestPage,
-    // String requestCount,
-    // int totalRecords,
-    // int totalPages,
-    // Integer firstPage,
-    // Integer previousPage,
-    // Integer thisPage,
-    // Integer nextPage,
-    // Integer lastPage
-    return Stream.of( // pages of results
+    /*
+    String requestName,
+    String requestPage,
+    String requestCount,
+    int totalRecords,
+    int totalPages,
+    Integer firstPage,
+    Integer previousPage,
+    Integer thisPage,
+    Integer nextPage,
+    Integer lastPage
+    */
+
+    return Stream.of(
         arguments("a", "1", "10", 6, 1, 1, null, 1, null, 1),
         arguments("a", "2", "10", 6, 1, 1, null, 2, null, 1),
         arguments("a", "1", "2", 6, 3, 1, null, 1, 2, 3),
         arguments("a", "2", "2", 6, 3, 1, 1, 2, 3, 3),
-        arguments("a", "3", "2", 6, 3, 1, 2, 3, null, 3),
-        arguments("a", "2", "5", 6, 2, 1, 1, 2, null, 2),
         // no records found
-        arguments("nope", "1", "5", 0, 0, null, null, 1, null, null),
+        arguments("a", "3", "2", 6, 3, 1, 2, 3, null, 3),
         // count only results
+        arguments("a", "2", "5", 6, 2, 1, 1, 2, null, 2),
+        arguments("nope", "1", "5", 0, 0, null, null, 1, null, null),
         arguments("a", "1", "0", 6, 0, null, null, 1, null, null));
   }
 
@@ -229,6 +232,16 @@ class VulcanTest {
         .containsExactlyInAnyOrder(nachos2005, moreNachos2005, tacos2005, tacos2007, tacos2008);
     assertThat(req("/fugazi?xdate=gt2005-01-20&xdate=lt2005-02"))
         .containsExactlyInAnyOrder(nachos2005, tacos2005, moreNachos2005);
+  }
+
+  @Test
+  void mappingReference() {
+    assertThat(req("/fugazi?foodref=")).isEmpty();
+    assertThat(req("/fugazi?foodref:mexican=nachos2005")).containsExactly(nachos2005);
+    assertThat(req("/fugazi?foodref:italian=tacos2005")).containsExactly(tacos2005);
+    assertThat(req("/fugazi?foodref=mexican/nachos2005")).containsExactly(nachos2005);
+    assertThat(req("/fugazi?foodref=https://goodfood.com/mexican/nachos2005"))
+        .containsExactly(nachos2005);
   }
 
   @SuppressWarnings("SpellCheckingInspection")
