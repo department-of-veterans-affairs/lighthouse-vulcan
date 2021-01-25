@@ -17,6 +17,7 @@ import gov.va.api.lighthouse.vulcan.VulcanConfiguration.PagingConfiguration;
 import gov.va.api.lighthouse.vulcan.mappings.Mappings;
 import java.time.Instant;
 import java.util.List;
+import java.util.Set;
 import javax.servlet.http.HttpServletRequest;
 import lombok.SneakyThrows;
 import org.springframework.data.domain.Sort;
@@ -50,6 +51,13 @@ public class ExampleUsage {
                 .csvList("food")
                 .value("millis", v -> Instant.parse(v).toEpochMilli())
                 .dateAsInstant("when", "date")
+                .reference(
+                    "foodref",
+                    "food",
+                    Set.of("mexican, italian"),
+                    "mexican",
+                    rp -> rp.type().equals("mexican"),
+                    rp -> rp.publicId())
                 .get())
         .defaultQuery(rejectRequest())
         .rule(atLeastOneParameterOf("patient", "_id"))
