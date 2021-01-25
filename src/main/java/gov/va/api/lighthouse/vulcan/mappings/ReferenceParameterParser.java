@@ -23,9 +23,10 @@ public class ReferenceParameterParser {
   @NonNull private final Collection<ReferenceFormat> formats;
 
   /** Get a set of standard formatters for a fhir resource reference. */
-  public static Collection<ReferenceFormat> standardFormatsForResource(String resourceType) {
+  public static Collection<ReferenceFormat> standardFormatsForResource(
+      String resourceType, Set<String> allowedReferenceTypes) {
     return List.of(
-        new ValueOnlyFormat(resourceType),
+        new ValueOnlyFormat(resourceType, allowedReferenceTypes),
         new TypeModifierAndValueFormat(),
         new RelativeUrlFormat(),
         new AbsoluteUrlFormat());
@@ -44,6 +45,7 @@ public class ReferenceParameterParser {
       var ref = f.tryParse(parameterName, parameterValue);
       if (ref == null) {
         help.add(f.help());
+        continue;
       }
       if (!allowedReferenceTypes.contains(ref.type())) {
         throw InvalidRequest.because(
@@ -51,14 +53,6 @@ public class ReferenceParameterParser {
                 "ReferenceParameter type [%s] is not legal as per the spec. "
                     + "Allowed types are: %s",
                 ref.type(), allowedReferenceTypes));
-      }
-      if (allowedReferenceTypes.size() > 1 && f instanceof ValueOnlyFormat) {
-        throw InvalidRequest.badParameter(
-            parameterName,
-            parameterValue,
-            "Cannot search by value on a reference that allows more than 1 type."
-                + " To do so explicitly use the type modifier..."
-                + " parameter:resource=id ");
       }
       return ref;
     }
@@ -155,6 +149,7 @@ public class ReferenceParameterParser {
   static class ValueOnlyFormat implements ReferenceFormat {
 
     @NonNull String defaultResourceType;
+    @NonNull Set<String> allowedReferenceTypes;
 
     @Override
     public String help() {
@@ -163,7 +158,15 @@ public class ReferenceParameterParser {
 
     @Override
     public ReferenceParameter tryParse(String parameterName, String value) {
-      if (value.matches("^[A-Za-z0-9-.]{1,64}$")) {
+      if (parameterName.matches("^[A-Za-z0-9-]*") && value.matches("^[A-Za-z0-9-.]{1,64}$")) {
+        if (allowedReferenceTypes.size() > 1) {
+          throw InvalidRequest.badParameter(
+              parameterName,
+              value,
+              "Cannot search by value on a reference that allows more than 1 type."
+                  + " To do so explicitly use the type modifier..."
+                  + " parameter:resource=id ");
+        }
         return ReferenceParameter.builder()
             .parameterName(parameterName)
             .value(value)

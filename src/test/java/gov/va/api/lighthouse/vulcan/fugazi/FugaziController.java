@@ -72,7 +72,7 @@ public class FugaziController {
                 .reference(
                     "foodref",
                     "name",
-                    Set.of("mexican"),
+                    Set.of("mexican", "italian"),
                     "mexican",
                     this::foodReferenceIsSupported,
                     this::foodReferenceValues)
@@ -101,9 +101,15 @@ public class FugaziController {
         referenceParameter.url());
     var isSafeUrl = true;
     if (referenceParameter.url().isPresent()) {
-      isSafeUrl = referenceParameter.url().get().startsWith("https://goodfood.com/mexican");
+      isSafeUrl =
+          referenceParameter
+              .url()
+              .get()
+              .equals("https://goodfood.com/mexican" + "/" + referenceParameter.publicId());
     }
-    return StringUtils.equals("mexican", referenceParameter.type()) && isSafeUrl;
+    return (StringUtils.equals("mexican", referenceParameter.type())
+            || StringUtils.equals("italian", referenceParameter.type()))
+        && isSafeUrl;
   }
 
   private String foodReferenceValues(ReferenceParameter referenceParameter) {

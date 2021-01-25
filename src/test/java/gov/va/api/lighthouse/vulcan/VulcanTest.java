@@ -233,8 +233,8 @@ class VulcanTest {
   @Test
   void mappingReference() {
     assertThat(req("/fugazi?foodref=")).isEmpty();
-    assertThat(req("/fugazi?foodref=nachos2005")).containsExactly(nachos2005);
     assertThat(req("/fugazi?foodref:mexican=nachos2005")).containsExactly(nachos2005);
+    assertThat(req("/fugazi?foodref:italian=tacos2005")).containsExactly(tacos2005);
     assertThat(req("/fugazi?foodref=mexican/nachos2005")).containsExactly(nachos2005);
     assertThat(req("/fugazi?foodref=https://goodfood.com/mexican/nachos2005"))
         .containsExactly(nachos2005);
