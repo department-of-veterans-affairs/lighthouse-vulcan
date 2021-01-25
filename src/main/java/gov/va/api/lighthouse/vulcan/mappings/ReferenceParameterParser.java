@@ -1,7 +1,6 @@
 package gov.va.api.lighthouse.vulcan.mappings;
 
 import static org.apache.commons.lang3.StringUtils.isBlank;
-import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
 import gov.va.api.lighthouse.vulcan.InvalidRequest;
 import java.net.MalformedURLException;
@@ -9,9 +8,11 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
+import lombok.NonNull;
 
 @Builder
 public class ReferenceParameterParser {
@@ -19,18 +20,15 @@ public class ReferenceParameterParser {
   private final String parameterName;
   private final String parameterValue;
   private final Set<String> allowedReferenceTypes;
-  private final Collection<ReferenceFormat> formats;
+  @NonNull private final Collection<ReferenceFormat> formats;
 
   /** Get a set of standard formatters for a fhir resource reference. */
   public static Collection<ReferenceFormat> standardFormatsForResource(String resourceType) {
-    if (resourceType == null) {
-      throw new IllegalStateException("Cannot build standard formats. Missing resource type.");
-    }
     return List.of(
-        new AbsoluteUrlFormat(),
-        new RelativeUrlFormat(),
+        new ValueOnlyFormat(resourceType),
         new TypeModifierAndValueFormat(),
-        new ValueOnlyFormat(resourceType));
+        new RelativeUrlFormat(),
+        new AbsoluteUrlFormat());
   }
 
   /** Create a ReferenceParameter from a reference search parameter. */
@@ -42,31 +40,27 @@ public class ReferenceParameterParser {
               parameterName, parameterValue));
     }
     List<String> help = new ArrayList<>();
-    if (formats == null || formats.isEmpty()) {
-      throw new IllegalStateException(
-          "Cannot parse. Missing formats for the ReferenceParameterParser.");
-    }
     for (ReferenceFormat f : formats) {
       var ref = f.tryParse(parameterName, parameterValue);
-      if (ref != null) {
-        if (isNotBlank(ref.type()) && !allowedReferenceTypes.contains(ref.type())) {
-          throw InvalidRequest.because(
-              String.format(
-                  "ReferenceParameter type [%s] is not legal as per the spec. "
-                      + "Allowed types are: %s",
-                  ref.type(), allowedReferenceTypes));
-        }
-        if (allowedReferenceTypes.size() > 1 && f instanceof ValueOnlyFormat) {
-          throw InvalidRequest.badParameter(
-              parameterName,
-              parameterValue,
-              "Cannot search by value on a reference that allows more than 1 type."
-                  + " To do so explicitly use the type modifier..."
-                  + " parameter:resource=id ");
-        }
-        return ref;
+      if (ref == null) {
+        help.add(f.help());
       }
-      help.add(f.help());
+      if (!allowedReferenceTypes.contains(ref.type())) {
+        throw InvalidRequest.because(
+            String.format(
+                "ReferenceParameter type [%s] is not legal as per the spec. "
+                    + "Allowed types are: %s",
+                ref.type(), allowedReferenceTypes));
+      }
+      if (allowedReferenceTypes.size() > 1 && f instanceof ValueOnlyFormat) {
+        throw InvalidRequest.badParameter(
+            parameterName,
+            parameterValue,
+            "Cannot search by value on a reference that allows more than 1 type."
+                + " To do so explicitly use the type modifier..."
+                + " parameter:resource=id ");
+      }
+      return ref;
     }
     throw InvalidRequest.because(
         String.format(
@@ -97,7 +91,7 @@ public class ReferenceParameterParser {
                 .value(value)
                 .type(referenceParts[referenceParts.length - 2])
                 .publicId(referenceParts[referenceParts.length - 1])
-                .url(value)
+                .url(Optional.of(value))
                 .build();
           } else {
             throw InvalidRequest.badParameter(
@@ -160,7 +154,7 @@ public class ReferenceParameterParser {
   @AllArgsConstructor
   static class ValueOnlyFormat implements ReferenceFormat {
 
-    String defaultResourceType;
+    @NonNull String defaultResourceType;
 
     @Override
     public String help() {

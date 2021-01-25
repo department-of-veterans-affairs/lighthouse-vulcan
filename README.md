@@ -244,12 +244,12 @@ Result: `Tacos1`
 Request: `/fugazi?foodreference=https://good.com/mexican/4` \
 Result: `Nachos2`
 
-Request: `/fugazi?foodreference:japaneese=1`\
+Request: `/fugazi?foodreference:japanese=1`\
 Result: `Invalid Request`
-Type japaneese not allowed, as per the spec.
+Type japanese not allowed, as per the spec.
  
 Mapping: \
- `.reference("foodreference", "food", "mexican", Set.of("mexican, japaneese"), foodReferenceIsSupported(), foodReferenceValues())`
+ `.reference("foodreference", "food", "mexican", Set.of("mexican", "japanese"), foodReferenceIsSupported(), foodReferenceValues())`
 
 Request: `/fugazi?foodreference=1`\
 Result: `Invalid Request` \

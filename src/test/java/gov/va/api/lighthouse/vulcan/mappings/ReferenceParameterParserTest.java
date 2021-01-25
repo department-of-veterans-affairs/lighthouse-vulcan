@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 
 import gov.va.api.lighthouse.vulcan.InvalidRequest;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.Test;
@@ -176,7 +177,7 @@ public class ReferenceParameterParserTest {
                 .type(expectedType)
                 .value(expectedValue)
                 .publicId(expectedPublicId)
-                .url(expectedUrl)
+                .url(Optional.of(expectedUrl))
                 .build());
   }
 }

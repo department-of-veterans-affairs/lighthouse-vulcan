@@ -3,7 +3,6 @@ package gov.va.api.lighthouse.vulcan.fugazi;
 import static gov.va.api.lighthouse.vulcan.Vulcan.useUrl;
 import static java.util.stream.Collectors.toList;
 import static org.apache.commons.lang3.StringUtils.isBlank;
-import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import gov.va.api.health.autoconfig.configuration.JacksonConfig;
@@ -101,8 +100,8 @@ public class FugaziController {
         referenceParameter.publicId(),
         referenceParameter.url());
     var isSafeUrl = true;
-    if (isNotBlank(referenceParameter.url())) {
-      isSafeUrl = referenceParameter.url().startsWith("https://goodfood.com/mexican");
+    if (referenceParameter.url().isPresent()) {
+      isSafeUrl = referenceParameter.url().get().startsWith("https://goodfood.com/mexican");
     }
     return StringUtils.equals("mexican", referenceParameter.type()) && isSafeUrl;
   }

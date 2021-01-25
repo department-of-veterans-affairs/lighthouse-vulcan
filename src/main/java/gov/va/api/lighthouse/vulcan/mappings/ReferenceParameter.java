@@ -1,18 +1,20 @@
 package gov.va.api.lighthouse.vulcan.mappings;
 
+import java.util.Optional;
 import lombok.Builder;
+import lombok.NonNull;
 import lombok.Value;
 
 @Value
 @Builder
 public class ReferenceParameter {
-  String parameterName;
+  @NonNull String parameterName;
 
-  String value;
+  @NonNull String value;
 
-  String type;
+  @NonNull String type;
 
-  String publicId;
+  @NonNull String publicId;
 
-  String url;
+  Optional<String> url;
 }
