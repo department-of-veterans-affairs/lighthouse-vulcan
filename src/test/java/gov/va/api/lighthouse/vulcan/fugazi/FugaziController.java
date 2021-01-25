@@ -105,7 +105,7 @@ public class FugaziController {
           referenceParameter
               .url()
               .get()
-              .equals("https://goodfood.com/mexican" + "/" + referenceParameter.publicId());
+              .equals("https://goodfood.com/mexican/" + referenceParameter.publicId());
     }
     return (StringUtils.equals("mexican", referenceParameter.type())
             || StringUtils.equals("italian", referenceParameter.type()))
