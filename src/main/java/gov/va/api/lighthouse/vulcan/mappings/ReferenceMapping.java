@@ -39,8 +39,7 @@ public class ReferenceMapping<EntityT> implements Mapping<EntityT> {
 
   @Override
   public boolean appliesTo(HttpServletRequest request) {
-    return isNotBlank(request.getParameter(parameterName()))
-        || asParametersWithTypeModifier().anyMatch(p -> isNotBlank(request.getParameter(p)));
+    return supportedParameterNames().stream().anyMatch(p -> isNotBlank(request.getParameter(p)));
   }
 
   private Stream<String> asParametersWithTypeModifier() {
