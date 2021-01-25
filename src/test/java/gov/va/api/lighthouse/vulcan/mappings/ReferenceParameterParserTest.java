@@ -13,7 +13,7 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
 public class ReferenceParameterParserTest {
-  private static Stream<Arguments> invalidRequest() {
+  private static Stream<Arguments> badParse() {
     /*
     Arguments.of(parameterName, parameterValue, defaultResourceType, allowedReferenceTypes)
     */
@@ -111,7 +111,7 @@ public class ReferenceParameterParserTest {
 
   @ParameterizedTest
   @MethodSource
-  void invalidRequest(
+  void badParse(
       String parameterName,
       String parameterValue,
       String defaultResourceType,
