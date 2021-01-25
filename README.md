@@ -209,7 +209,7 @@ The `DateMapping` class allows for extensible customization. It divides the resp
 - `supportedReference [Predicate<ReferenceParameter>]` : Predicate that determines validity of your token via your own custom criteria (e.g. resource type validation, base-url validation, etc...)
 - `valueSelector [Function<ReferenceParameter, String]` : translate public ids to searchable values
     
-For a database table with the following values:
+For a database with the following values:
 
 | ID | FOOD   |
 | -- | ------ |
@@ -221,7 +221,7 @@ For a database table with the following values:
 Consider these examples:
 
 Mapping: \
- `.reference("foodreference", "food", "mexican", Set.of("mexican, japaneese"), foodReferenceIsSupported(), foodReferenceValues())`
+ `.reference("foodreference", "food", "mexican", Set.of("mexican"), foodReferenceIsSupported(), foodReferenceValues())`
 
 Request: `/fugazi?foodreference=1`\
 Result: `Nachos1`
@@ -243,4 +243,24 @@ Result: `Tacos1`
 
 Request: `/fugazi?foodreference=https://good.com/mexican/4` \
 Result: `Nachos2`
+
+Request: `/fugazi?foodreference:japaneese=1`\
+Result: `Invalid Request`
+Type japaneese not allowed, as per the spec.
  
+Mapping: \
+ `.reference("foodreference", "food", "mexican", Set.of("mexican, japaneese"), foodReferenceIsSupported(), foodReferenceValues())`
+
+Request: `/fugazi?foodreference=1`\
+Result: `Invalid Request` \
+Must use a type-modified search on a reference
+that has more than 1 supported type
+
+Request: `/fugazi?foodreference:mexican=1`\
+Result: `Nachos1`
+
+Request: `/fugazi?foodreference=mexican/2`\
+Result: `Tacos1`
+
+Request: `/fugazi?foodreference=https://good.com/mexican/4` \
+Result: `Nachos2`
