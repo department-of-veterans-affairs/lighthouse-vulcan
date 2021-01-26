@@ -200,16 +200,17 @@ The `DateMapping` class allows for extensible customization. It divides the resp
 - `PredicateFactory` creates the JPA `Predicate` instances for a specific field type (or class). For example, the `InstantPredicateFactory` is suitable for JPA entities with `Instant` parameters. It cannot work with other types, such as epoch millis stored as `long` values. In that case a `LongPredicateFactory` is required.
 - `DateApproximation` provides logic for expanding the search parameter values. A preconfigured `FixedAmountDateApproximation` instance is available to be used as a default choice.
 
-### `reference(name, fieldNameSelector, defaultResourceType, allowedResourceTypes, supportedReference, valueSelector)`
+### `reference(name, fieldNameSelector, allowedResourceTypes, defaultResourceType, supportedReference, valueSelector)`
 
 - `name [String]`: the parameter name
 - `fieldNameSelector [Function<ReferenceParameter, Collection>]` : Function responsible for selecting the appropriate searchable DB column
-- `defaultResourceType [String]` : a resource type that will be used in all non-type-modified queries
 - `allowedResourceTypes [Set<String>]` : the set of allowed reference types as per the specification
+- `defaultResourceType [String]` : a resource type that will be used in all non-type-modified queries
 - `supportedReference [Predicate<ReferenceParameter>]` : Predicate that determines validity of your token via your own custom criteria (e.g. resource type validation, base-url validation, etc...)
 - `valueSelector [Function<ReferenceParameter, String]` : translate public ids to searchable values
     
 For a database with the following values:
+
 
 | ID | FOOD   |
 | -- | ------ |
@@ -217,6 +218,7 @@ For a database with the following values:
 | 2  | Tacos1  |
 | 3  | Shoe1 |
 | 4  | Nachos2 |
+
 
 Consider these examples:
 
