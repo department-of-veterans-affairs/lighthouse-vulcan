@@ -6,6 +6,7 @@ import static org.apache.commons.lang3.StringUtils.isBlank;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import gov.va.api.health.autoconfig.configuration.JacksonConfig;
+import gov.va.api.lighthouse.vulcan.InvalidRequest;
 import gov.va.api.lighthouse.vulcan.Vulcan;
 import gov.va.api.lighthouse.vulcan.VulcanConfiguration;
 import gov.va.api.lighthouse.vulcan.VulcanConfiguration.PagingConfiguration;
@@ -16,6 +17,7 @@ import gov.va.api.lighthouse.vulcan.mappings.TokenParameter;
 import java.time.Instant;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import javax.servlet.http.HttpServletRequest;
@@ -66,6 +68,7 @@ public class FugaziController {
                 .value("namevalue", "name")
                 .value("millis", v -> Instant.parse(v).toEpochMilli())
                 .value("xmillis", "millis", v -> Instant.parse(v).toEpochMilli())
+                .values("nameAndFood", this::nameFoodValues)
                 .dateAsInstant("xdate", "date")
                 .token("foodtoken", "food", this::foodIsSupported, this::foodValues)
                 .tokenList("foodtokencsv", "food", this::foodIsSupported, this::foodValues)
@@ -149,5 +152,13 @@ public class FugaziController {
         .entities()
         .map(this::asFoo)
         .collect(toList());
+  }
+
+  private Map<String, ?> nameFoodValues(String value) {
+    var parts = value.split(":", -1);
+    if (parts.length != 2) {
+      throw InvalidRequest.badParameter("namefood", value, "format is name:food");
+    }
+    return Map.of("name", parts[0], "food", parts[1]);
   }
 }

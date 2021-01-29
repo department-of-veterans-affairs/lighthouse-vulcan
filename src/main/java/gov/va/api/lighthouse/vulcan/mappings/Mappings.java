@@ -7,6 +7,7 @@ import gov.va.api.lighthouse.vulcan.mappings.DateMapping.PredicateFactory;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -224,11 +225,12 @@ public class Mappings<EntityT> implements Supplier<List<Mapping<EntityT>>> {
   /** Create a value mapping where request and field name are different. */
   public Mappings<EntityT> value(
       String parameterName, String fieldName, Function<String, ?> converter) {
+    return values(parameterName, v -> Map.of(fieldName, converter.apply(v)));
+  }
+
+  public Mappings<EntityT> values(
+      String parameterName, Function<String, Map<String, ?>> converter) {
     return add(
-        ValueMapping.<EntityT>builder()
-            .parameterName(parameterName)
-            .fieldName(fieldName)
-            .converter(converter)
-            .build());
+        ValueMapping.<EntityT>builder().parameterName(parameterName).converter(converter).build());
   }
 }
