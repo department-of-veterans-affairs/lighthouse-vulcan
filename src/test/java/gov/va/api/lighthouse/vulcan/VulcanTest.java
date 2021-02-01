@@ -133,6 +133,23 @@ class VulcanTest {
     return dto;
   }
 
+  @SneakyThrows
+  String badReq(String uri) {
+    return mvc.perform(get(uri))
+        .andExpect(status().isBadRequest())
+        .andReturn()
+        .getResponse()
+        .getContentAsString();
+  }
+
+  @Test
+  void compositeValuesAreCombinedWithAnd() {
+    assertThat(req("/fugazi?nameAndFood=nachos2005:NACHOS")).containsExactly(nachos2005);
+    assertThat(req("/fugazi?nameAndFood=nachos2005:TACOS")).isEmpty();
+    assertThat(req("/fugazi?nameAndFood=tacos2005:TACOS")).containsExactly(tacos2005);
+    assertThat(badReq("/fugazi?nameAndFood=tacos2005+NOPE+TACOS")).isEmpty();
+  }
+
   @Test
   void defaultQueryCausesEmptyResult() {
     var vulcan =
