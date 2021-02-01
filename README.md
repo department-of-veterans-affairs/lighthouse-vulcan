@@ -134,7 +134,12 @@ For the JPA field value of `Vulcan`, here's how the following parameters match.
 
 For a table with the following values:
 
-| ID | FOOD | | -- | ------ | | 1 | Nachos | | 2 | Tacos | | 3 | A Shoe | | 4 | Nachos |
+| ID | FOOD |
+| -- | ------ |
+| 1 | Nachos |
+| 2 | Tacos |
+| 3 | A Shoe |
+| 4 | Nachos |
 
 The parameter `food=Nachos,Tacos` will result in records 1, 2, and 4 being returned. The parameter `food=NACHOS` will result in no records.
 
