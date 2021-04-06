@@ -1,6 +1,7 @@
 package gov.va.api.lighthouse.vulcan.mappings;
 
 import static java.util.Collections.singletonList;
+import static java.util.stream.Collectors.toList;
 
 import gov.va.api.lighthouse.vulcan.Mapping;
 import gov.va.api.lighthouse.vulcan.mappings.DateMapping.PredicateFactory;
@@ -19,7 +20,6 @@ import java.util.function.Supplier;
  */
 @SuppressWarnings("unused")
 public class Mappings<EntityT> implements Supplier<List<Mapping<EntityT>>> {
-
   private final List<Mapping<EntityT>> mappings = new ArrayList<>();
 
   /** Create a new Mappings instance. */
@@ -164,13 +164,16 @@ public class Mappings<EntityT> implements Supplier<List<Mapping<EntityT>>> {
       Function<TokenParameter, Collection<String>> fieldNameSelector,
       Predicate<TokenParameter> supportedToken,
       Function<TokenParameter, Collection<String>> valueSelector) {
-    return add(
-        TokenMapping.<EntityT>builder()
-            .parameterName(parameterName)
-            .supportedToken(supportedToken)
-            .fieldNameSelector(fieldNameSelector)
-            .valueSelector(valueSelector)
-            .build());
+    return tokens(
+        parameterName,
+        supportedToken,
+        t ->
+            SelectorSpecificationCollector.<EntityT>builder()
+                .orSelectors(
+                    fieldNameSelector.apply(t).stream()
+                        .map(fieldName -> Selector.<EntityT>of(fieldName, valueSelector.apply(t)))
+                        .collect(toList()))
+                .build());
   }
 
   /** Create a token list mapping where field name is constant . */
@@ -202,6 +205,19 @@ public class Mappings<EntityT> implements Supplier<List<Mapping<EntityT>>> {
             .supportedToken(supportedToken)
             .fieldNameSelector(fieldNameSelector)
             .valueSelector(valueSelector)
+            .build());
+  }
+
+  /** Create a token mapping where all aspects are configurable. */
+  public Mappings<EntityT> tokens(
+      String parameterName,
+      Predicate<TokenParameter> supportedToken,
+      Function<TokenParameter, SelectorSpecificationCollector<EntityT>> selector) {
+    return add(
+        TokenMapping.<EntityT>builder()
+            .parameterName(parameterName)
+            .supportedToken(supportedToken)
+            .whereClauseSelector(selector)
             .build());
   }
 
