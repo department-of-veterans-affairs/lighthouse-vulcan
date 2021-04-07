@@ -1,9 +1,10 @@
 package gov.va.api.lighthouse.vulcan.mappings;
 
 import static java.util.Collections.singletonList;
-import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.toMap;
 
 import gov.va.api.lighthouse.vulcan.Mapping;
+import gov.va.api.lighthouse.vulcan.Specifications;
 import gov.va.api.lighthouse.vulcan.mappings.DateMapping.PredicateFactory;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -168,11 +169,12 @@ public class Mappings<EntityT> implements Supplier<List<Mapping<EntityT>>> {
         parameterName,
         supportedToken,
         t ->
-            SelectorSpecificationCollector.<EntityT>builder()
-                .orSelectors(
+            SpecificationSelector.<EntityT>builder()
+                .selectors(
                     fieldNameSelector.apply(t).stream()
-                        .map(fieldName -> Selector.<EntityT>of(fieldName, valueSelector.apply(t)))
-                        .collect(toList()))
+                        .map(fieldName -> Map.entry(fieldName, valueSelector.apply(t)))
+                        .collect(toMap(Map.Entry::getKey, Map.Entry::getValue)))
+                .collector(Specifications.any())
                 .build());
   }
 
@@ -212,12 +214,12 @@ public class Mappings<EntityT> implements Supplier<List<Mapping<EntityT>>> {
   public Mappings<EntityT> tokens(
       String parameterName,
       Predicate<TokenParameter> supportedToken,
-      Function<TokenParameter, SelectorSpecificationCollector<EntityT>> selector) {
+      Function<TokenParameter, SpecificationSelector<EntityT>> selector) {
     return add(
         TokenMapping.<EntityT>builder()
             .parameterName(parameterName)
             .supportedToken(supportedToken)
-            .whereClauseSelector(selector)
+            .specificationSelector(selector)
             .build());
   }
 
