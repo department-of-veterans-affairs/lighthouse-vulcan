@@ -10,8 +10,6 @@ import lombok.Builder;
 import lombok.Data;
 import org.springframework.data.jpa.domain.Specification;
 
-// Lombok Generated Builder: redundant cast
-@SuppressWarnings("cast")
 @Data
 @Builder
 public class TokenMappingSelectors<EntityT> {
