@@ -217,7 +217,7 @@ public class Mappings<EntityT> implements Supplier<List<Mapping<EntityT>>> {
         TokenMapping.<EntityT>builder()
             .parameterName(parameterName)
             .supportedToken(supportedToken)
-            .specification(toSpecification)
+            .toSpecification(toSpecification)
             .build());
   }
 
