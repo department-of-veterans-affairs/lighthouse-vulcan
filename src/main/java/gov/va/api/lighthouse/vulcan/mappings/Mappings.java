@@ -1,7 +1,6 @@
 package gov.va.api.lighthouse.vulcan.mappings;
 
 import static java.util.Collections.singletonList;
-import static java.util.stream.Collectors.toMap;
 
 import gov.va.api.lighthouse.vulcan.Mapping;
 import gov.va.api.lighthouse.vulcan.Specifications;
@@ -14,6 +13,7 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
+import org.springframework.data.jpa.domain.Specification;
 
 /**
  * Mapping builder for an entity. This provides easy to use methods to creating the different types
@@ -169,13 +169,11 @@ public class Mappings<EntityT> implements Supplier<List<Mapping<EntityT>>> {
         parameterName,
         supportedToken,
         t ->
-            TokenMappingSelectors.<EntityT>builder()
-                .selectors(
-                    fieldNameSelector.apply(t).stream()
-                        .map(fieldName -> Map.entry(fieldName, valueSelector.apply(t)))
-                        .collect(toMap(Map.Entry::getKey, Map.Entry::getValue)))
-                .collector(Specifications.any())
-                .build());
+            fieldNameSelector.apply(t).stream()
+                .map(
+                    fieldName ->
+                        Specifications.<EntityT>selectInList(fieldName, valueSelector.apply(t)))
+                .collect(Specifications.any()));
   }
 
   /** Create a token list mapping where field name is constant . */
@@ -214,12 +212,12 @@ public class Mappings<EntityT> implements Supplier<List<Mapping<EntityT>>> {
   public Mappings<EntityT> tokens(
       String parameterName,
       Predicate<TokenParameter> supportedToken,
-      Function<TokenParameter, TokenMappingSelectors<EntityT>> selector) {
+      Function<TokenParameter, Specification<EntityT>> toSpecification) {
     return add(
         TokenMapping.<EntityT>builder()
             .parameterName(parameterName)
             .supportedToken(supportedToken)
-            .fieldAndValueSelectors(selector)
+            .specification(toSpecification)
             .build());
   }
 
