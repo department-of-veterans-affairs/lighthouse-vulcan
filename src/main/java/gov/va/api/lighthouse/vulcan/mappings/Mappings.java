@@ -169,7 +169,7 @@ public class Mappings<EntityT> implements Supplier<List<Mapping<EntityT>>> {
         parameterName,
         supportedToken,
         t ->
-            SpecificationSelector.<EntityT>builder()
+            TokenMappingSelectors.<EntityT>builder()
                 .selectors(
                     fieldNameSelector.apply(t).stream()
                         .map(fieldName -> Map.entry(fieldName, valueSelector.apply(t)))
@@ -214,12 +214,12 @@ public class Mappings<EntityT> implements Supplier<List<Mapping<EntityT>>> {
   public Mappings<EntityT> tokens(
       String parameterName,
       Predicate<TokenParameter> supportedToken,
-      Function<TokenParameter, SpecificationSelector<EntityT>> selector) {
+      Function<TokenParameter, TokenMappingSelectors<EntityT>> selector) {
     return add(
         TokenMapping.<EntityT>builder()
             .parameterName(parameterName)
             .supportedToken(supportedToken)
-            .specificationSelector(selector)
+            .fieldAndValueSelectors(selector)
             .build());
   }
 

@@ -17,7 +17,7 @@ public class TokenMapping<EntityT> implements SingleParameterMapping<EntityT> {
 
   @Include String parameterName;
   Predicate<TokenParameter> supportedToken;
-  Function<TokenParameter, SpecificationSelector<EntityT>> specificationSelector;
+  Function<TokenParameter, TokenMappingSelectors<EntityT>> fieldAndValueSelectors;
 
   @Override
   public Specification<EntityT> specificationFor(HttpServletRequest request) {
@@ -27,7 +27,7 @@ public class TokenMapping<EntityT> implements SingleParameterMapping<EntityT> {
       throw CircuitBreaker.noResultsWillBeFound(
           parameterName(), request.getParameter(parameterName()), "Token is not supported.");
     }
-    Specification<EntityT> specification = specificationSelector().apply(token).specification();
+    Specification<EntityT> specification = fieldAndValueSelectors().apply(token).specification();
     if (specification == null) {
       throw CircuitBreaker.noResultsWillBeFound(
           parameterName(),
