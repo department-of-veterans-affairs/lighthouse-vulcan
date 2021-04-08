@@ -30,9 +30,7 @@ public class TokenMapping<EntityT> implements SingleParameterMapping<EntityT> {
     var specification = toSpecification().apply(token);
     if (specification == null) {
       throw CircuitBreaker.noResultsWillBeFound(
-          parameterName(),
-          request.getParameter(parameterName()),
-          "Unable to determine specification.");
+          parameterName(), request.getParameter(parameterName()), "No specification defined.");
     }
     return specification;
   }

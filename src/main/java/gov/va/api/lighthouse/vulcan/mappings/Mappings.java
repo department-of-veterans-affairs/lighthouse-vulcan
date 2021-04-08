@@ -143,6 +143,7 @@ public class Mappings<EntityT> implements Supplier<List<Mapping<EntityT>>> {
   }
 
   /** Create a token list mapping where field name is constant . */
+  @Deprecated
   public Mappings<EntityT> token(
       String parameterName,
       String fieldName,
@@ -152,6 +153,7 @@ public class Mappings<EntityT> implements Supplier<List<Mapping<EntityT>>> {
   }
 
   /** Create a token list mapping where parameter and field name are the same. */
+  @Deprecated
   public Mappings<EntityT> token(
       String parameterAndFieldName,
       Predicate<TokenParameter> supportedToken,
@@ -160,6 +162,7 @@ public class Mappings<EntityT> implements Supplier<List<Mapping<EntityT>>> {
   }
 
   /** Create a token mapping where all aspects are configurable. */
+  @Deprecated
   public Mappings<EntityT> token(
       String parameterName,
       Function<TokenParameter, Collection<String>> fieldNameSelector,
@@ -175,11 +178,8 @@ public class Mappings<EntityT> implements Supplier<List<Mapping<EntityT>>> {
             return null;
           }
           Collection<String> values = valueSelector.apply(token);
-          /* If the transformed values is an empty Collection, we don't want to throw
-           * CircuitBreaker. Per the Device resource, we assume an empty Collection of values
-           * means to ignore the value in the database call (In Device, there is only one
-           * code available in Datamart, so if the token is valid it essentially becomes a
-           * search by patient). */
+          /* To maintain backwards compatibility, if the transformed values is an empty
+           * Collection, we don't want to throw CircuitBreaker. */
           if (values.isEmpty()) {
             return Specification.where(null);
           }
