@@ -172,11 +172,7 @@ public class Mappings<EntityT> implements Supplier<List<Mapping<EntityT>>> {
         parameterName,
         supportedToken,
         token -> {
-          var fieldNames = fieldNameSelector.apply(token);
-          if (fieldNames.isEmpty()) {
-            // Null will trip CircuitBreaker in TokenMapping
-            return null;
-          }
+          Collection<String> fieldNames = fieldNameSelector.apply(token);
           Collection<String> values = valueSelector.apply(token);
           return fieldNames.stream()
               .map(field -> Specifications.<EntityT>selectInList(field, values))
