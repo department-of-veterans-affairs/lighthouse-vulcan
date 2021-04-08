@@ -1,6 +1,7 @@
 package gov.va.api.lighthouse.vulcan;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.stream.Collector;
 import java.util.stream.Collector.Characteristics;
 import javax.persistence.criteria.CriteriaBuilder.In;
@@ -37,6 +38,10 @@ public class Specifications {
         (a, b) -> a.add(b.specification()),
         MatchesAnySpecifications::specification,
         Characteristics.UNORDERED);
+  }
+
+  public static <E> Specification<E> select(String fieldName, String value) {
+    return selectInList(fieldName, List.of(value));
   }
 
   /** Produces a specification than explicitly handles a lists of 0 and 1. */

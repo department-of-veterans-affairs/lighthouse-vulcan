@@ -3,6 +3,7 @@ package gov.va.api.lighthouse.vulcan.mappings;
 import static java.util.Collections.singletonList;
 
 import gov.va.api.lighthouse.vulcan.Mapping;
+import gov.va.api.lighthouse.vulcan.Specifications;
 import gov.va.api.lighthouse.vulcan.mappings.DateMapping.PredicateFactory;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -12,6 +13,7 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
+import org.springframework.data.jpa.domain.Specification;
 
 /**
  * Mapping builder for an entity. This provides easy to use methods to creating the different types
@@ -19,7 +21,6 @@ import java.util.function.Supplier;
  */
 @SuppressWarnings("unused")
 public class Mappings<EntityT> implements Supplier<List<Mapping<EntityT>>> {
-
   private final List<Mapping<EntityT>> mappings = new ArrayList<>();
 
   /** Create a new Mappings instance. */
@@ -142,6 +143,7 @@ public class Mappings<EntityT> implements Supplier<List<Mapping<EntityT>>> {
   }
 
   /** Create a token list mapping where field name is constant . */
+  @Deprecated
   public Mappings<EntityT> token(
       String parameterName,
       String fieldName,
@@ -151,6 +153,7 @@ public class Mappings<EntityT> implements Supplier<List<Mapping<EntityT>>> {
   }
 
   /** Create a token list mapping where parameter and field name are the same. */
+  @Deprecated
   public Mappings<EntityT> token(
       String parameterAndFieldName,
       Predicate<TokenParameter> supportedToken,
@@ -159,18 +162,22 @@ public class Mappings<EntityT> implements Supplier<List<Mapping<EntityT>>> {
   }
 
   /** Create a token mapping where all aspects are configurable. */
+  @Deprecated
   public Mappings<EntityT> token(
       String parameterName,
       Function<TokenParameter, Collection<String>> fieldNameSelector,
       Predicate<TokenParameter> supportedToken,
       Function<TokenParameter, Collection<String>> valueSelector) {
-    return add(
-        TokenMapping.<EntityT>builder()
-            .parameterName(parameterName)
-            .supportedToken(supportedToken)
-            .fieldNameSelector(fieldNameSelector)
-            .valueSelector(valueSelector)
-            .build());
+    return tokens(
+        parameterName,
+        supportedToken,
+        token -> {
+          Collection<String> fieldNames = fieldNameSelector.apply(token);
+          Collection<String> values = valueSelector.apply(token);
+          return fieldNames.stream()
+              .map(field -> Specifications.<EntityT>selectInList(field, values))
+              .collect(Specifications.any());
+        });
   }
 
   /** Create a token list mapping where field name is constant . */
@@ -202,6 +209,19 @@ public class Mappings<EntityT> implements Supplier<List<Mapping<EntityT>>> {
             .supportedToken(supportedToken)
             .fieldNameSelector(fieldNameSelector)
             .valueSelector(valueSelector)
+            .build());
+  }
+
+  /** Create a token mapping where all aspects are configurable. */
+  public Mappings<EntityT> tokens(
+      String parameterName,
+      Predicate<TokenParameter> supportedToken,
+      Function<TokenParameter, Specification<EntityT>> toSpecification) {
+    return add(
+        TokenMapping.<EntityT>builder()
+            .parameterName(parameterName)
+            .supportedToken(supportedToken)
+            .toSpecification(toSpecification)
             .build());
   }
 
