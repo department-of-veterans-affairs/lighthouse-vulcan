@@ -1,5 +1,6 @@
 package gov.va.api.lighthouse.vulcan.fugazi;
 
+import static gov.va.api.lighthouse.vulcan.Specifications.select;
 import static gov.va.api.lighthouse.vulcan.Vulcan.useUrl;
 import static java.util.stream.Collectors.toList;
 import static org.apache.commons.lang3.StringUtils.isBlank;
@@ -26,6 +27,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -71,6 +73,8 @@ public class FugaziController {
                 .values("nameAndFood", this::nameFoodValues)
                 .dateAsInstant("xdate", "date")
                 .token("foodtoken", "food", this::foodIsSupported, this::foodValues)
+                .token("ewfood", t -> List.of(), t -> true, this::foodValues)
+                .tokens("foodSpecToken", this::foodIsSupported, this::foodSpecification)
                 .tokenList("foodtokencsv", "food", this::foodIsSupported, this::foodValues)
                 .reference(
                     "foodref",
@@ -117,6 +121,13 @@ public class FugaziController {
 
   private String foodReferenceValues(ReferenceParameter referenceParameter) {
     return referenceParameter.publicId();
+  }
+
+  private Specification<FugaziEntity> foodSpecification(TokenParameter token) {
+    if ("http://food".equals(token.system())) {
+      return select("food", token.code());
+    }
+    return null;
   }
 
   private Collection<String> foodValues(TokenParameter token) {

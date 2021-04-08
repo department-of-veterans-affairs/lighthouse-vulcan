@@ -168,12 +168,25 @@ public class Mappings<EntityT> implements Supplier<List<Mapping<EntityT>>> {
     return tokens(
         parameterName,
         supportedToken,
-        t ->
-            fieldNameSelector.apply(t).stream()
-                .map(
-                    fieldName ->
-                        Specifications.<EntityT>selectInList(fieldName, valueSelector.apply(t)))
-                .collect(Specifications.any()));
+        token -> {
+          var fieldNames = fieldNameSelector.apply(token);
+          if (fieldNames.isEmpty()) {
+            // Null will trip CircuitBreaker in TokenMapping
+            return null;
+          }
+          Collection<String> values = valueSelector.apply(token);
+          /* If the transformed values is an empty Collection, we don't want to throw
+           * CircuitBreaker. Per the Device resource, we assume an empty Collection of values
+           * means to ignore the value in the database call (In Device, there is only one
+           * code available in Datamart, so if the token is valid it essentially becomes a
+           * search by patient). */
+          if (values.isEmpty()) {
+            return Specification.where(null);
+          }
+          return fieldNames.stream()
+              .map(field -> Specifications.<EntityT>selectInList(field, values))
+              .collect(Specifications.any());
+        });
   }
 
   /** Create a token list mapping where field name is constant . */
