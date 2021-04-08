@@ -27,11 +27,6 @@ public class TokenMapping<EntityT> implements SingleParameterMapping<EntityT> {
       throw CircuitBreaker.noResultsWillBeFound(
           parameterName(), request.getParameter(parameterName()), "Token is not supported.");
     }
-    var specification = toSpecification().apply(token);
-    if (specification == null) {
-      throw CircuitBreaker.noResultsWillBeFound(
-          parameterName(), request.getParameter(parameterName()), "No specification defined.");
-    }
-    return specification;
+    return toSpecification().apply(token);
   }
 }

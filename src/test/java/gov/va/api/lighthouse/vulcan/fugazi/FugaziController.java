@@ -73,7 +73,6 @@ public class FugaziController {
                 .values("nameAndFood", this::nameFoodValues)
                 .dateAsInstant("xdate", "date")
                 .token("foodtoken", "food", this::foodIsSupported, this::foodValues)
-                .token("ewfood", t -> List.of(), t -> true, this::foodValues)
                 .tokens("foodSpecToken", this::foodIsSupported, this::foodSpecification)
                 .tokenList("foodtokencsv", "food", this::foodIsSupported, this::foodValues)
                 .reference(

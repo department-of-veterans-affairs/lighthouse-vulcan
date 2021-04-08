@@ -178,11 +178,6 @@ public class Mappings<EntityT> implements Supplier<List<Mapping<EntityT>>> {
             return null;
           }
           Collection<String> values = valueSelector.apply(token);
-          /* To maintain backwards compatibility, if the transformed values is an empty
-           * Collection, we don't want to throw CircuitBreaker. */
-          if (values.isEmpty()) {
-            return Specification.where(null);
-          }
           return fieldNames.stream()
               .map(field -> Specifications.<EntityT>selectInList(field, values))
               .collect(Specifications.any());
