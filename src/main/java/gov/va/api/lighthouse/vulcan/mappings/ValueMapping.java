@@ -1,7 +1,8 @@
 package gov.va.api.lighthouse.vulcan.mappings;
 
 import gov.va.api.lighthouse.vulcan.CircuitBreaker;
-import gov.va.api.lighthouse.vulcan.Predicates;
+import gov.va.api.lighthouse.vulcan.Specifications;
+import java.util.Arrays;
 import java.util.Map;
 import java.util.function.Function;
 import javax.servlet.http.HttpServletRequest;
@@ -9,6 +10,8 @@ import lombok.Builder;
 import lombok.ToString.Exclude;
 import lombok.Value;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 
 /**
  * Provides value equality mapping. Unlike StringMapping, this mapping only provides strict
@@ -31,15 +34,18 @@ public class ValueMapping<EntityT> implements SingleParameterMapping<EntityT> {
 
   @Override
   public Specification<EntityT> specificationFor(HttpServletRequest request) {
-    String parameterValue = request.getParameter(parameterName());
-    var fieldsToValue = converter.apply(parameterValue);
-    if (fieldsToValue.isEmpty()) {
+    MultiValueMap<String, Object> fieldToValueMap = new LinkedMultiValueMap<>();
+    Arrays.stream(request.getParameter(parameterName()).split(",", -1))
+        .flatMap(paramValue -> converter().apply(paramValue).entrySet().stream())
+        .forEach(e -> fieldToValueMap.add(e.getKey(), e.getValue()));
+    if (fieldToValueMap.isEmpty()) {
       throw CircuitBreaker.noResultsWillBeFound(
-          parameterName(), parameterValue, "No fields were identified to search");
+          parameterName(),
+          request.getParameter(parameterName()),
+          "No fields were identified to search");
     }
-    return (root, criteriaQuery, criteriaBuilder) ->
-        fieldsToValue.entrySet().stream()
-            .map(e -> criteriaBuilder.equal(root.get(e.getKey()), e.getValue()))
-            .collect(Predicates.andUsing(criteriaBuilder));
+    return fieldToValueMap.entrySet().stream()
+        .map(e -> Specifications.<EntityT>selectInList(e.getKey(), e.getValue()))
+        .collect(Specifications.all());
   }
 }
