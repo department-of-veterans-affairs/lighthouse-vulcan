@@ -4,11 +4,13 @@ import gov.va.api.lighthouse.vulcan.CircuitBreaker;
 import gov.va.api.lighthouse.vulcan.Specifications;
 import java.util.Arrays;
 import java.util.Map;
+import java.util.Objects;
 import java.util.function.Function;
 import javax.servlet.http.HttpServletRequest;
 import lombok.Builder;
 import lombok.ToString.Exclude;
 import lombok.Value;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.jpa.domain.Specification;
 
 /**
@@ -38,7 +40,9 @@ public class ValueMapping<EntityT> implements SingleParameterMapping<EntityT> {
           parameterName(), "null", "Parameter value is null.");
     }
     return Arrays.stream(parameterValue.split(",", -1))
-        .map(paramValue -> converter().apply(paramValue.trim()).entrySet())
+        .map(StringUtils::trimToNull)
+        .filter(Objects::nonNull)
+        .map(paramValue -> converter().apply(paramValue).entrySet())
         .map(
             v ->
                 v.stream()
