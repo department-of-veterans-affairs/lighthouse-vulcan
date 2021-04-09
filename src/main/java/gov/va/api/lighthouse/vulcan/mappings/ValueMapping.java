@@ -10,8 +10,6 @@ import lombok.Builder;
 import lombok.ToString.Exclude;
 import lombok.Value;
 import org.springframework.data.jpa.domain.Specification;
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
 
 /**
  * Provides value equality mapping. Unlike StringMapping, this mapping only provides strict
@@ -34,18 +32,18 @@ public class ValueMapping<EntityT> implements SingleParameterMapping<EntityT> {
 
   @Override
   public Specification<EntityT> specificationFor(HttpServletRequest request) {
-    MultiValueMap<String, Object> fieldToValueMap = new LinkedMultiValueMap<>();
-    Arrays.stream(request.getParameter(parameterName()).split(",", -1))
-        .flatMap(paramValue -> converter().apply(paramValue).entrySet().stream())
-        .forEach(e -> fieldToValueMap.add(e.getKey(), e.getValue()));
-    if (fieldToValueMap.isEmpty()) {
+    String parameterValue = request.getParameter(parameterName());
+    if (parameterValue == null) {
       throw CircuitBreaker.noResultsWillBeFound(
-          parameterName(),
-          request.getParameter(parameterName()),
-          "No fields were identified to search");
+          parameterName(), "null", "Parameter value is null.");
     }
-    return fieldToValueMap.entrySet().stream()
-        .map(e -> Specifications.<EntityT>selectInList(e.getKey(), e.getValue()))
-        .collect(Specifications.all());
+    return Arrays.stream(parameterValue.split(",", -1))
+        .map(paramValue -> converter().apply(paramValue).entrySet())
+        .map(
+            v ->
+                v.stream()
+                    .map(cv -> Specifications.<EntityT>select(cv.getKey(), cv.getValue()))
+                    .collect(Specifications.all()))
+        .collect(Specifications.any());
   }
 }
