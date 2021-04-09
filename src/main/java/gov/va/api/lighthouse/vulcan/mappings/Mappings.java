@@ -34,14 +34,24 @@ public class Mappings<EntityT> implements Supplier<List<Mapping<EntityT>>> {
     return this;
   }
 
-  /** Create a CSV list mapping where request and field name are the same. */
-  @Deprecated
+  /**
+   * Create a CSV list mapping where request and field name are the same.
+   *
+   * @deprecated composite value (CSV) support has been added to value mappings. Use one of the
+   *     value(...) methods instead.
+   */
+  @Deprecated(since = "1.0.7", forRemoval = true)
   public Mappings<EntityT> csvList(String parameterAndFieldName) {
     return value(parameterAndFieldName, parameterAndFieldName);
   }
 
-  /** Create a CSV list mapping where request and field name are different. */
-  @Deprecated
+  /**
+   * Create a CSV list mapping where request and field name are different.
+   *
+   * @deprecated composite value (CSV) support has been added to value mappings. Use one of the
+   *     value(...) methods instead.
+   */
+  @Deprecated(since = "1.0.7", forRemoval = true)
   public Mappings<EntityT> csvList(String parameterName, String fieldName) {
     return value(parameterName, fieldName);
   }
@@ -140,8 +150,13 @@ public class Mappings<EntityT> implements Supplier<List<Mapping<EntityT>>> {
         StringMapping.<EntityT>builder().parameterName(parameterName).fieldName(fieldName).build());
   }
 
-  /** Create a token list mapping where field name is constant . */
-  @Deprecated
+  /**
+   * Create a token list mapping where field name is constant .
+   *
+   * @deprecated to support complex token logic, JPA specifications support was added. Use the
+   *     tokens(...) method instead.
+   */
+  @Deprecated(since = "1.0.6", forRemoval = true)
   public Mappings<EntityT> token(
       String parameterName,
       String fieldName,
@@ -150,8 +165,13 @@ public class Mappings<EntityT> implements Supplier<List<Mapping<EntityT>>> {
     return token(parameterName, t -> singletonList(fieldName), supportedToken, valueSelector);
   }
 
-  /** Create a token list mapping where parameter and field name are the same. */
-  @Deprecated
+  /**
+   * Create a token list mapping where parameter and field name are the same.
+   *
+   * @deprecated to support complex token logic, JPA specifications support was added. Use the
+   *     tokens(...) method instead.
+   */
+  @Deprecated(since = "1.0.6", forRemoval = true)
   public Mappings<EntityT> token(
       String parameterAndFieldName,
       Predicate<TokenParameter> supportedToken,
@@ -159,8 +179,13 @@ public class Mappings<EntityT> implements Supplier<List<Mapping<EntityT>>> {
     return token(parameterAndFieldName, parameterAndFieldName, supportedToken, valueSelector);
   }
 
-  /** Create a token mapping where all aspects are configurable. */
-  @Deprecated
+  /**
+   * Create a token mapping where all aspects are configurable.
+   *
+   * @deprecated to support complex token logic, JPA specifications support was added. Use the
+   *     tokens(...) method instead.
+   */
+  @Deprecated(since = "1.0.6", forRemoval = true)
   public Mappings<EntityT> token(
       String parameterName,
       Function<TokenParameter, Collection<String>> fieldNameSelector,
