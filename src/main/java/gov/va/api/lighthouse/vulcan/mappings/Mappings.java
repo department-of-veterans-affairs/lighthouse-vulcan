@@ -35,17 +35,15 @@ public class Mappings<EntityT> implements Supplier<List<Mapping<EntityT>>> {
   }
 
   /** Create a CSV list mapping where request and field name are the same. */
+  @Deprecated
   public Mappings<EntityT> csvList(String parameterAndFieldName) {
-    return csvList(parameterAndFieldName, parameterAndFieldName);
+    return value(parameterAndFieldName, parameterAndFieldName);
   }
 
   /** Create a CSV list mapping where request and field name are different. */
+  @Deprecated
   public Mappings<EntityT> csvList(String parameterName, String fieldName) {
-    return add(
-        CsvListMapping.<EntityT>builder()
-            .parameterName(parameterName)
-            .fieldName(fieldName)
-            .build());
+    return value(parameterName, fieldName);
   }
 
   /**

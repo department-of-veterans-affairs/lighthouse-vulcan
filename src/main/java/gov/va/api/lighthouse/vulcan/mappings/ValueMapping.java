@@ -38,7 +38,7 @@ public class ValueMapping<EntityT> implements SingleParameterMapping<EntityT> {
           parameterName(), "null", "Parameter value is null.");
     }
     return Arrays.stream(parameterValue.split(",", -1))
-        .map(paramValue -> converter().apply(paramValue).entrySet())
+        .map(paramValue -> converter().apply(paramValue.trim()).entrySet())
         .map(
             v ->
                 v.stream()

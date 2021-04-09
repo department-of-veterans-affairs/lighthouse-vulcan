@@ -20,6 +20,7 @@ import org.springframework.data.jpa.domain.Specification;
  *       x, or y, or z.
  * </ul>
  */
+@Deprecated
 @Value
 @Builder
 public class CsvListMapping<EntityT> implements SingleParameterMapping<EntityT> {
