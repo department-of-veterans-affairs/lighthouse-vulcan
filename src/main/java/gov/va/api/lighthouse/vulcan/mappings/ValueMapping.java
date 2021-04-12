@@ -1,13 +1,16 @@
 package gov.va.api.lighthouse.vulcan.mappings;
 
 import gov.va.api.lighthouse.vulcan.CircuitBreaker;
-import gov.va.api.lighthouse.vulcan.Predicates;
+import gov.va.api.lighthouse.vulcan.Specifications;
+import java.util.Arrays;
 import java.util.Map;
+import java.util.Objects;
 import java.util.function.Function;
 import javax.servlet.http.HttpServletRequest;
 import lombok.Builder;
 import lombok.ToString.Exclude;
 import lombok.Value;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.jpa.domain.Specification;
 
 /**
@@ -32,14 +35,19 @@ public class ValueMapping<EntityT> implements SingleParameterMapping<EntityT> {
   @Override
   public Specification<EntityT> specificationFor(HttpServletRequest request) {
     String parameterValue = request.getParameter(parameterName());
-    var fieldsToValue = converter.apply(parameterValue);
-    if (fieldsToValue.isEmpty()) {
+    if (parameterValue == null) {
       throw CircuitBreaker.noResultsWillBeFound(
-          parameterName(), parameterValue, "No fields were identified to search");
+          parameterName(), "null", "Parameter value is null.");
     }
-    return (root, criteriaQuery, criteriaBuilder) ->
-        fieldsToValue.entrySet().stream()
-            .map(e -> criteriaBuilder.equal(root.get(e.getKey()), e.getValue()))
-            .collect(Predicates.andUsing(criteriaBuilder));
+    return Arrays.stream(parameterValue.split(",", -1))
+        .map(StringUtils::trimToNull)
+        .filter(Objects::nonNull)
+        .map(paramValue -> converter().apply(paramValue).entrySet())
+        .map(
+            v ->
+                v.stream()
+                    .map(cv -> Specifications.<EntityT>select(cv.getKey(), cv.getValue()))
+                    .collect(Specifications.all()))
+        .collect(Specifications.any());
   }
 }

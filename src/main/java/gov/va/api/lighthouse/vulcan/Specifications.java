@@ -40,12 +40,12 @@ public class Specifications {
         Characteristics.UNORDERED);
   }
 
-  public static <E> Specification<E> select(String fieldName, String value) {
+  public static <E> Specification<E> select(String fieldName, Object value) {
     return selectInList(fieldName, List.of(value));
   }
 
   /** Produces a specification than explicitly handles a lists of 0 and 1. */
-  public static <E> Specification<E> selectInList(String fieldName, Collection<String> values) {
+  public static <E> Specification<E> selectInList(String fieldName, Collection<?> values) {
     if (values == null || values.isEmpty()) {
       return null;
     }
@@ -54,7 +54,7 @@ public class Specifications {
           criteriaBuilder.equal(root.get(fieldName), values.stream().findFirst().orElseThrow());
     }
     return (root, criteriaQuery, criteriaBuilder) -> {
-      In<String> in = criteriaBuilder.in(root.get(fieldName));
+      In<Object> in = criteriaBuilder.in(root.get(fieldName));
       values.forEach(in::value);
       return criteriaBuilder.or(in);
     };
