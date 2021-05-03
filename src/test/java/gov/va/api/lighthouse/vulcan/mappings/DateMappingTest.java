@@ -157,26 +157,36 @@ class DateMappingTest {
   @ParameterizedTest
   @ValueSource(
       strings = {
+        "",
+        "x",
+        "eq",
         "xx2005",
         "g2005",
         "ggt2005",
         "eq200",
+        "eq199X",
         "eq2005-1",
+        "eq2005-99",
         "eq2005-01-2",
+        "eq2005-01-99",
         "eq2005-01-21T",
         "eq2005-01-21T07",
         "eq2005-01-21T07:5",
+        "eq2005-01-21T07:57",
         "eq2005-01-21T07:57:0",
-        "eq2005-01-21T07:57:03-4"
+        "eq2005-01-21T07:57:99",
+        "eq2005-01-21T07:99:00",
+        "eq2005-01-21T99:00:00",
+        "eq2005-01-21T07:57:03",
+        "eq2005-01-21T07:57:03-04",
+        "eq2005-01-21T07:57:03-04:",
+        "eq2005-01-21T07:57:03-04:0",
+        "eq2005-01-21T07:57:03-0X:00"
       })
   @NullAndEmptySource
   void parsedParametersThrowExceptionForIllegalValues(String parameterValue) {
     assertThatExceptionOfType(InvalidRequest.class)
-        .isThrownBy(
-            () -> {
-              var sd = new SearchableDate("x", parameterValue);
-              sd.upperBound();
-            });
+        .isThrownBy(() -> new SearchableDate("x", parameterValue));
   }
 
   @Test
