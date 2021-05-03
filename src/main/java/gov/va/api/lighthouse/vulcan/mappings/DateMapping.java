@@ -23,7 +23,6 @@ import javax.persistence.criteria.Path;
 import javax.persistence.criteria.Predicate;
 import javax.servlet.http.HttpServletRequest;
 import lombok.Builder;
-import lombok.Getter;
 import lombok.Singular;
 import lombok.ToString.Exclude;
 import lombok.Value;
@@ -70,8 +69,7 @@ public class DateMapping<EntityT, DateT> implements SingleParameterMapping<Entit
         Stream.of(dates).map(v -> new SearchableDate(parameterName(), v)).collect(toList());
     return (root, criteriaQuery, criteriaBuilder) -> {
       Path<DateT> field = root.get(fieldName());
-      return searchableDates
-          .stream()
+      return searchableDates.stream()
           .map(sd -> predicates().predicate(sd, field, criteriaBuilder))
           .collect(andUsing(criteriaBuilder));
     };
@@ -221,27 +219,17 @@ public class DateMapping<EntityT, DateT> implements SingleParameterMapping<Entit
   @Value
   public static class SearchableDate {
     private static final int YEAR = 4;
-
     private static final int YEAR_MONTH = 7;
-
     private static final int YEAR_MONTH_DAY = 10;
-
     private static final int TIME_ZONE = 20;
-
     private static final int TIME_ZONE_OFFSET = 25;
 
     String parameterName;
-
     String operatorAndDate;
-
     DateOperator operator;
-
     String date;
-
     DateFidelity fidelity;
-
     Instant lowerBound;
-
     Instant upperBound;
 
     SearchableDate(String parameterName, String operatorAndDate) {
@@ -289,15 +277,20 @@ public class DateMapping<EntityT, DateT> implements SingleParameterMapping<Entit
         case YEAR:
           return OffsetDateTime.parse(String.format("%s-01-01T00:00:00%s", date(), offset))
               .toInstant();
+
         case YEAR_MONTH:
           return OffsetDateTime.parse(String.format("%s-01T00:00:00%s", date(), offset))
               .toInstant();
+
         case YEAR_MONTH_DAY:
           return OffsetDateTime.parse(String.format("%sT00:00:00%s", date(), offset)).toInstant();
+
         case TIME_ZONE:
           return Instant.parse(date());
+
         case TIME_ZONE_OFFSET:
           return OffsetDateTime.parse(date()).toInstant();
+
         default:
           throw invalidParameterValue();
       }
@@ -310,14 +303,18 @@ public class DateMapping<EntityT, DateT> implements SingleParameterMapping<Entit
       switch (date().length()) {
         case YEAR:
           return offsetLowerBound.plusYears(1).minus(1, ChronoUnit.MILLIS).toInstant();
+
         case YEAR_MONTH:
           return offsetLowerBound.plusMonths(1).minus(1, ChronoUnit.MILLIS).toInstant();
+
         case YEAR_MONTH_DAY:
           return offsetLowerBound.plusDays(1).minus(1, ChronoUnit.MILLIS).toInstant();
+
         case TIME_ZONE:
           // falls through
         case TIME_ZONE_OFFSET:
           return offsetLowerBound.plusSeconds(1).minus(1, ChronoUnit.MILLIS).toInstant();
+
         default:
           throw invalidParameterValue();
       }
