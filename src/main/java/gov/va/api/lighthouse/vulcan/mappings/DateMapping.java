@@ -5,13 +5,13 @@ import static java.util.stream.Collectors.toList;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
 import gov.va.api.lighthouse.vulcan.InvalidRequest;
+import java.time.DateTimeException;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
-import java.time.format.DateTimeParseException;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Locale;
@@ -246,12 +246,8 @@ public class DateMapping<EntityT, DateT> implements SingleParameterMapping<Entit
         date = operatorAndDate;
       }
       fidelity = computeDateFidelity();
-      try {
-        lowerBound = computeLowerBound();
-        upperBound = computeUpperBound();
-      } catch (DateTimeParseException e) {
-        throw invalidParameterValue();
-      }
+      lowerBound = computeLowerBound();
+      upperBound = computeUpperBound();
     }
 
     private DateFidelity computeDateFidelity() {
@@ -272,51 +268,59 @@ public class DateMapping<EntityT, DateT> implements SingleParameterMapping<Entit
     }
 
     private Instant computeLowerBound() {
-      ZoneOffset offset = ZonedDateTime.now(ZoneId.systemDefault()).getOffset();
-      switch (date().length()) {
-        case YEAR:
-          return OffsetDateTime.parse(String.format("%s-01-01T00:00:00%s", date(), offset))
-              .toInstant();
+      try {
+        ZoneOffset offset = ZonedDateTime.now(ZoneId.systemDefault()).getOffset();
+        switch (date().length()) {
+          case YEAR:
+            return OffsetDateTime.parse(String.format("%s-01-01T00:00:00%s", date(), offset))
+                .toInstant();
 
-        case YEAR_MONTH:
-          return OffsetDateTime.parse(String.format("%s-01T00:00:00%s", date(), offset))
-              .toInstant();
+          case YEAR_MONTH:
+            return OffsetDateTime.parse(String.format("%s-01T00:00:00%s", date(), offset))
+                .toInstant();
 
-        case YEAR_MONTH_DAY:
-          return OffsetDateTime.parse(String.format("%sT00:00:00%s", date(), offset)).toInstant();
+          case YEAR_MONTH_DAY:
+            return OffsetDateTime.parse(String.format("%sT00:00:00%s", date(), offset)).toInstant();
 
-        case TIME_ZONE:
-          return Instant.parse(date());
+          case TIME_ZONE:
+            return Instant.parse(date());
 
-        case TIME_ZONE_OFFSET:
-          return OffsetDateTime.parse(date()).toInstant();
+          case TIME_ZONE_OFFSET:
+            return OffsetDateTime.parse(date()).toInstant();
 
-        default:
-          throw invalidParameterValue();
+          default:
+            throw invalidParameterValue();
+        }
+      } catch (DateTimeException e) {
+        throw invalidParameterValue();
       }
     }
 
     private Instant computeUpperBound() {
-      OffsetDateTime offsetLowerBound =
-          OffsetDateTime.ofInstant(
-              lowerBound(), ZonedDateTime.now(ZoneId.systemDefault()).getOffset());
-      switch (date().length()) {
-        case YEAR:
-          return offsetLowerBound.plusYears(1).minus(1, ChronoUnit.MILLIS).toInstant();
+      try {
+        OffsetDateTime offsetLowerBound =
+            OffsetDateTime.ofInstant(
+                lowerBound(), ZonedDateTime.now(ZoneId.systemDefault()).getOffset());
+        switch (date().length()) {
+          case YEAR:
+            return offsetLowerBound.plusYears(1).minus(1, ChronoUnit.MILLIS).toInstant();
 
-        case YEAR_MONTH:
-          return offsetLowerBound.plusMonths(1).minus(1, ChronoUnit.MILLIS).toInstant();
+          case YEAR_MONTH:
+            return offsetLowerBound.plusMonths(1).minus(1, ChronoUnit.MILLIS).toInstant();
 
-        case YEAR_MONTH_DAY:
-          return offsetLowerBound.plusDays(1).minus(1, ChronoUnit.MILLIS).toInstant();
+          case YEAR_MONTH_DAY:
+            return offsetLowerBound.plusDays(1).minus(1, ChronoUnit.MILLIS).toInstant();
 
-        case TIME_ZONE:
-          // falls through
-        case TIME_ZONE_OFFSET:
-          return offsetLowerBound.plusSeconds(1).minus(1, ChronoUnit.MILLIS).toInstant();
+          case TIME_ZONE:
+            // falls through
+          case TIME_ZONE_OFFSET:
+            return offsetLowerBound.plusSeconds(1).minus(1, ChronoUnit.MILLIS).toInstant();
 
-        default:
-          throw invalidParameterValue();
+          default:
+            throw invalidParameterValue();
+        }
+      } catch (DateTimeException e) {
+        throw invalidParameterValue();
       }
     }
 
