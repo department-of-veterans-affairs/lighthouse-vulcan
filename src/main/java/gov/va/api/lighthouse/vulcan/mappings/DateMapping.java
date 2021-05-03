@@ -1,6 +1,7 @@
 package gov.va.api.lighthouse.vulcan.mappings;
 
 import static gov.va.api.lighthouse.vulcan.Predicates.andUsing;
+import static java.util.stream.Collectors.toList;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
 import gov.va.api.lighthouse.vulcan.InvalidRequest;
@@ -10,7 +11,9 @@ import java.time.OffsetDateTime;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
+import java.time.format.DateTimeParseException;
 import java.time.temporal.ChronoUnit;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.stream.Stream;
@@ -37,7 +40,6 @@ import org.springframework.data.jpa.domain.Specification;
 @Value
 @Builder
 public class DateMapping<EntityT, DateT> implements SingleParameterMapping<EntityT> {
-
   String parameterName;
 
   String fieldName;
@@ -64,10 +66,12 @@ public class DateMapping<EntityT, DateT> implements SingleParameterMapping<Entit
     if (dates.length > 2) {
       throw InvalidRequest.repeatedTooManyTimes(parameterName(), 2, dates.length);
     }
+    List<SearchableDate> searchableDates =
+        Stream.of(dates).map(v -> new SearchableDate(parameterName(), v)).collect(toList());
     return (root, criteriaQuery, criteriaBuilder) -> {
       Path<DateT> field = root.get(fieldName());
-      return Stream.of(dates)
-          .map(v -> new SearchableDate(parameterName(), v))
+      return searchableDates
+          .stream()
           .map(sd -> predicates().predicate(sd, field, criteriaBuilder))
           .collect(andUsing(criteriaBuilder));
     };
@@ -128,9 +132,9 @@ public class DateMapping<EntityT, DateT> implements SingleParameterMapping<Entit
    */
   @Value
   @Builder
-  @SuppressWarnings("cast") // thanks lombok
+  // thanks lombok
+  @SuppressWarnings("cast")
   public static class FixedAmountDateApproximation implements DateApproximation {
-
     @Singular Map<DateFidelity, Duration> amounts;
 
     private Duration amountFor(DateFidelity fidelity) {
@@ -156,7 +160,6 @@ public class DateMapping<EntityT, DateT> implements SingleParameterMapping<Entit
   @Value
   @Builder
   public static class InstantPredicateFactory implements PredicateFactory<Instant> {
-
     DateApproximation approximation;
 
     @SuppressWarnings("EnhancedSwitchMigration")
@@ -217,26 +220,29 @@ public class DateMapping<EntityT, DateT> implements SingleParameterMapping<Entit
   @SuppressWarnings("EnhancedSwitchMigration")
   @Value
   public static class SearchableDate {
-
     private static final int YEAR = 4;
+
     private static final int YEAR_MONTH = 7;
+
     private static final int YEAR_MONTH_DAY = 10;
+
     private static final int TIME_ZONE = 20;
+
     private static final int TIME_ZONE_OFFSET = 25;
 
     String parameterName;
+
     String operatorAndDate;
+
     DateOperator operator;
+
     String date;
 
-    @Getter(lazy = true)
-    Instant lowerBound = computeLowerBound();
+    DateFidelity fidelity;
 
-    @Getter(lazy = true)
-    Instant upperBound = computeUpperBound();
+    Instant lowerBound;
 
-    @Getter(lazy = true)
-    DateFidelity fidelity = computeDateFideity();
+    Instant upperBound;
 
     SearchableDate(String parameterName, String operatorAndDate) {
       this.parameterName = parameterName;
@@ -251,9 +257,16 @@ public class DateMapping<EntityT, DateT> implements SingleParameterMapping<Entit
         operator = DateOperator.EQ;
         date = operatorAndDate;
       }
+      fidelity = computeDateFidelity();
+      try {
+        lowerBound = computeLowerBound();
+        upperBound = computeUpperBound();
+      } catch (DateTimeParseException e) {
+        throw invalidParameterValue();
+      }
     }
 
-    private DateFidelity computeDateFideity() {
+    private DateFidelity computeDateFidelity() {
       switch (date().length()) {
         case YEAR:
           return DateFidelity.YEAR;
@@ -276,20 +289,15 @@ public class DateMapping<EntityT, DateT> implements SingleParameterMapping<Entit
         case YEAR:
           return OffsetDateTime.parse(String.format("%s-01-01T00:00:00%s", date(), offset))
               .toInstant();
-
         case YEAR_MONTH:
           return OffsetDateTime.parse(String.format("%s-01T00:00:00%s", date(), offset))
               .toInstant();
-
         case YEAR_MONTH_DAY:
           return OffsetDateTime.parse(String.format("%sT00:00:00%s", date(), offset)).toInstant();
-
         case TIME_ZONE:
           return Instant.parse(date());
-
         case TIME_ZONE_OFFSET:
           return OffsetDateTime.parse(date()).toInstant();
-
         default:
           throw invalidParameterValue();
       }
@@ -302,18 +310,14 @@ public class DateMapping<EntityT, DateT> implements SingleParameterMapping<Entit
       switch (date().length()) {
         case YEAR:
           return offsetLowerBound.plusYears(1).minus(1, ChronoUnit.MILLIS).toInstant();
-
         case YEAR_MONTH:
           return offsetLowerBound.plusMonths(1).minus(1, ChronoUnit.MILLIS).toInstant();
-
         case YEAR_MONTH_DAY:
           return offsetLowerBound.plusDays(1).minus(1, ChronoUnit.MILLIS).toInstant();
-
         case TIME_ZONE:
           // falls through
         case TIME_ZONE_OFFSET:
           return offsetLowerBound.plusSeconds(1).minus(1, ChronoUnit.MILLIS).toInstant();
-
         default:
           throw invalidParameterValue();
       }
