@@ -72,6 +72,7 @@ public class FugaziController {
                 .value("xmillis", "millis", v -> Instant.parse(v).toEpochMilli())
                 .values("nameAndFood", this::nameFoodValues)
                 .dateAsInstant("xdate", "date")
+                .dateAsLong("ydate", "millis")
                 .token("foodtoken", "food", this::foodIsSupported, this::foodValues)
                 .tokens("foodSpecToken", this::foodIsSupported, this::foodSpecification)
                 .tokenList("foodtokencsv", "food", this::foodIsSupported, this::foodValues)

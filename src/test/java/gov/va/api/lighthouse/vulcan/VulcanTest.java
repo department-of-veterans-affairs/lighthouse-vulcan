@@ -251,6 +251,28 @@ class VulcanTest {
         .containsExactlyInAnyOrder(nachos2005, tacos2005, moreNachos2005);
   }
 
+  @SuppressWarnings("SpellCheckingInspection")
+  @Test
+  void mappingDateAsLong() {
+    assertThat(req("/fugazi?ydate=")).isEmpty();
+    assertThat(req("/fugazi?ydate=2006-01-21")).containsExactly(tacos2006);
+    assertThat(req("/fugazi?ydate=eq2006-01-21")).containsExactly(tacos2006);
+    assertThat(req("/fugazi?ydate=gt2006-01-20")).containsExactly(tacos2006, tacos2007, tacos2008);
+    assertThat(req("/fugazi?ydate=sa2006-01-20")).containsExactly(tacos2006, tacos2007, tacos2008);
+    assertThat(req("/fugazi?ydate=ge2005-01-22"))
+        .containsExactlyInAnyOrder(tacos2005, moreNachos2005, tacos2006, tacos2007, tacos2008);
+    assertThat(req("/fugazi?ydate=lt2005-01-22")).containsExactly(nachos2005);
+    assertThat(req("/fugazi?ydate=eb2005-01-22")).containsExactly(nachos2005);
+    assertThat(req("/fugazi?ydate=le2005-01-22"))
+        .containsExactlyInAnyOrder(nachos2005, moreNachos2005);
+    assertThat(req("/fugazi?ydate=ap2005-01-22"))
+        .containsExactlyInAnyOrder(nachos2005, moreNachos2005, tacos2005);
+    assertThat(req("/fugazi?ydate=ne2006"))
+        .containsExactlyInAnyOrder(nachos2005, moreNachos2005, tacos2005, tacos2007, tacos2008);
+    assertThat(req("/fugazi?ydate=gt2005-01-20&ydate=lt2005-02"))
+        .containsExactlyInAnyOrder(nachos2005, tacos2005, moreNachos2005);
+  }
+
   @Test
   void mappingReference() {
     assertThat(req("/fugazi?foodref=")).isEmpty();
