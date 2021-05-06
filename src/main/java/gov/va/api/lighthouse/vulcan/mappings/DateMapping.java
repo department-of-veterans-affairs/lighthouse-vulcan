@@ -193,12 +193,6 @@ public class DateMapping<EntityT, DateT> implements SingleParameterMapping<Entit
       }
     }
   }
-  /*
-  case EQ:
-            return criteriaBuilder.and(
-                criteriaBuilder.greaterThanOrEqualTo(field, date.upperBound().toEpochMilli()),
-                criteriaBuilder.lessThanOrEqualTo(field, date.upperBound().toEpochMilli()));
-  */
 
   @Value
   @Builder
@@ -220,9 +214,11 @@ public class DateMapping<EntityT, DateT> implements SingleParameterMapping<Entit
               criteriaBuilder.lessThan(field, date.lowerBound().toEpochMilli()),
               criteriaBuilder.greaterThan(field, date.upperBound().toEpochMilli()));
         case GT:
+          // fall-through
         case SA:
           return criteriaBuilder.greaterThan(field, date.upperBound().toEpochMilli());
         case LT:
+          // fall-through
         case EB:
           return criteriaBuilder.lessThan(field, date.lowerBound().toEpochMilli());
         case GE:
@@ -232,9 +228,9 @@ public class DateMapping<EntityT, DateT> implements SingleParameterMapping<Entit
         case AP:
           return criteriaBuilder.and(
               criteriaBuilder.greaterThanOrEqualTo(
-                  field, approximation.expandLowerBound(date).toEpochMilli()),
+                  field, approximation().expandLowerBound(date).toEpochMilli()),
               criteriaBuilder.lessThanOrEqualTo(
-                  field, approximation.expandUpperBound(date).toEpochMilli()));
+                  field, approximation().expandUpperBound(date).toEpochMilli()));
         default:
           throw new InvalidRequest("Unknown date search operator: " + date.operator());
       }

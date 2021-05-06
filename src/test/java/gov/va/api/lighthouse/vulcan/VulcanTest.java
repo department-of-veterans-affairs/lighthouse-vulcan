@@ -253,7 +253,7 @@ class VulcanTest {
 
   @SuppressWarnings("SpellCheckingInspection")
   @Test
-  void mappingDateAsLong() {
+  void mappingDateAsLongMilliseconds() {
     assertThat(req("/fugazi?ydate=")).isEmpty();
     assertThat(req("/fugazi?ydate=2006-01-21")).containsExactly(tacos2006);
     assertThat(req("/fugazi?ydate=eq2006-01-21")).containsExactly(tacos2006);
