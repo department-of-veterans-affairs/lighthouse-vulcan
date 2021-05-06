@@ -105,29 +105,11 @@ public class Rules {
   public static class IfParameterRuleBuilder {
     private final String parameter;
 
-    /** Require at least one of the given parameters to be specified. */
-    public Rule thenAlsoAtLeastOneParameterOf(String... requiredParameters) {
-      return (ctx) -> {
-        if (isNotBlank(ctx.request().getParameter(parameter))) {
-          atLeastOneParameterOf(requiredParameters).check(ctx);
-        }
-      };
-    }
-
-    /** Forbid all of the given parameters from being specified. */
-    public Rule thenForbidParameters(String... forbiddenParameters) {
-      return (ctx) -> {
-        if (isNotBlank(ctx.request().getParameter(parameter))) {
-          forbiddenParameters(forbiddenParameters).check(ctx);
-        }
-      };
-    }
-
     /**
      * Forbid any unknown parameter modifiers. Known modifiers are determined both by the mappings
      * themselves, but also any provided to the method.
      */
-    public Rule thenForbidUnknownModifiers(String... additionalSupportedModifiers) {
+    public Rule thenAllowOnlyKnownModifiers(String... additionalSupportedModifiers) {
       return (ctx) -> {
         var supportedParameters =
             ctx.config().supportedParameters().stream()
@@ -148,6 +130,24 @@ public class Rules {
                         p, ctx.request().getParameter(p), "Modifier not allowed.");
                   }
                 });
+      };
+    }
+
+    /** Require at least one of the given parameters to be specified. */
+    public Rule thenAlsoAtLeastOneParameterOf(String... requiredParameters) {
+      return (ctx) -> {
+        if (isNotBlank(ctx.request().getParameter(parameter))) {
+          atLeastOneParameterOf(requiredParameters).check(ctx);
+        }
+      };
+    }
+
+    /** Forbid all of the given parameters from being specified. */
+    public Rule thenForbidParameters(String... forbiddenParameters) {
+      return (ctx) -> {
+        if (isNotBlank(ctx.request().getParameter(parameter))) {
+          forbiddenParameters(forbiddenParameters).check(ctx);
+        }
       };
     }
   }
