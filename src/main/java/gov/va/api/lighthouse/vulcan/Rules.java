@@ -2,6 +2,7 @@ package gov.va.api.lighthouse.vulcan;
 
 import static java.lang.String.join;
 import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.toSet;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
 import java.util.Arrays;
@@ -115,12 +116,12 @@ public class Rules {
             ctx.config().supportedParameters().stream()
                 .filter(p -> p.startsWith(parameter()))
                 .filter(p -> p.contains(":"))
-                .collect(toList());
+                .collect(toSet());
         var allowedParameters =
             Stream.concat(
                     supportedParameters.stream(),
                     Arrays.stream(additionalSupportedModifiers).map(m -> join(":", parameter(), m)))
-                .collect(toList());
+                .collect(toSet());
         ctx.request().getParameterMap().keySet().stream()
             .filter(p -> p.startsWith(parameter()))
             .forEach(
