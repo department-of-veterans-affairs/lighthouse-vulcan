@@ -202,15 +202,17 @@ class VulcanTest {
   @ParameterizedTest
   @ValueSource(
       strings = {
-        "/fugazi?foodtoken=|",
-        "/fugazi?foodtokencsv=|",
-        "/fugazi?foodtokencsv=NACHOS,|",
-        "/fugazi?xdate=nope",
-        "/fugazi?xdate=no2006"
+        "?foodtoken=|",
+        "?foodtokencsv=|",
+        "?foodSpecToken=|",
+        "?foodtokencsv=NACHOS,|",
+        "?foodSpecToken=NACHOS,|",
+        "?xdate=nope",
+        "?xdate=no2006"
       })
   @SneakyThrows
-  void invalidParameterSearchs(String uri) {
-    mvc.perform(get(uri)).andExpect(status().isBadRequest());
+  void invalidParameterSearchs(String query) {
+    mvc.perform(get("/fugazi" + query)).andExpect(status().isBadRequest());
   }
 
   @SuppressWarnings("SpellCheckingInspection")
@@ -278,6 +280,7 @@ class VulcanTest {
 
   @Test
   void mappingToken() {
+    // Deprecated
     assertThat(req("/fugazi?foodtoken=")).isEmpty();
     assertThat(req("/fugazi?foodtoken=PIZZA")).isEmpty();
     assertThat(req("/fugazi?foodtoken=http://movie-theater|NACHOS")).isEmpty();
@@ -289,13 +292,23 @@ class VulcanTest {
     assertThat(req("/fugazi?foodtoken=http://food|"))
         .containsExactlyInAnyOrder(
             nachos2005, moreNachos2005, tacos2005, tacos2006, tacos2007, tacos2008);
+    // New Fancy Boi
+    assertThat(req("/fugazi?foodSpecToken=")).isEmpty();
+    assertThat(req("/fugazi?foodSpecToken=PIZZA")).isEmpty();
+    assertThat(req("/fugazi?foodSpecToken=http://movie-theater|NACHOS")).isEmpty();
+    assertThat(req("/fugazi?foodSpecToken=NACHOS")).containsExactly(nachos2005);
+    assertThat(req("/fugazi?foodSpecToken=TACOS"))
+        .containsExactlyInAnyOrder(tacos2005, tacos2006, tacos2007, tacos2008);
     assertThat(req("/fugazi?foodSpecToken=http://food|TACOS"))
         .containsExactlyInAnyOrder(tacos2005, tacos2006, tacos2007, tacos2008);
-    assertThat(req("/fugazi?foodSpecToken=http://movie-theater|NACHOS")).isEmpty();
+    assertThat(req("/fugazi?foodSpecToken=http://food|"))
+        .containsExactlyInAnyOrder(
+            nachos2005, moreNachos2005, tacos2005, tacos2006, tacos2007, tacos2008);
   }
 
   @Test
   void mappingTokenList() {
+    // Deprecated
     assertThat(req("/fugazi?foodtokencsv=")).isEmpty();
     assertThat(req("/fugazi?foodtokencsv=,")).isEmpty();
     assertThat(req("/fugazi?foodtokencsv=PIZZA")).isEmpty();
@@ -312,6 +325,25 @@ class VulcanTest {
     assertThat(req("/fugazi?foodtokencsv=http://food|TACOS,NACHOS"))
         .containsExactlyInAnyOrder(tacos2005, tacos2006, tacos2007, tacos2008, nachos2005);
     assertThat(req("/fugazi?foodtokencsv=http://food|"))
+        .containsExactlyInAnyOrder(
+            nachos2005, moreNachos2005, tacos2005, tacos2006, tacos2007, tacos2008);
+    // New Fancy Boi
+    assertThat(req("/fugazi?foodSpecToken=")).isEmpty();
+    assertThat(req("/fugazi?foodSpecToken=,")).isEmpty();
+    assertThat(req("/fugazi?foodSpecToken=PIZZA")).isEmpty();
+    assertThat(req("/fugazi?foodSpecToken=http://movie-theater|NACHOS")).isEmpty();
+    assertThat(req("/fugazi?foodSpecToken=NACHOS")).containsExactly(nachos2005);
+    assertThat(req("/fugazi?foodSpecToken=TACOS"))
+        .containsExactlyInAnyOrder(tacos2005, tacos2006, tacos2007, tacos2008);
+    assertThat(req("/fugazi?foodSpecToken=http://food|TACOS"))
+        .containsExactlyInAnyOrder(tacos2005, tacos2006, tacos2007, tacos2008);
+    assertThat(req("/fugazi?foodSpecToken=http://food|TACOS,http://nope|NACHOS"))
+        .containsExactlyInAnyOrder(tacos2005, tacos2006, tacos2007, tacos2008);
+    assertThat(req("/fugazi?foodSpecToken=http://food|TACOS,http://food|NACHOS"))
+        .containsExactlyInAnyOrder(tacos2005, tacos2006, tacos2007, tacos2008, nachos2005);
+    assertThat(req("/fugazi?foodSpecToken=http://food|TACOS,NACHOS"))
+        .containsExactlyInAnyOrder(tacos2005, tacos2006, tacos2007, tacos2008, nachos2005);
+    assertThat(req("/fugazi?foodSpecToken=http://food|"))
         .containsExactlyInAnyOrder(
             nachos2005, moreNachos2005, tacos2005, tacos2006, tacos2007, tacos2008);
   }
