@@ -51,7 +51,7 @@ public class ExampleUsage {
                 .csvList("food")
                 .value("millis", v -> Instant.parse(v).toEpochMilli())
                 .dateAsInstant("when", "date")
-                .dateAsLong("whenLong", "millis")
+                .dateAsLongMilliseconds("whenLong", "millis")
                 .reference(
                     "foodref",
                     "food",

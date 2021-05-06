@@ -85,7 +85,7 @@ public class Mappings<EntityT> implements Supplier<List<Mapping<EntityT>>> {
    * Add a date mapping for Long entity field values using standard "ap" (approximate) date
    * processing.
    */
-  public Mappings<EntityT> dateAsLong(String parameterName, String fieldName) {
+  public Mappings<EntityT> dateAsLongMilliseconds(String parameterName, String fieldName) {
     return date(
         parameterName,
         fieldName,
