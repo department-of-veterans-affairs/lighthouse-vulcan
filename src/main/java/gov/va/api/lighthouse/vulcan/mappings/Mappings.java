@@ -204,6 +204,7 @@ public class Mappings<EntityT> implements Supplier<List<Mapping<EntityT>>> {
   }
 
   /** Create a token list mapping where field name is constant . */
+  @Deprecated(since = "1.0.9", forRemoval = true)
   public Mappings<EntityT> tokenList(
       String parameterName,
       String fieldName,
@@ -213,6 +214,7 @@ public class Mappings<EntityT> implements Supplier<List<Mapping<EntityT>>> {
   }
 
   /** Create a token list mapping where parameter and field name are the same. */
+  @Deprecated(since = "1.0.9", forRemoval = true)
   public Mappings<EntityT> tokenList(
       String parameterAndFieldName,
       Predicate<TokenParameter> supportedToken,
@@ -221,6 +223,7 @@ public class Mappings<EntityT> implements Supplier<List<Mapping<EntityT>>> {
   }
 
   /** Create a token list mapping where all aspects are configurable. */
+  @Deprecated(since = "1.0.9", forRemoval = true)
   public Mappings<EntityT> tokenList(
       String parameterName,
       Function<TokenParameter, Collection<String>> fieldNameSelector,
