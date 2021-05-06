@@ -1,10 +1,13 @@
 package gov.va.api.lighthouse.vulcan;
 
+import static java.lang.String.join;
 import static java.util.stream.Collectors.toList;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
 import java.util.Arrays;
+import java.util.stream.Stream;
 import lombok.RequiredArgsConstructor;
+import lombok.Value;
 import lombok.experimental.UtilityClass;
 
 /**
@@ -97,6 +100,7 @@ public class Rules {
     };
   }
 
+  @Value
   @RequiredArgsConstructor
   public static class IfParameterRuleBuilder {
     private final String parameter;
@@ -116,6 +120,34 @@ public class Rules {
         if (isNotBlank(ctx.request().getParameter(parameter))) {
           forbiddenParameters(forbiddenParameters).check(ctx);
         }
+      };
+    }
+
+    /**
+     * Forbid any unknown parameter modifiers. Known modifiers are determined both by the mappings
+     * themselves, but also any provided to the method.
+     */
+    public Rule thenForbidUnknownModifiers(String... additionalSupportedModifiers) {
+      return (ctx) -> {
+        var supportedParameters =
+            ctx.config().supportedParameters().stream()
+                .filter(p -> p.startsWith(parameter()))
+                .filter(p -> p.contains(":"))
+                .collect(toList());
+        var allowedParameters =
+            Stream.concat(
+                    supportedParameters.stream(),
+                    Arrays.stream(additionalSupportedModifiers).map(m -> join(":", parameter(), m)))
+                .collect(toList());
+        ctx.request().getParameterMap().keySet().stream()
+            .filter(p -> p.startsWith(parameter()))
+            .forEach(
+                p -> {
+                  if (!allowedParameters.contains(p)) {
+                    throw InvalidRequest.badParameter(
+                        p, ctx.request().getParameter(p), "Modifier not allowed.");
+                  }
+                });
       };
     }
   }

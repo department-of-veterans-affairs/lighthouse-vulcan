@@ -96,6 +96,15 @@ class RulesTest {
   }
 
   @Test
+  void ifParameterThenForbidUnknownModifiers() {
+    var rule = Rules.ifParameter("nacho").thenForbidUnknownModifiers("friday", "libre");
+    assertThatExceptionOfType(InvalidRequest.class)
+        .isThrownBy(() -> rule.check(requestWithParameters("nacho:wednesday")));
+    rule.check(requestWithParameters("nacho:friday"));
+    rule.check(requestWithParameters("nacho:libre"));
+  }
+
+  @Test
   void parametersAlwaysSpecifiedTogether() {
     Rules.parametersAlwaysSpecifiedTogether("foo", "bar").check(requestWithParameters("whatever"));
     Rules.parametersAlwaysSpecifiedTogether("foo", "bar")
