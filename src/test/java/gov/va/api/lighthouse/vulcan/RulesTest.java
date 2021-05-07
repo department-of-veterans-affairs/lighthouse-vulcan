@@ -52,6 +52,7 @@ class RulesTest {
     var rule = Rules.ifParameter("nacho").thenAllowOnlyKnownModifiers("friday", "libre");
     assertThatExceptionOfType(InvalidRequest.class)
         .isThrownBy(() -> rule.check(requestWithParameters("nacho:wednesday")));
+    rule.check(requestWithParameters("nacho"));
     rule.check(requestWithParameters("nacho:friday"));
     rule.check(requestWithParameters("nacho:libre"));
   }
