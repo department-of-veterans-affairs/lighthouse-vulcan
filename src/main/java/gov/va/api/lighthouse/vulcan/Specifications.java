@@ -66,6 +66,14 @@ public class Specifications {
     };
   }
 
+  public static Collection<String> strings(Enum<?>... values) {
+    return Arrays.stream(values).map(Enum::toString).collect(toSet());
+  }
+
+  public static <EnumT extends Enum<?>> Collection<String> strings(Class<EnumT> enumClass) {
+    return strings(enumClass.getEnumConstants());
+  }
+
   private static class MatchesAllSpecifications<E> {
     @Getter Specification<E> specification;
 

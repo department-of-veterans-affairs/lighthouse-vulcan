@@ -1,5 +1,6 @@
 package gov.va.api.lighthouse.vulcan.fugazi;
 
+import static gov.va.api.lighthouse.vulcan.Specifications.strings;
 import static gov.va.api.lighthouse.vulcan.Vulcan.useUrl;
 import static java.util.stream.Collectors.toList;
 import static org.apache.commons.lang3.StringUtils.isBlank;
@@ -130,13 +131,7 @@ public class FugaziController {
         .onAnySystemAndExplicitCode(c -> Specifications.<FugaziEntity>select("food", c))
         .onNoSystemAndExplicitCode(c -> Specifications.<FugaziEntity>select("food", c))
         .onExplicitSystemAndAnyCode(
-            s ->
-                // FugaziEntity defines "food" as a string.
-                Specifications.<FugaziEntity>selectInList(
-                    "food",
-                    Food.TACOS.toString(),
-                    Food.EVEN_MORE_NACHOS.toString(),
-                    Food.NACHOS.toString()))
+            s -> Specifications.<FugaziEntity>selectInList("food", strings(Food.class)))
         .build()
         .execute();
   }
