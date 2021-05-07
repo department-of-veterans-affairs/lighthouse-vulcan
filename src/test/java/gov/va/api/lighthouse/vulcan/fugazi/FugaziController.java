@@ -17,13 +17,11 @@ import gov.va.api.lighthouse.vulcan.mappings.Mappings;
 import gov.va.api.lighthouse.vulcan.mappings.ReferenceParameter;
 import gov.va.api.lighthouse.vulcan.mappings.TokenParameter;
 import java.time.Instant;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-import java.util.stream.Collectors;
 import javax.servlet.http.HttpServletRequest;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -133,9 +131,12 @@ public class FugaziController {
         .onNoSystemAndExplicitCode(c -> Specifications.<FugaziEntity>select("food", c))
         .onExplicitSystemAndAnyCode(
             s ->
+                // FugaziEntity defines "food" as a string.
                 Specifications.<FugaziEntity>selectInList(
                     "food",
-                    Arrays.stream(Food.values()).map(Enum::toString).collect(Collectors.toSet())))
+                    Food.TACOS.toString(),
+                    Food.EVEN_MORE_NACHOS.toString(),
+                    Food.NACHOS.toString()))
         .build()
         .execute();
   }
