@@ -1,6 +1,6 @@
 package gov.va.api.lighthouse.vulcan.fugazi;
 
-import static gov.va.api.lighthouse.vulcan.Specifications.select;
+import static gov.va.api.lighthouse.vulcan.Specifications.strings;
 import static gov.va.api.lighthouse.vulcan.Vulcan.useUrl;
 import static java.util.stream.Collectors.toList;
 import static org.apache.commons.lang3.StringUtils.isBlank;
@@ -8,9 +8,11 @@ import static org.apache.commons.lang3.StringUtils.isBlank;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import gov.va.api.health.autoconfig.configuration.JacksonConfig;
 import gov.va.api.lighthouse.vulcan.InvalidRequest;
+import gov.va.api.lighthouse.vulcan.Specifications;
 import gov.va.api.lighthouse.vulcan.Vulcan;
 import gov.va.api.lighthouse.vulcan.VulcanConfiguration;
 import gov.va.api.lighthouse.vulcan.VulcanConfiguration.PagingConfiguration;
+import gov.va.api.lighthouse.vulcan.VulcanResult;
 import gov.va.api.lighthouse.vulcan.fugazi.FugaziDto.Food;
 import gov.va.api.lighthouse.vulcan.mappings.Mappings;
 import gov.va.api.lighthouse.vulcan.mappings.ReferenceParameter;
@@ -124,10 +126,15 @@ public class FugaziController {
   }
 
   private Specification<FugaziEntity> foodSpecification(TokenParameter token) {
-    if ("http://food".equals(token.system())) {
-      return select("food", token.code());
-    }
-    return null;
+    return token
+        .behavior()
+        .onExplicitSystemAndExplicitCode((s, c) -> Specifications.<FugaziEntity>select("food", c))
+        .onAnySystemAndExplicitCode(c -> Specifications.<FugaziEntity>select("food", c))
+        .onNoSystemAndExplicitCode(c -> Specifications.<FugaziEntity>select("food", c))
+        .onExplicitSystemAndAnyCode(
+            s -> Specifications.<FugaziEntity>selectInList("food", strings(Food.class)))
+        .build()
+        .execute();
   }
 
   private Collection<String> foodValues(TokenParameter token) {
@@ -160,7 +167,7 @@ public class FugaziController {
         .config(configuration())
         .build()
         .search(request)
-        .entities()
+        .map(VulcanResult::entities)
         .map(this::asFoo)
         .collect(toList());
   }

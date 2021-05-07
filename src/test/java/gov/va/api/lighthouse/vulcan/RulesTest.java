@@ -14,7 +14,6 @@ import org.springframework.data.domain.Sort;
 import org.springframework.mock.web.MockHttpServletRequest;
 
 class RulesTest {
-
   @Test
   void atLeastOneParameterOf() {
     Rules.atLeastOneParameterOf("foo", "bar").check(requestWithParameters("foo"));
@@ -46,6 +45,16 @@ class RulesTest {
     assertThatExceptionOfType(InvalidRequest.class)
         .isThrownBy(
             () -> Rules.forbiddenParameters("foo", "bar").check(requestWithParameters("bar")));
+  }
+
+  @Test
+  void ifParameterThenAllowOnlyKnownModifiers() {
+    var rule = Rules.ifParameter("nacho").thenAllowOnlyKnownModifiers("friday", "libre");
+    assertThatExceptionOfType(InvalidRequest.class)
+        .isThrownBy(() -> rule.check(requestWithParameters("nacho:wednesday")));
+    rule.check(requestWithParameters("nacho"));
+    rule.check(requestWithParameters("nacho:friday"));
+    rule.check(requestWithParameters("nacho:libre"));
   }
 
   @Test
@@ -150,6 +159,7 @@ class RulesTest {
   @RequiredArgsConstructor
   private static class FugaziRuleContext implements RuleContext {
     HttpServletRequest request;
+
     VulcanConfiguration<?> config;
   }
 }
