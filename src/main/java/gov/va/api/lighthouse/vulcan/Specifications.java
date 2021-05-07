@@ -1,5 +1,8 @@
 package gov.va.api.lighthouse.vulcan;
 
+import static java.util.stream.Collectors.toSet;
+
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collector;
@@ -58,6 +61,14 @@ public class Specifications {
       values.forEach(in::value);
       return criteriaBuilder.or(in);
     };
+  }
+
+  public static Collection<String> strings(Object... values) {
+    return Arrays.stream(values).map(Object::toString).collect(toSet());
+  }
+
+  public static <EnumT extends Enum<?>> Collection<String> strings(Class<EnumT> enumClass) {
+    return strings((Object[]) enumClass.getEnumConstants());
   }
 
   private static class MatchesAllSpecifications<E> {
