@@ -4,6 +4,7 @@ import static java.util.stream.Collectors.toSet;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
 import java.util.stream.Collector;
 import java.util.stream.Collector.Characteristics;
 import javax.persistence.criteria.CriteriaBuilder.In;
@@ -43,7 +44,7 @@ public class Specifications {
   }
 
   public static <E> Specification<E> select(String fieldName, Object value) {
-    return selectInList(fieldName, strings(value));
+    return selectInList(fieldName, List.of(value));
   }
 
   /** Produces a specification than explicitly handles a lists of 0 and 1. */
