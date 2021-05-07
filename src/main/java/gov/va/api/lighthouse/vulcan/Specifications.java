@@ -43,11 +43,7 @@ public class Specifications {
   }
 
   public static <E> Specification<E> select(String fieldName, Object value) {
-    return selectInList(fieldName, value);
-  }
-
-  public static <E> Specification<E> selectInList(String fieldName, Object... values) {
-    return selectInList(fieldName, Arrays.stream(values).collect(toSet()));
+    return selectInList(fieldName, strings(value));
   }
 
   /** Produces a specification than explicitly handles a lists of 0 and 1. */
@@ -66,12 +62,12 @@ public class Specifications {
     };
   }
 
-  public static Collection<String> strings(Enum<?>... values) {
-    return Arrays.stream(values).map(Enum::toString).collect(toSet());
+  public static Collection<String> strings(Object... values) {
+    return Arrays.stream(values).map(Object::toString).collect(toSet());
   }
 
   public static <EnumT extends Enum<?>> Collection<String> strings(Class<EnumT> enumClass) {
-    return strings(enumClass.getEnumConstants());
+    return strings((Object[]) enumClass.getEnumConstants());
   }
 
   private static class MatchesAllSpecifications<E> {
