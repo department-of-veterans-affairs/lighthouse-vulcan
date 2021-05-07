@@ -112,6 +112,10 @@ public class Rules {
      */
     public Rule thenAllowOnlyKnownModifiers(String... additionalSupportedModifiers) {
       return (ctx) -> {
+        // If parameter has no modifier, continue
+        if (ctx.request().getParameter(parameter()) != null) {
+          return;
+        }
         var supportedParameters =
             ctx.config().supportedParameters().stream()
                 .filter(p -> p.startsWith(parameter()))
