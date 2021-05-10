@@ -81,6 +81,17 @@ public class Mappings<EntityT> implements Supplier<List<Mapping<EntityT>>> {
         new DateMapping.InstantPredicateFactory(DateMapping.defaultGraduatedApproximation()));
   }
 
+  /**
+   * Add a date mapping for Long entity field values using standard "ap" (approximate) date
+   * processing.
+   */
+  public Mappings<EntityT> dateAsLongMilliseconds(String parameterName, String fieldName) {
+    return date(
+        parameterName,
+        fieldName,
+        new DateMapping.LongPredicateFactory(DateMapping.defaultGraduatedApproximation()));
+  }
+
   /** Get the mappings. */
   @Override
   public List<Mapping<EntityT>> get() {

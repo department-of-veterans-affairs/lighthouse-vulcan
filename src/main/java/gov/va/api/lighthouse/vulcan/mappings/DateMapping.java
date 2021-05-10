@@ -195,6 +195,49 @@ public class DateMapping<EntityT, DateT> implements SingleParameterMapping<Entit
     }
   }
 
+  @Value
+  @Builder
+  public static class LongPredicateFactory implements PredicateFactory<Long> {
+
+    DateApproximation approximation;
+
+    @SuppressWarnings("EnhancedSwitchMigration")
+    @Override
+    public Predicate predicate(
+        SearchableDate date, Expression<? extends Long> field, CriteriaBuilder criteriaBuilder) {
+      switch (date.operator()) {
+        case EQ:
+          return criteriaBuilder.and(
+              criteriaBuilder.greaterThanOrEqualTo(field, date.lowerBound().toEpochMilli()),
+              criteriaBuilder.lessThanOrEqualTo(field, date.upperBound().toEpochMilli()));
+        case NE:
+          return criteriaBuilder.or(
+              criteriaBuilder.lessThan(field, date.lowerBound().toEpochMilli()),
+              criteriaBuilder.greaterThan(field, date.upperBound().toEpochMilli()));
+        case GT:
+          // fall-through
+        case SA:
+          return criteriaBuilder.greaterThan(field, date.upperBound().toEpochMilli());
+        case LT:
+          // fall-through
+        case EB:
+          return criteriaBuilder.lessThan(field, date.lowerBound().toEpochMilli());
+        case GE:
+          return criteriaBuilder.greaterThanOrEqualTo(field, date.lowerBound().toEpochMilli());
+        case LE:
+          return criteriaBuilder.lessThanOrEqualTo(field, date.upperBound().toEpochMilli());
+        case AP:
+          return criteriaBuilder.and(
+              criteriaBuilder.greaterThanOrEqualTo(
+                  field, approximation().expandLowerBound(date).toEpochMilli()),
+              criteriaBuilder.lessThanOrEqualTo(
+                  field, approximation().expandUpperBound(date).toEpochMilli()));
+        default:
+          throw new InvalidRequest("Unknown date search operator: " + date.operator());
+      }
+    }
+  }
+
   /**
    * This represents the searchable date value, e.g. createdondate=gt2005. This supports the formats
    * defined by FHIRs date search specification.
