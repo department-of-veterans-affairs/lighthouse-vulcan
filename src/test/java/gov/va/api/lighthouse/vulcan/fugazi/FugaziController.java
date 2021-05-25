@@ -77,6 +77,7 @@ public class FugaziController {
                 .dateAsLongMilliseconds("ydate", "millis")
                 .token("foodtoken", "food", this::foodIsSupported, this::foodValues)
                 .tokens("foodSpecToken", this::foodIsSupported, this::foodSpecification)
+                .tokens("foodSpecNullable", this::foodIsSupported, this::foodSpecificationNullable)
                 .tokenList("foodtokencsv", "food", this::foodIsSupported, this::foodValues)
                 .reference(
                     "foodref",
@@ -133,6 +134,17 @@ public class FugaziController {
         .onNoSystemAndExplicitCode(c -> Specifications.<FugaziEntity>select("food", c))
         .onExplicitSystemAndAnyCode(
             s -> Specifications.<FugaziEntity>selectInList("food", strings(Food.class)))
+        .build()
+        .execute();
+  }
+
+  private Specification<FugaziEntity> foodSpecificationNullable(TokenParameter token) {
+    return token
+        .behavior()
+        .onExplicitSystemAndExplicitCode((s, c) -> Specifications.<FugaziEntity>select("food", c))
+        .onAnySystemAndExplicitCode(c -> Specifications.<FugaziEntity>select("food", c))
+        .onNoSystemAndExplicitCode(c -> Specifications.<FugaziEntity>select("food", c))
+        .onExplicitSystemAndAnyCode(s -> Specifications.<FugaziEntity>selectNotNull("food"))
         .build()
         .execute();
   }

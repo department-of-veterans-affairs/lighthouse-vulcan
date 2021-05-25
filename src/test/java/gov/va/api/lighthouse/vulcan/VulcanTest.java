@@ -205,6 +205,7 @@ class VulcanTest {
         "?foodtoken=|",
         "?foodtokencsv=|",
         "?foodSpecToken=|",
+        "?foodSpecNullable=|",
         "?foodtokencsv=NACHOS,|",
         "?foodSpecToken=NACHOS,|",
         "?xdate=nope",
@@ -324,6 +325,9 @@ class VulcanTest {
     assertThat(req("/fugazi?foodSpecToken=http://food|TACOS"))
         .containsExactlyInAnyOrder(tacos2005, tacos2006, tacos2007, tacos2008);
     assertThat(req("/fugazi?foodSpecToken=http://food|"))
+        .containsExactlyInAnyOrder(
+            nachos2005, moreNachos2005, tacos2005, tacos2006, tacos2007, tacos2008);
+    assertThat(req("/fugazi?foodSpecNullable=http://food|"))
         .containsExactlyInAnyOrder(
             nachos2005, moreNachos2005, tacos2005, tacos2006, tacos2007, tacos2008);
   }
