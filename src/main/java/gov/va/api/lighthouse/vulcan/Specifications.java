@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.stream.Collector;
 import java.util.stream.Collector.Characteristics;
 import javax.persistence.criteria.CriteriaBuilder.In;
+import javax.persistence.criteria.Predicate;
 import lombok.Getter;
 import lombok.experimental.UtilityClass;
 import org.springframework.data.jpa.domain.Specification;
@@ -60,6 +61,14 @@ public class Specifications {
       In<Object> in = criteriaBuilder.in(root.get(fieldName));
       values.forEach(in::value);
       return criteriaBuilder.or(in);
+    };
+  }
+
+  /** Produces a specification that explicitly looks for non-null values. */
+  public static <E> Specification<E> selectNotNull(String fieldName) {
+    return (root, criteriaQuery, criteriaBuilder) -> {
+      Predicate notNull = criteriaBuilder.isNotNull(root.get(fieldName));
+      return criteriaBuilder.or(notNull);
     };
   }
 
