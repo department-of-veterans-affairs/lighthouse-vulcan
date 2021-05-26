@@ -153,16 +153,13 @@ public class FugaziController {
             .parameterName("foodSpecHelper")
             .add("http://food", "food")
             .add("http://food-with-prefix", "food", this::removeFoodPrefix)
-            .add(
+            .addWithCustomSystemAndCodeHandler(
                 "http://food-custom",
+                "food",
                 (system, code) -> {
                   return Specifications.<FugaziEntity>select("food", code);
                 });
-    SystemIdFields.forEntity(FugaziEntity.class)
-        .parameterName("blah")
-        .add("http://whoops", (system, code) -> {
-          return Specifications.<FugaziEntity>select("food", code);
-        }).matchSystemOnly();
+
     return token
         .behavior()
         .onExplicitSystemAndExplicitCode(helper.matchSystemAndCode())

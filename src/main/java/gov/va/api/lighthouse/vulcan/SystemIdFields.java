@@ -33,9 +33,11 @@ public class SystemIdFields<EntityT> {
     return this;
   }
 
-  public SystemIdFields<EntityT> add(
-      String system, BiFunction<String, String, Specification<EntityT>> function) {
-    fields.add(SystemFieldMapping.<EntityT>of(system, function));
+  public SystemIdFields<EntityT> addWithCustomSystemAndCodeHandler(
+      String system,
+      String fieldName,
+      BiFunction<String, String, Specification<EntityT>> function) {
+    fields.add(SystemFieldMapping.<EntityT>of(system, fieldName, function));
     return this;
   }
 
@@ -72,13 +74,11 @@ public class SystemIdFields<EntityT> {
   public static class SystemFieldMapping<EntityT> {
     @NonNull String system;
 
-    String fieldName;
+    @NonNull String fieldName;
 
-    Function<String, String> converter;
+    @NonNull Function<String, Specification<EntityT>> withSystem;
 
-    Function<String, Specification<EntityT>> withSystem;
-
-    BiFunction<String, String, Specification<EntityT>> withSystemAndCode;
+    @NonNull BiFunction<String, String, Specification<EntityT>> withSystemAndCode;
 
     /** Creates mapping for system and field name. */
     public static <E> SystemFieldMapping<E> of(String system, String fieldName) {
@@ -104,9 +104,16 @@ public class SystemIdFields<EntityT> {
 
     /** Creates mapping with a custom function. */
     public static <E> SystemFieldMapping<E> of(
-        String system, BiFunction<String, String, Specification<E>> customSystemAndCodeFunction) {
+        String system,
+        String fieldName,
+        BiFunction<String, String, Specification<E>> customSystemAndCodeFunction) {
       return SystemFieldMapping.<E>builder()
           .system(system)
+          .fieldName(fieldName)
+          .withSystem(
+              (s) -> {
+                return Specifications.<E>selectNotNull(fieldName);
+              })
           .withSystemAndCode(customSystemAndCodeFunction)
           .build();
     }

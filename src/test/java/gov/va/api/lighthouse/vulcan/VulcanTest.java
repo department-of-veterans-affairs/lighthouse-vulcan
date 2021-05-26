@@ -359,6 +359,9 @@ class VulcanTest {
             nachos2005, moreNachos2005, tacos2005, tacos2006, tacos2007, tacos2008);
     assertThat(req("/fugazi?foodSpecHelper=http://food-with-prefix|food_TACOS"))
         .containsExactlyInAnyOrder(tacos2005, tacos2006, tacos2007, tacos2008);
+    assertThat(req("/fugazi?foodSpecHelper=http://food-custom|"))
+        .containsExactlyInAnyOrder(
+            nachos2005, moreNachos2005, tacos2005, tacos2006, tacos2007, tacos2008);
     assertThat(req("/fugazi?foodSpecHelper=http://food-custom|PIZZA")).isEmpty();
     assertThat(req("/fugazi?foodSpecHelper=http://food-custom|TACOS"))
         .containsExactlyInAnyOrder(tacos2005, tacos2006, tacos2007, tacos2008);
