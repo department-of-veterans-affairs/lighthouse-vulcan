@@ -80,6 +80,8 @@ class VulcanTest {
 
   private FugaziDto tacos2008;
 
+  private FugaziDto unknown;
+
   @SuppressWarnings("unused")
   static Stream<Arguments> pageAndCount() {
     /*
@@ -110,6 +112,7 @@ class VulcanTest {
 
   @BeforeEach
   void _insertData() {
+    unknown = _save("unknown", "2004-01-23T04:04:00Z", null);
     nachos2005 = _save("nachos2005", "2005-01-21T07:57:00Z", Food.NACHOS);
     moreNachos2005 = _save("moreNachos2005", "2005-01-22T07:57:00Z", Food.EVEN_MORE_NACHOS);
     tacos2005 = _save("tacos2005", "2005-01-23T07:57:00Z", Food.TACOS);
@@ -125,7 +128,7 @@ class VulcanTest {
     repo.save(
         FugaziEntity.builder()
             .name(name)
-            .food(food.toString())
+            .food(food == null ? null : food.toString())
             .date(time)
             .millis(time.toEpochMilli())
             .payload(mapper.writeValueAsString(dto))
@@ -205,6 +208,7 @@ class VulcanTest {
         "?foodtoken=|",
         "?foodtokencsv=|",
         "?foodSpecToken=|",
+        "?foodSpecNullable=|",
         "?foodtokencsv=NACHOS,|",
         "?foodSpecToken=NACHOS,|",
         "?xdate=nope",
@@ -241,14 +245,15 @@ class VulcanTest {
     assertThat(req("/fugazi?xdate=sa2006-01-20")).containsExactly(tacos2006, tacos2007, tacos2008);
     assertThat(req("/fugazi?xdate=ge2005-01-22"))
         .containsExactlyInAnyOrder(tacos2005, moreNachos2005, tacos2006, tacos2007, tacos2008);
-    assertThat(req("/fugazi?xdate=lt2005-01-22")).containsExactly(nachos2005);
-    assertThat(req("/fugazi?xdate=eb2005-01-22")).containsExactly(nachos2005);
+    assertThat(req("/fugazi?xdate=lt2005-01-22")).containsExactlyInAnyOrder(unknown, nachos2005);
+    assertThat(req("/fugazi?xdate=eb2005-01-22")).containsExactlyInAnyOrder(unknown, nachos2005);
     assertThat(req("/fugazi?xdate=le2005-01-22"))
-        .containsExactlyInAnyOrder(nachos2005, moreNachos2005);
+        .containsExactlyInAnyOrder(unknown, nachos2005, moreNachos2005);
     assertThat(req("/fugazi?xdate=ap2005-01-22"))
         .containsExactlyInAnyOrder(nachos2005, moreNachos2005, tacos2005);
     assertThat(req("/fugazi?xdate=ne2006"))
-        .containsExactlyInAnyOrder(nachos2005, moreNachos2005, tacos2005, tacos2007, tacos2008);
+        .containsExactlyInAnyOrder(
+            unknown, nachos2005, moreNachos2005, tacos2005, tacos2007, tacos2008);
     assertThat(req("/fugazi?xdate=gt2005-01-20&xdate=lt2005-02"))
         .containsExactlyInAnyOrder(nachos2005, tacos2005, moreNachos2005);
   }
@@ -263,14 +268,15 @@ class VulcanTest {
     assertThat(req("/fugazi?ydate=sa2006-01-20")).containsExactly(tacos2006, tacos2007, tacos2008);
     assertThat(req("/fugazi?ydate=ge2005-01-22"))
         .containsExactlyInAnyOrder(tacos2005, moreNachos2005, tacos2006, tacos2007, tacos2008);
-    assertThat(req("/fugazi?ydate=lt2005-01-22")).containsExactly(nachos2005);
-    assertThat(req("/fugazi?ydate=eb2005-01-22")).containsExactly(nachos2005);
+    assertThat(req("/fugazi?ydate=lt2005-01-22")).containsExactlyInAnyOrder(unknown, nachos2005);
+    assertThat(req("/fugazi?ydate=eb2005-01-22")).containsExactlyInAnyOrder(unknown, nachos2005);
     assertThat(req("/fugazi?ydate=le2005-01-22"))
-        .containsExactlyInAnyOrder(nachos2005, moreNachos2005);
+        .containsExactlyInAnyOrder(unknown, nachos2005, moreNachos2005);
     assertThat(req("/fugazi?ydate=ap2005-01-22"))
         .containsExactlyInAnyOrder(nachos2005, moreNachos2005, tacos2005);
     assertThat(req("/fugazi?ydate=ne2006"))
-        .containsExactlyInAnyOrder(nachos2005, moreNachos2005, tacos2005, tacos2007, tacos2008);
+        .containsExactlyInAnyOrder(
+            unknown, nachos2005, moreNachos2005, tacos2005, tacos2007, tacos2008);
     assertThat(req("/fugazi?ydate=gt2005-01-20&ydate=lt2005-02"))
         .containsExactlyInAnyOrder(nachos2005, tacos2005, moreNachos2005);
   }
@@ -326,6 +332,39 @@ class VulcanTest {
     assertThat(req("/fugazi?foodSpecToken=http://food|"))
         .containsExactlyInAnyOrder(
             nachos2005, moreNachos2005, tacos2005, tacos2006, tacos2007, tacos2008);
+
+    assertThat(req("/fugazi?foodSpecNullable=")).isEmpty();
+    assertThat(req("/fugazi?foodSpecNullable=PIZZA")).isEmpty();
+    assertThat(req("/fugazi?foodSpecNullable=http://movie-theater|NACHOS")).isEmpty();
+    assertThat(req("/fugazi?foodSpecNullable=NACHOS")).containsExactly(nachos2005);
+    assertThat(req("/fugazi?foodSpecNullable=TACOS"))
+        .containsExactlyInAnyOrder(tacos2005, tacos2006, tacos2007, tacos2008);
+    assertThat(req("/fugazi?foodSpecNullable=http://food|PIZZA")).isEmpty();
+    assertThat(req("/fugazi?foodSpecNullable=http://food|"))
+        .containsExactlyInAnyOrder(
+            nachos2005, moreNachos2005, tacos2005, tacos2006, tacos2007, tacos2008);
+
+    assertThat(req("/fugazi?foodSpecHelper=")).isEmpty();
+    assertThat(req("/fugazi?foodSpecHelper=PIZZA")).isEmpty();
+    assertThat(req("/fugazi?foodSpecHelper=http://movie-theater|NACHOS")).isEmpty();
+    assertThat(req("/fugazi?foodSpecHelper=http://movie-theater|")).isEmpty();
+    assertThat(req("/fugazi?foodSpecHelper=NACHOS")).containsExactly(nachos2005);
+    assertThat(req("/fugazi?foodSpecHelper=TACOS"))
+        .containsExactlyInAnyOrder(tacos2005, tacos2006, tacos2007, tacos2008);
+    assertThat(req("/fugazi?foodSpecHelper=http://food|PIZZA")).isEmpty();
+    assertThat(req("/fugazi?foodSpecHelper=http://food|TACOS"))
+        .containsExactlyInAnyOrder(tacos2005, tacos2006, tacos2007, tacos2008);
+    assertThat(req("/fugazi?foodSpecHelper=http://food|"))
+        .containsExactlyInAnyOrder(
+            nachos2005, moreNachos2005, tacos2005, tacos2006, tacos2007, tacos2008);
+    assertThat(req("/fugazi?foodSpecHelper=http://food-with-prefix|food_TACOS"))
+        .containsExactlyInAnyOrder(tacos2005, tacos2006, tacos2007, tacos2008);
+    assertThat(req("/fugazi?foodSpecHelper=http://food-custom|"))
+        .containsExactlyInAnyOrder(
+            nachos2005, moreNachos2005, tacos2005, tacos2006, tacos2007, tacos2008);
+    assertThat(req("/fugazi?foodSpecHelper=http://food-custom|PIZZA")).isEmpty();
+    assertThat(req("/fugazi?foodSpecHelper=http://food-custom|TACOS"))
+        .containsExactlyInAnyOrder(tacos2005, tacos2006, tacos2007, tacos2008);
   }
 
   @Test
@@ -366,6 +405,27 @@ class VulcanTest {
     assertThat(req("/fugazi?foodSpecToken=http://food|TACOS,NACHOS"))
         .containsExactlyInAnyOrder(tacos2005, tacos2006, tacos2007, tacos2008, nachos2005);
     assertThat(req("/fugazi?foodSpecToken=http://food|"))
+        .containsExactlyInAnyOrder(
+            nachos2005, moreNachos2005, tacos2005, tacos2006, tacos2007, tacos2008);
+
+    assertThat(req("/fugazi?foodSpecHelper=")).isEmpty();
+    assertThat(req("/fugazi?foodSpecHelper=,")).isEmpty();
+    assertThat(req("/fugazi?foodSpecHelper=PIZZA")).isEmpty();
+    assertThat(req("/fugazi?foodSpecHelper=http://movie-theater|NACHOS")).isEmpty();
+    assertThat(req("/fugazi?foodSpecHelper=NACHOS")).containsExactly(nachos2005);
+    assertThat(req("/fugazi?foodSpecHelper=TACOS"))
+        .containsExactlyInAnyOrder(tacos2005, tacos2006, tacos2007, tacos2008);
+    assertThat(req("/fugazi?foodSpecHelper=http://food|TACOS"))
+        .containsExactlyInAnyOrder(tacos2005, tacos2006, tacos2007, tacos2008);
+    assertThat(req("/fugazi?foodSpecHelper=http://food|TACOS,http://nope|NACHOS"))
+        .containsExactlyInAnyOrder(tacos2005, tacos2006, tacos2007, tacos2008);
+    assertThat(req("/fugazi?foodSpecHelper=http://food|TACOS,http://food|NACHOS"))
+        .containsExactlyInAnyOrder(tacos2005, tacos2006, tacos2007, tacos2008, nachos2005);
+    assertThat(req("/fugazi?foodSpecHelper=http://food|TACOS,NACHOS"))
+        .containsExactlyInAnyOrder(tacos2005, tacos2006, tacos2007, tacos2008, nachos2005);
+    assertThat(req("/fugazi?foodSpecHelper=http://food-with-prefix|food_TACOS,http://food|NACHOS"))
+        .containsExactlyInAnyOrder(tacos2005, tacos2006, tacos2007, tacos2008, nachos2005);
+    assertThat(req("/fugazi?foodSpecHelper=http://food|"))
         .containsExactlyInAnyOrder(
             nachos2005, moreNachos2005, tacos2005, tacos2006, tacos2007, tacos2008);
   }

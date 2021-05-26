@@ -9,6 +9,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import gov.va.api.health.autoconfig.configuration.JacksonConfig;
 import gov.va.api.lighthouse.vulcan.InvalidRequest;
 import gov.va.api.lighthouse.vulcan.Specifications;
+import gov.va.api.lighthouse.vulcan.SystemIdFields;
 import gov.va.api.lighthouse.vulcan.Vulcan;
 import gov.va.api.lighthouse.vulcan.VulcanConfiguration;
 import gov.va.api.lighthouse.vulcan.VulcanConfiguration.PagingConfiguration;
@@ -77,6 +78,11 @@ public class FugaziController {
                 .dateAsLongMilliseconds("ydate", "millis")
                 .token("foodtoken", "food", this::foodIsSupported, this::foodValues)
                 .tokens("foodSpecToken", this::foodIsSupported, this::foodSpecification)
+                .tokens("foodSpecNullable", this::foodIsSupported, this::foodSpecificationNullable)
+                .tokens(
+                    "foodSpecHelper",
+                    this::foodIsSupportedAnyExplicitSystem,
+                    this::foodSpecificationHelper)
                 .tokenList("foodtokencsv", "food", this::foodIsSupported, this::foodValues)
                 .reference(
                     "foodref",
@@ -98,6 +104,10 @@ public class FugaziController {
       return false;
     }
     return true;
+  }
+
+  private boolean foodIsSupportedAnyExplicitSystem(TokenParameter token) {
+    return token.hasExplicitSystem() || token.hasExplicitCode();
   }
 
   private boolean foodReferenceIsSupported(ReferenceParameter referenceParameter) {
@@ -133,6 +143,40 @@ public class FugaziController {
         .onNoSystemAndExplicitCode(c -> Specifications.<FugaziEntity>select("food", c))
         .onExplicitSystemAndAnyCode(
             s -> Specifications.<FugaziEntity>selectInList("food", strings(Food.class)))
+        .build()
+        .execute();
+  }
+
+  private Specification<FugaziEntity> foodSpecificationHelper(TokenParameter token) {
+    var helper =
+        SystemIdFields.forEntity(FugaziEntity.class)
+            .parameterName("foodSpecHelper")
+            .add("http://food", "food")
+            .add("http://food-with-prefix", "food", this::removeFoodPrefix)
+            .addWithCustomSystemAndCodeHandler(
+                "http://food-custom",
+                "food",
+                (system, code) -> {
+                  return Specifications.<FugaziEntity>select("food", code);
+                });
+
+    return token
+        .behavior()
+        .onExplicitSystemAndExplicitCode(helper.matchSystemAndCode())
+        .onAnySystemAndExplicitCode(c -> Specifications.<FugaziEntity>select("food", c))
+        .onNoSystemAndExplicitCode(c -> Specifications.<FugaziEntity>select("food", c))
+        .onExplicitSystemAndAnyCode(helper.matchSystemOnly())
+        .build()
+        .execute();
+  }
+
+  private Specification<FugaziEntity> foodSpecificationNullable(TokenParameter token) {
+    return token
+        .behavior()
+        .onExplicitSystemAndExplicitCode((s, c) -> Specifications.<FugaziEntity>select("food", c))
+        .onAnySystemAndExplicitCode(c -> Specifications.<FugaziEntity>select("food", c))
+        .onNoSystemAndExplicitCode(c -> Specifications.<FugaziEntity>select("food", c))
+        .onExplicitSystemAndAnyCode(s -> Specifications.<FugaziEntity>selectNotNull("food"))
         .build()
         .execute();
   }
@@ -178,5 +222,13 @@ public class FugaziController {
       throw InvalidRequest.badParameter("namefood", value, "format is name:food");
     }
     return Map.of("name", parts[0], "food", parts[1]);
+  }
+
+  private String removeFoodPrefix(String value) {
+    if (value == null) return null;
+    if (StringUtils.startsWith(value, "food_")) {
+      return StringUtils.removeStart(value, "food_");
+    }
+    return value;
   }
 }

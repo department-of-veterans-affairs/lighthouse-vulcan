@@ -23,7 +23,7 @@ import lombok.NoArgsConstructor;
 public class FugaziEntity {
   @Id @GeneratedValue @Column @NotNull @EqualsAndHashCode.Include long id;
   @Column @NotNull String name;
-  @Column @NotNull String food;
+  @Column String food;
   @Column @NotNull Instant date;
   @Column long millis;
   @Column String payload;
