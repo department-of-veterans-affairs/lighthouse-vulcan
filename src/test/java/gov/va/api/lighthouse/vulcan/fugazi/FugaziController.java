@@ -67,17 +67,13 @@ public class FugaziController {
                 .string("name")
                 .string("xname", "name")
                 .value("namevalue", "name")
-                .csvList("food")
-                .csvList("xfood", "food")
                 .value("namevalue", "name")
                 .value("millis", v -> Instant.parse(v).toEpochMilli())
                 .value("xmillis", "millis", v -> Instant.parse(v).toEpochMilli())
                 .values("nameAndFood", this::nameFoodValues)
                 .dateAsInstant("xdate", "date")
                 .dateAsLongMilliseconds("ydate", "millis")
-                .token("foodtoken", "food", this::foodIsSupported, this::foodValues)
                 .tokens("foodSpecToken", this::foodIsSupported, this::foodSpecification)
-                .tokenList("foodtokencsv", "food", this::foodIsSupported, this::foodValues)
                 .reference(
                     "foodref",
                     "name",

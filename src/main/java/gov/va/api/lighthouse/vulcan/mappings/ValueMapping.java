@@ -27,11 +27,6 @@ public class ValueMapping<EntityT> implements SingleParameterMapping<EntityT> {
   /** Produce a JPA entity field name to query value. */
   @Exclude Function<String, Map<String, ?>> converter;
 
-  /** Simple converter that allows a single field to be mapped to the parameter value. */
-  public static Function<String, Map<String, ?>> singleFieldValue(String fieldName) {
-    return value -> Map.of(fieldName, value);
-  }
-
   @Override
   public Specification<EntityT> specificationFor(HttpServletRequest request) {
     String parameterValue = request.getParameter(parameterName());

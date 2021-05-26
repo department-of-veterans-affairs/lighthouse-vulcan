@@ -48,7 +48,6 @@ public class ExampleUsage {
         .mappings(
             Mappings.forEntity(FugaziEntity.class)
                 .string("name")
-                .csvList("food")
                 .value("millis", v -> Instant.parse(v).toEpochMilli())
                 .dateAsInstant("when", "date")
                 .dateAsLongMilliseconds("whenLong", "millis")
