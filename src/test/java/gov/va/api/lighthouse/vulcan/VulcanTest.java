@@ -332,6 +332,14 @@ class VulcanTest {
     assertThat(req("/fugazi?foodSpecToken=http://food|"))
         .containsExactlyInAnyOrder(
             nachos2005, moreNachos2005, tacos2005, tacos2006, tacos2007, tacos2008);
+
+    assertThat(req("/fugazi?foodSpecNullable=")).isEmpty();
+    assertThat(req("/fugazi?foodSpecNullable=PIZZA")).isEmpty();
+    assertThat(req("/fugazi?foodSpecNullable=http://movie-theater|NACHOS")).isEmpty();
+    assertThat(req("/fugazi?foodSpecNullable=NACHOS")).containsExactly(nachos2005);
+    assertThat(req("/fugazi?foodSpecNullable=TACOS"))
+        .containsExactlyInAnyOrder(tacos2005, tacos2006, tacos2007, tacos2008);
+    assertThat(req("/fugazi?foodSpecNullable=http://food|PIZZA")).isEmpty();
     assertThat(req("/fugazi?foodSpecNullable=http://food|"))
         .containsExactlyInAnyOrder(
             nachos2005, moreNachos2005, tacos2005, tacos2006, tacos2007, tacos2008);
