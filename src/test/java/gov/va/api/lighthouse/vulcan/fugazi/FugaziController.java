@@ -9,7 +9,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import gov.va.api.health.autoconfig.configuration.JacksonConfig;
 import gov.va.api.lighthouse.vulcan.InvalidRequest;
 import gov.va.api.lighthouse.vulcan.Specifications;
-import gov.va.api.lighthouse.vulcan.SystemIdColumns;
+import gov.va.api.lighthouse.vulcan.SystemIdFields;
 import gov.va.api.lighthouse.vulcan.Vulcan;
 import gov.va.api.lighthouse.vulcan.VulcanConfiguration;
 import gov.va.api.lighthouse.vulcan.VulcanConfiguration.PagingConfiguration;
@@ -149,8 +149,8 @@ public class FugaziController {
 
   private Specification<FugaziEntity> foodSpecificationHelper(TokenParameter token) {
     var helper =
-        SystemIdColumns.forEntity(FugaziEntity.class)
-            .param("foodSpecHelper")
+        SystemIdFields.forEntity(FugaziEntity.class)
+            .parameterName("foodSpecHelper")
             .add("http://food", "food")
             .add("http://food-with-prefix", "food", this::removeFoodPrefix)
             .add(
@@ -158,6 +158,11 @@ public class FugaziController {
                 (system, code) -> {
                   return Specifications.<FugaziEntity>select("food", code);
                 });
+    SystemIdFields.forEntity(FugaziEntity.class)
+        .parameterName("blah")
+        .add("http://whoops", (system, code) -> {
+          return Specifications.<FugaziEntity>select("food", code);
+        }).matchSystemOnly();
     return token
         .behavior()
         .onExplicitSystemAndExplicitCode(helper.matchSystemAndCode())

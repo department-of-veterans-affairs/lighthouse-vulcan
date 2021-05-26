@@ -14,37 +14,37 @@ import org.springframework.data.jpa.domain.Specification;
 /** Provides Specification function shortcuts for simple system to field name mappings. */
 @Data
 @NoArgsConstructor
-public class SystemIdColumns<EntityT> {
-  private final List<SystemColumnMapping<EntityT>> fields = new ArrayList<>();
+public class SystemIdFields<EntityT> {
+  private final List<SystemFieldMapping<EntityT>> fields = new ArrayList<>();
   private String parameterName;
 
-  public static <E> SystemIdColumns<E> forEntity(Class<E> entity) {
-    return new SystemIdColumns<>();
+  public static <E> SystemIdFields<E> forEntity(Class<E> entity) {
+    return new SystemIdFields<>();
   }
 
-  public SystemIdColumns<EntityT> add(String system, String fieldName) {
-    fields.add(SystemColumnMapping.<EntityT>of(system, fieldName));
+  public SystemIdFields<EntityT> add(String system, String fieldName) {
+    fields.add(SystemFieldMapping.<EntityT>of(system, fieldName));
     return this;
   }
 
-  public SystemIdColumns<EntityT> add(
+  public SystemIdFields<EntityT> add(
       String system, String fieldName, Function<String, String> converter) {
-    fields.add(SystemColumnMapping.<EntityT>of(system, fieldName, converter));
+    fields.add(SystemFieldMapping.<EntityT>of(system, fieldName, converter));
     return this;
   }
 
-  public SystemIdColumns<EntityT> add(
+  public SystemIdFields<EntityT> add(
       String system, BiFunction<String, String, Specification<EntityT>> function) {
-    fields.add(SystemColumnMapping.<EntityT>of(system, function));
+    fields.add(SystemFieldMapping.<EntityT>of(system, function));
     return this;
   }
 
   /** Generates BiFunction from mappings. */
   public BiFunction<String, String, Specification<EntityT>> matchSystemAndCode() {
     return (system, code) -> {
-      for (SystemColumnMapping<EntityT> column : fields) {
-        if (column.system().equals(system)) {
-          return column.withSystemAndCode().apply(system, code);
+      for (SystemFieldMapping<EntityT> field : fields) {
+        if (field.system().equals(system)) {
+          return field.withSystemAndCode().apply(system, code);
         }
       }
       return (root, criteriaQuery, criteriaBuilder) -> {
@@ -56,9 +56,9 @@ public class SystemIdColumns<EntityT> {
   /** Generates Function from mappings. */
   public Function<String, Specification<EntityT>> matchSystemOnly() {
     return system -> {
-      for (SystemColumnMapping<EntityT> column : fields) {
-        if (column.system().equals(system)) {
-          return column.withSystem().apply(system);
+      for (SystemFieldMapping<EntityT> field : fields) {
+        if (field.system().equals(system)) {
+          return field.withSystem().apply(system);
         }
       }
       return (root, criteriaQuery, criteriaBuilder) -> {
@@ -69,7 +69,7 @@ public class SystemIdColumns<EntityT> {
 
   @Builder
   @Value
-  public static class SystemColumnMapping<EntityT> {
+  public static class SystemFieldMapping<EntityT> {
     @NonNull String system;
 
     String fieldName;
@@ -80,15 +80,15 @@ public class SystemIdColumns<EntityT> {
 
     BiFunction<String, String, Specification<EntityT>> withSystemAndCode;
 
-    /** Creates mapping for system and column. */
-    public static <E> SystemColumnMapping<E> of(String system, String fieldName) {
+    /** Creates mapping for system and field name. */
+    public static <E> SystemFieldMapping<E> of(String system, String fieldName) {
       return of(system, fieldName, Function.identity());
     }
 
-    /** Creates mapping for system and column with value converter. */
-    public static <E> SystemColumnMapping<E> of(
+    /** Creates mapping for system and field name with value converter. */
+    public static <E> SystemFieldMapping<E> of(
         String system, String fieldName, Function<String, String> converter) {
-      return SystemColumnMapping.<E>builder()
+      return SystemFieldMapping.<E>builder()
           .system(system)
           .fieldName(fieldName)
           .withSystem(
@@ -103,9 +103,9 @@ public class SystemIdColumns<EntityT> {
     }
 
     /** Creates mapping with a custom function. */
-    public static <E> SystemColumnMapping<E> of(
+    public static <E> SystemFieldMapping<E> of(
         String system, BiFunction<String, String, Specification<E>> customSystemAndCodeFunction) {
-      return SystemColumnMapping.<E>builder()
+      return SystemFieldMapping.<E>builder()
           .system(system)
           .withSystemAndCode(customSystemAndCodeFunction)
           .build();
