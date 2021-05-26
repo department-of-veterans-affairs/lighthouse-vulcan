@@ -75,6 +75,11 @@ public class FugaziController {
                 .dateAsInstant("xdate", "date")
                 .dateAsLongMilliseconds("ydate", "millis")
                 .tokens("foodSpecToken", this::foodIsSupported, this::foodSpecification)
+                .tokens("foodSpecNullable", this::foodIsSupported, this::foodSpecificationNullable)
+                .tokens(
+                    "foodSpecHelper",
+                    this::foodIsSupportedAnyExplicitSystem,
+                    this::foodSpecificationHelper)
                 .reference(
                     "foodref",
                     "name",
