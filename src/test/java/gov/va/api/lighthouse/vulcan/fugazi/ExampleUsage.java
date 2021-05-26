@@ -61,12 +61,14 @@ public class ExampleUsage {
                     rp -> rp.publicId())
                 .get())
         .defaultQuery(rejectRequest())
-        .rule(atLeastOneParameterOf("patient", "_id"))
-        .rule(parametersNeverSpecifiedTogether("patient", "_id"))
-        .rule(forbiddenParameters("client-key"))
-        .rule(ifParameter("patient").thenAlsoAtLeastOneParameterOf("category", "code"))
-        .rule(ifParameter("category").thenForbidParameters("code"))
-        .rule(parametersAlwaysSpecifiedTogether("latitude", "longitude"))
+        .rules(
+            List.of(
+                atLeastOneParameterOf("patient", "_id"),
+                parametersNeverSpecifiedTogether("patient", "_id"),
+                forbiddenParameters("client-key"),
+                ifParameter("patient").thenAlsoAtLeastOneParameterOf("category", "code"),
+                ifParameter("category").thenForbidParameters("code"),
+                parametersAlwaysSpecifiedTogether("latitude", "longitude")))
         .build();
   }
 

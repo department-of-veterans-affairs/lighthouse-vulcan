@@ -41,6 +41,7 @@ public class Mappings<EntityT> implements Supplier<List<Mapping<EntityT>>> {
    *     value(...) methods instead.
    */
   @Deprecated(since = "1.0.7", forRemoval = true)
+  @SuppressWarnings("InlineMeSuggester")
   public Mappings<EntityT> csvList(String parameterAndFieldName) {
     return value(parameterAndFieldName, parameterAndFieldName);
   }
@@ -52,6 +53,7 @@ public class Mappings<EntityT> implements Supplier<List<Mapping<EntityT>>> {
    *     value(...) methods instead.
    */
   @Deprecated(since = "1.0.7", forRemoval = true)
+  @SuppressWarnings("InlineMeSuggester")
   public Mappings<EntityT> csvList(String parameterName, String fieldName) {
     return value(parameterName, fieldName);
   }

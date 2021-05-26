@@ -11,6 +11,7 @@ import static org.mockito.Mockito.when;
 import gov.va.api.lighthouse.vulcan.VulcanConfiguration.PagingConfiguration;
 import gov.va.api.lighthouse.vulcan.fugazi.FugaziEntity;
 import gov.va.api.lighthouse.vulcan.mappings.Mappings;
+import java.util.List;
 import java.util.stream.Stream;
 import javax.servlet.http.HttpServletRequest;
 import org.junit.jupiter.api.Test;
@@ -125,12 +126,13 @@ class RequestContextTest {
                     .build())
             .mappings(Mappings.forEntity(FugaziEntity.class).string("name").get())
             .defaultQuery(returnNothing())
-            .rule(r -> {})
-            .rule(r -> {})
-            .rule(
-                r -> {
-                  throw new InvalidRequest("fugazi");
-                })
+            .rules(
+                List.of(
+                    r -> {},
+                    r -> {},
+                    r -> {
+                      throw new InvalidRequest("fugazi");
+                    }))
             .build();
 
     HttpServletRequest req = mock(HttpServletRequest.class);

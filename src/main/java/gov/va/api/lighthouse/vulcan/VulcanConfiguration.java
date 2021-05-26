@@ -7,7 +7,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.validation.constraints.NotNull;
 import lombok.Builder;
 import lombok.NonNull;
-import lombok.Singular;
 import lombok.Value;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
@@ -17,11 +16,11 @@ import org.springframework.data.jpa.domain.Specification;
 public class VulcanConfiguration<EntityT> {
   @NonNull PagingConfiguration paging;
 
-  @Singular @NonNull List<Mapping<EntityT>> mappings;
+  @NonNull List<Mapping<EntityT>> mappings;
 
   @NonNull Function<HttpServletRequest, Specification<EntityT>> defaultQuery;
 
-  @Singular List<Rule> rules;
+  List<Rule> rules;
 
   public static <E> VulcanConfigurationBuilder<E> forEntity(
       @SuppressWarnings("unused") Class<E> repo) {
