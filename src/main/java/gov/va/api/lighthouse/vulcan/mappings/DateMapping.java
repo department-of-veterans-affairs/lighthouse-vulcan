@@ -23,7 +23,6 @@ import javax.persistence.criteria.Path;
 import javax.persistence.criteria.Predicate;
 import javax.servlet.http.HttpServletRequest;
 import lombok.Builder;
-import lombok.Singular;
 import lombok.ToString.Exclude;
 import lombok.Value;
 import org.springframework.data.jpa.domain.Specification;
@@ -52,10 +51,16 @@ public class DateMapping<EntityT, DateT> implements SingleParameterMapping<Entit
    */
   public static DateApproximation defaultGraduatedApproximation() {
     return FixedAmountDateApproximation.builder()
-        .amount(DateFidelity.YEAR, Duration.ofDays(365))
-        .amount(DateFidelity.MONTH, Duration.ofDays(30))
-        .amount(DateFidelity.DAY, Duration.ofDays(3))
-        .amount(DateFidelity.LESS_THAN_A_DAY, Duration.ofDays(1))
+        .amounts(
+            Map.of(
+                DateFidelity.YEAR,
+                Duration.ofDays(365),
+                DateFidelity.MONTH,
+                Duration.ofDays(30),
+                DateFidelity.DAY,
+                Duration.ofDays(3),
+                DateFidelity.LESS_THAN_A_DAY,
+                Duration.ofDays(1)))
         .build();
   }
 
@@ -133,7 +138,7 @@ public class DateMapping<EntityT, DateT> implements SingleParameterMapping<Entit
   // thanks lombok
   @SuppressWarnings("cast")
   public static class FixedAmountDateApproximation implements DateApproximation {
-    @Singular Map<DateFidelity, Duration> amounts;
+    Map<DateFidelity, Duration> amounts;
 
     private Duration amountFor(DateFidelity fidelity) {
       var amount = amounts().get(fidelity);

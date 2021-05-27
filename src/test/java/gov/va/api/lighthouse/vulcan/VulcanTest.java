@@ -204,35 +204,10 @@ class VulcanTest {
 
   @ParameterizedTest
   @ValueSource(
-      strings = {
-        "?foodtoken=|",
-        "?foodtokencsv=|",
-        "?foodSpecToken=|",
-        "?foodSpecNullable=|",
-        "?foodtokencsv=NACHOS,|",
-        "?foodSpecToken=NACHOS,|",
-        "?xdate=nope",
-        "?xdate=no2006"
-      })
+      strings = {"?foodSpecToken=|", "?foodSpecToken=NACHOS,|", "?xdate=nope", "?xdate=no2006"})
   @SneakyThrows
   void invalidParameterSearchs(String query) {
     mvc.perform(get("/fugazi" + query)).andExpect(status().isBadRequest());
-  }
-
-  @SuppressWarnings("SpellCheckingInspection")
-  @Test
-  void mappingCsvList() {
-    assertThat(req("/fugazi?food=")).isEmpty();
-    assertThat(req("/fugazi?food=,")).isEmpty();
-    assertThat(req("/fugazi?food=NOPE")).isEmpty();
-    assertThat(req("/fugazi?food=NACHOS")).containsExactly(nachos2005);
-    assertThat(req("/fugazi?food=NACHOS,NACHOS")).containsExactly(nachos2005);
-    assertThat(req("/fugazi?food=NACHOS,TACOS"))
-        .containsExactlyInAnyOrder(nachos2005, tacos2005, tacos2006, tacos2007, tacos2008);
-    assertThat(req("/fugazi?food=NACHOS,,TACOS,TACOS"))
-        .containsExactlyInAnyOrder(nachos2005, tacos2005, tacos2006, tacos2007, tacos2008);
-    assertThat(req("/fugazi?food=NACHOS,NOPE")).containsExactly(nachos2005);
-    assertThat(req("/fugazi?xfood=NACHOS")).containsExactly(nachos2005);
   }
 
   @SuppressWarnings("SpellCheckingInspection")
@@ -308,19 +283,6 @@ class VulcanTest {
 
   @Test
   void mappingToken() {
-    // Deprecated
-    assertThat(req("/fugazi?foodtoken=")).isEmpty();
-    assertThat(req("/fugazi?foodtoken=PIZZA")).isEmpty();
-    assertThat(req("/fugazi?foodtoken=http://movie-theater|NACHOS")).isEmpty();
-    assertThat(req("/fugazi?foodtoken=NACHOS")).containsExactly(nachos2005);
-    assertThat(req("/fugazi?foodtoken=TACOS"))
-        .containsExactlyInAnyOrder(tacos2005, tacos2006, tacos2007, tacos2008);
-    assertThat(req("/fugazi?foodtoken=http://food|TACOS"))
-        .containsExactlyInAnyOrder(tacos2005, tacos2006, tacos2007, tacos2008);
-    assertThat(req("/fugazi?foodtoken=http://food|"))
-        .containsExactlyInAnyOrder(
-            nachos2005, moreNachos2005, tacos2005, tacos2006, tacos2007, tacos2008);
-    // New Fancy Boi
     assertThat(req("/fugazi?foodSpecToken=")).isEmpty();
     assertThat(req("/fugazi?foodSpecToken=PIZZA")).isEmpty();
     assertThat(req("/fugazi?foodSpecToken=http://movie-theater|NACHOS")).isEmpty();
@@ -369,26 +331,6 @@ class VulcanTest {
 
   @Test
   void mappingTokenList() {
-    // Deprecated
-    assertThat(req("/fugazi?foodtokencsv=")).isEmpty();
-    assertThat(req("/fugazi?foodtokencsv=,")).isEmpty();
-    assertThat(req("/fugazi?foodtokencsv=PIZZA")).isEmpty();
-    assertThat(req("/fugazi?foodtokencsv=http://movie-theater|NACHOS")).isEmpty();
-    assertThat(req("/fugazi?foodtokencsv=NACHOS")).containsExactly(nachos2005);
-    assertThat(req("/fugazi?foodtokencsv=TACOS"))
-        .containsExactlyInAnyOrder(tacos2005, tacos2006, tacos2007, tacos2008);
-    assertThat(req("/fugazi?foodtokencsv=http://food|TACOS"))
-        .containsExactlyInAnyOrder(tacos2005, tacos2006, tacos2007, tacos2008);
-    assertThat(req("/fugazi?foodtokencsv=http://food|TACOS,http://nope|NACHOS"))
-        .containsExactlyInAnyOrder(tacos2005, tacos2006, tacos2007, tacos2008);
-    assertThat(req("/fugazi?foodtokencsv=http://food|TACOS,http://food|NACHOS"))
-        .containsExactlyInAnyOrder(tacos2005, tacos2006, tacos2007, tacos2008, nachos2005);
-    assertThat(req("/fugazi?foodtokencsv=http://food|TACOS,NACHOS"))
-        .containsExactlyInAnyOrder(tacos2005, tacos2006, tacos2007, tacos2008, nachos2005);
-    assertThat(req("/fugazi?foodtokencsv=http://food|"))
-        .containsExactlyInAnyOrder(
-            nachos2005, moreNachos2005, tacos2005, tacos2006, tacos2007, tacos2008);
-    // New Fancy Boi
     assertThat(req("/fugazi?foodSpecToken=")).isEmpty();
     assertThat(req("/fugazi?foodSpecToken=,")).isEmpty();
     assertThat(req("/fugazi?foodSpecToken=PIZZA")).isEmpty();
@@ -440,7 +382,8 @@ class VulcanTest {
 
   @Test
   void multipleParametersAreCombinedWithAnd() {
-    assertThat(req("/fugazi?food=NACHOS,TACOS&name:contains=nacho")).containsExactly(nachos2005);
+    assertThat(req("/fugazi?foodSpecToken=NACHOS,TACOS&name:contains=nacho"))
+        .containsExactly(nachos2005);
   }
 
   @ParameterizedTest

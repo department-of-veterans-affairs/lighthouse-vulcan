@@ -18,6 +18,7 @@ import java.time.OffsetDateTime;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
+import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Stream;
 import javax.servlet.http.HttpServletRequest;
@@ -133,7 +134,7 @@ class DateMappingTest {
   void fixedDateApproximationThrowsExceptionWhenNotConfigured() {
     var ap =
         FixedAmountDateApproximation.builder()
-            .amount(DateFidelity.YEAR, Duration.ofDays(1))
+            .amounts(Map.of(DateFidelity.YEAR, Duration.ofDays(1)))
             .build();
     var s = new SearchableDate("x", "ap2005-01");
     assertThatExceptionOfType(IllegalStateException.class).isThrownBy(() -> ap.expandLowerBound(s));

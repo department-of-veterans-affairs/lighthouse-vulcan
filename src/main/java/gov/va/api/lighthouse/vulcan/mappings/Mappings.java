@@ -3,7 +3,6 @@ package gov.va.api.lighthouse.vulcan.mappings;
 import static java.util.Collections.singletonList;
 
 import gov.va.api.lighthouse.vulcan.Mapping;
-import gov.va.api.lighthouse.vulcan.Specifications;
 import gov.va.api.lighthouse.vulcan.mappings.DateMapping.PredicateFactory;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -32,28 +31,6 @@ public class Mappings<EntityT> implements Supplier<List<Mapping<EntityT>>> {
   public Mappings<EntityT> add(Mapping<EntityT> mapping) {
     mappings.add(mapping);
     return this;
-  }
-
-  /**
-   * Create a CSV list mapping where request and field name are the same.
-   *
-   * @deprecated composite value (CSV) support has been added to value mappings. Use one of the
-   *     value(...) methods instead.
-   */
-  @Deprecated(since = "1.0.7", forRemoval = true)
-  public Mappings<EntityT> csvList(String parameterAndFieldName) {
-    return value(parameterAndFieldName, parameterAndFieldName);
-  }
-
-  /**
-   * Create a CSV list mapping where request and field name are different.
-   *
-   * @deprecated composite value (CSV) support has been added to value mappings. Use one of the
-   *     value(...) methods instead.
-   */
-  @Deprecated(since = "1.0.7", forRemoval = true)
-  public Mappings<EntityT> csvList(String parameterName, String fieldName) {
-    return value(parameterName, fieldName);
   }
 
   /**
@@ -159,94 +136,6 @@ public class Mappings<EntityT> implements Supplier<List<Mapping<EntityT>>> {
   public Mappings<EntityT> string(String parameterName, String fieldName) {
     return add(
         StringMapping.<EntityT>builder().parameterName(parameterName).fieldName(fieldName).build());
-  }
-
-  /**
-   * Create a token list mapping where field name is constant .
-   *
-   * @deprecated to support complex token logic, JPA specifications support was added. Use the
-   *     tokens(...) method instead.
-   */
-  @Deprecated(since = "1.0.6", forRemoval = true)
-  public Mappings<EntityT> token(
-      String parameterName,
-      String fieldName,
-      Predicate<TokenParameter> supportedToken,
-      Function<TokenParameter, Collection<String>> valueSelector) {
-    return token(parameterName, t -> singletonList(fieldName), supportedToken, valueSelector);
-  }
-
-  /**
-   * Create a token list mapping where parameter and field name are the same.
-   *
-   * @deprecated to support complex token logic, JPA specifications support was added. Use the
-   *     tokens(...) method instead.
-   */
-  @Deprecated(since = "1.0.6", forRemoval = true)
-  public Mappings<EntityT> token(
-      String parameterAndFieldName,
-      Predicate<TokenParameter> supportedToken,
-      Function<TokenParameter, Collection<String>> valueSelector) {
-    return token(parameterAndFieldName, parameterAndFieldName, supportedToken, valueSelector);
-  }
-
-  /**
-   * Create a token mapping where all aspects are configurable.
-   *
-   * @deprecated to support complex token logic, JPA specifications support was added. Use the
-   *     tokens(...) method instead.
-   */
-  @Deprecated(since = "1.0.6", forRemoval = true)
-  public Mappings<EntityT> token(
-      String parameterName,
-      Function<TokenParameter, Collection<String>> fieldNameSelector,
-      Predicate<TokenParameter> supportedToken,
-      Function<TokenParameter, Collection<String>> valueSelector) {
-    return tokens(
-        parameterName,
-        supportedToken,
-        token -> {
-          Collection<String> fieldNames = fieldNameSelector.apply(token);
-          Collection<String> values = valueSelector.apply(token);
-          return fieldNames.stream()
-              .map(field -> Specifications.<EntityT>selectInList(field, values))
-              .collect(Specifications.any());
-        });
-  }
-
-  /** Create a token list mapping where field name is constant . */
-  @Deprecated(since = "1.0.9", forRemoval = true)
-  public Mappings<EntityT> tokenList(
-      String parameterName,
-      String fieldName,
-      Predicate<TokenParameter> supportedToken,
-      Function<TokenParameter, Collection<String>> valueSelector) {
-    return tokenList(parameterName, t -> singletonList(fieldName), supportedToken, valueSelector);
-  }
-
-  /** Create a token list mapping where parameter and field name are the same. */
-  @Deprecated(since = "1.0.9", forRemoval = true)
-  public Mappings<EntityT> tokenList(
-      String parameterAndFieldName,
-      Predicate<TokenParameter> supportedToken,
-      Function<TokenParameter, Collection<String>> valueSelector) {
-    return tokenList(parameterAndFieldName, parameterAndFieldName, supportedToken, valueSelector);
-  }
-
-  /** Create a token list mapping where all aspects are configurable. */
-  @Deprecated(since = "1.0.9", forRemoval = true)
-  public Mappings<EntityT> tokenList(
-      String parameterName,
-      Function<TokenParameter, Collection<String>> fieldNameSelector,
-      Predicate<TokenParameter> supportedToken,
-      Function<TokenParameter, Collection<String>> valueSelector) {
-    return add(
-        TokenCsvListMapping.<EntityT>builder()
-            .parameterName(parameterName)
-            .supportedToken(supportedToken)
-            .fieldNameSelector(fieldNameSelector)
-            .valueSelector(valueSelector)
-            .build());
   }
 
   /** Create a token mapping where all aspects are configurable. */
