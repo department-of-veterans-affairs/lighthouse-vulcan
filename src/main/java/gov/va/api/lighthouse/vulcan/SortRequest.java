@@ -17,5 +17,13 @@ public final class SortRequest {
     @NonNull String parameterName;
 
     @NonNull Sort.Direction direction;
+
+    static Parameter forRule(@NonNull String rule) {
+      if (rule.startsWith("-")) {
+        return builder().parameterName(rule.substring(1)).direction(Sort.Direction.DESC).build();
+      } else {
+        return builder().parameterName(rule).direction(Sort.Direction.ASC).build();
+      }
+    }
   }
 }
