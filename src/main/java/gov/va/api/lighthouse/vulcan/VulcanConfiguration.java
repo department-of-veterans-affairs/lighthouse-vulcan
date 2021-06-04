@@ -36,8 +36,7 @@ public class VulcanConfiguration<EntityT> {
 
   /** Return supported parameters learned from the mappings. */
   public List<String> supportedParameters() {
-    return mappings()
-        .stream()
+    return mappings().stream()
         .flatMap(m -> m.supportedParameterNames().stream())
         .collect(Collectors.toList());
   }
@@ -55,9 +54,9 @@ public class VulcanConfiguration<EntityT> {
 
     @NonNull Sort sort;
 
-    @NonNull @Builder.Default Function<SortRequest, Sort> sortableParameters = r -> null;
-
     @NonNull Vulcan.BaseUrlStrategy baseUrlStrategy;
+
+    Function<SortRequest, Sort> sortableParameters;
 
     /** Return true if the given parameter is either the page or count parameter. */
     public boolean isPagingRelatedParameter(String param) {

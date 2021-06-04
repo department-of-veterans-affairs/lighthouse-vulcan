@@ -1,10 +1,10 @@
 package gov.va.api.lighthouse.vulcan;
 
 import java.util.List;
-import org.springframework.data.domain.Sort;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import org.springframework.data.domain.Sort;
 
 @Value
 @Builder
