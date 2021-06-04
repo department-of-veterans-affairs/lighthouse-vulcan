@@ -12,6 +12,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import lombok.NonNull;
 
 @Data
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
@@ -22,9 +23,9 @@ import lombok.NoArgsConstructor;
 @Table(name = "FOO")
 public class FugaziEntity {
   @Id @GeneratedValue @Column @NotNull @EqualsAndHashCode.Include long id;
-  @Column @NotNull String name;
+  @Column @NonNull String name;
   @Column String food;
-  @Column @NotNull Instant date;
+  @Column @NonNull Instant date;
   @Column long millis;
   @Column String payload;
 }
