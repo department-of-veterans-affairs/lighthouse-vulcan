@@ -2,17 +2,13 @@ package gov.va.api.lighthouse.vulcan;
 
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
-import java.util.Arrays;
-import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.stream.Collectors;
 import javax.servlet.http.HttpServletRequest;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
@@ -141,18 +137,11 @@ public class RequestContext<EntityT> {
 
   private Sort sort(VulcanConfiguration<EntityT> config, HttpServletRequest request) {
     String parameterValue = request.getParameter("_sort");
-    if (parameterValue == null || config.paging().sortableParameters() == null) {
-      return config.paging().sort();
-    }
-    List<SortRequest.Parameter> parameters =
-        Arrays.stream(parameterValue.split(",", -1))
-            .map(StringUtils::trimToNull)
-            .filter(Objects::nonNull)
-            .map(SortRequest.Parameter::forRule)
-            .collect(Collectors.toList());
-    SortRequest sortRequest = SortRequest.builder().sorting(parameters).build();
-    return Optional.ofNullable(config.paging().sortableParameters().apply(sortRequest))
-        .orElse(config.paging().sort());
+    return parameterValue == null
+        ? config.paging().sort()
+        : Optional.ofNullable(config.paging().sortableParameters())
+            .map(sp -> sp.apply(SortRequest.forCsv(parameterValue)))
+            .orElse(config.paging().sort());
   }
 
   private Specification<EntityT> specificationOf(HttpServletRequest request) {
