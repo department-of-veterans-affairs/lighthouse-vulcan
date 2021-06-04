@@ -23,7 +23,7 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 public class Vulcan<EntityT, JpaRepositoryT extends JpaSpecificationExecutor<EntityT>> {
   @NonNull private final JpaRepositoryT repository;
 
-  @NotNull private final VulcanConfiguration<EntityT> config;
+  @NonNull private final VulcanConfiguration<EntityT> config;
 
   public static <E, R extends JpaSpecificationExecutor<E>> VulcanBuilder<E, R> forRepo(R repo) {
     return Vulcan.<E, R>builder().repository(repo);

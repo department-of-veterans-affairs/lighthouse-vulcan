@@ -47,13 +47,13 @@ public class VulcanConfiguration<EntityT> {
   public static class PagingConfiguration {
     @NonNull String pageParameter;
 
-    @NotNull String countParameter;
+    @NonNull String countParameter;
 
     @Builder.Default int defaultCount = 10;
 
     @Builder.Default int maxCount = 20;
 
-    @NotNull Sort sort;
+    @NonNull Sort sort;
 
     @NonNull Vulcan.BaseUrlStrategy baseUrlStrategy;
 
