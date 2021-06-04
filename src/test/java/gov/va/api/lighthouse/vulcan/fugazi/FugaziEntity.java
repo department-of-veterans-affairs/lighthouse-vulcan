@@ -6,7 +6,6 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
-import javax.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -22,7 +21,7 @@ import lombok.NonNull;
 @Entity
 @Table(name = "FOO")
 public class FugaziEntity {
-  @Id @GeneratedValue @Column @NotNull @EqualsAndHashCode.Include long id;
+  @Id @GeneratedValue @Column @EqualsAndHashCode.Include long id;
   @Column @NonNull String name;
   @Column String food;
   @Column @NonNull Instant date;
