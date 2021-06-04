@@ -151,7 +151,6 @@ public class RequestContext<EntityT> {
             .map(SortRequest.Parameter::forRule)
             .collect(Collectors.toList());
     SortRequest sortRequest = SortRequest.builder().sorting(parameters).build();
-    System.out.println(sortRequest);
     return Optional.ofNullable(config.paging().sortableParameters().apply(sortRequest))
         .orElse(config.paging().sort());
   }
