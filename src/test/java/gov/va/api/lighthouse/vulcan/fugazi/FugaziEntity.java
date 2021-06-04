@@ -6,12 +6,12 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import javax.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
-import lombok.NonNull;
 
 @Data
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
@@ -21,10 +21,10 @@ import lombok.NonNull;
 @Entity
 @Table(name = "FOO")
 public class FugaziEntity {
-  @Id @GeneratedValue @Column @EqualsAndHashCode.Include long id;
-  @Column @NonNull String name;
+  @Id @GeneratedValue @Column @NotNull @EqualsAndHashCode.Include long id;
+  @Column @NotNull String name;
   @Column String food;
-  @Column @NonNull Instant date;
+  @Column @NotNull Instant date;
   @Column long millis;
   @Column String payload;
 }
