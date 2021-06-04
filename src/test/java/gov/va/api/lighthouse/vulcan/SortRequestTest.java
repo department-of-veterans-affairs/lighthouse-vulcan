@@ -2,7 +2,6 @@ package gov.va.api.lighthouse.vulcan;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import gov.va.api.lighthouse.vulcan.SortRequest.Parameter;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.springframework.data.domain.Sort;
@@ -12,7 +11,7 @@ public class SortRequestTest {
 
   private static final Sort.Direction DESC = Sort.Direction.DESC;
 
-  static Parameter param(String name, Sort.Direction dir) {
+  static SortRequest.Parameter param(String name, Sort.Direction dir) {
     return SortRequest.Parameter.builder().parameterName(name).direction(dir).build();
   }
 
