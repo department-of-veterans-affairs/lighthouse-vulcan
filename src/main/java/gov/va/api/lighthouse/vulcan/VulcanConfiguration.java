@@ -4,7 +4,6 @@ import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import javax.servlet.http.HttpServletRequest;
-import javax.validation.constraints.NotNull;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -37,7 +36,8 @@ public class VulcanConfiguration<EntityT> {
 
   /** Return supported parameters learned from the mappings. */
   public List<String> supportedParameters() {
-    return mappings().stream()
+    return mappings()
+        .stream()
         .flatMap(m -> m.supportedParameterNames().stream())
         .collect(Collectors.toList());
   }
@@ -54,6 +54,8 @@ public class VulcanConfiguration<EntityT> {
     @Builder.Default int maxCount = 20;
 
     @NonNull Sort sort;
+
+    @NonNull @Builder.Default Function<SortRequest, Sort> sortableParameters = r -> null;
 
     @NonNull Vulcan.BaseUrlStrategy baseUrlStrategy;
 
