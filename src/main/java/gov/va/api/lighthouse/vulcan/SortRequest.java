@@ -1,9 +1,10 @@
 package gov.va.api.lighthouse.vulcan;
 
+import static java.util.stream.Collectors.toList;
+
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
-import java.util.stream.Collectors;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -35,7 +36,7 @@ public final class SortRequest {
                         .build();
                   }
                 })
-            .collect(Collectors.toList());
+            .collect(toList());
     return builder().sorting(parameters).build();
   }
 
