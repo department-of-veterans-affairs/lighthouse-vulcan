@@ -18,7 +18,7 @@ public final class SortRequest {
 
   /** Create from a comma-delimited list of rules, e.g. status,-date,category. */
   public static SortRequest forCsv(@NonNull String csv) {
-    List<SortRequest.Parameter> parameters =
+    List<Parameter> parameters =
         Arrays.stream(csv.split(",", -1))
             .map(StringUtils::trimToNull)
             .filter(Objects::nonNull)
