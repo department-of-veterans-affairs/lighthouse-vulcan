@@ -138,10 +138,10 @@ public class RequestContext<EntityT> {
   private Sort sort(VulcanConfiguration<EntityT> config, HttpServletRequest request) {
     String parameterValue = request.getParameter("_sort");
     return parameterValue == null
-        ? config.paging().sort()
+        ? config.paging().sortDefault()
         : Optional.ofNullable(config.paging().sortableParameters())
             .map(sp -> sp.apply(SortRequest.forCsv(parameterValue)))
-            .orElse(config.paging().sort());
+            .orElse(config.paging().sortDefault());
   }
 
   private Specification<EntityT> specificationOf(HttpServletRequest request) {

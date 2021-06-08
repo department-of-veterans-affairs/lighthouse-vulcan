@@ -31,7 +31,7 @@ class RequestContextTest {
                 .countParameter("count")
                 .defaultCount(10)
                 .maxCount(20)
-                .sort(Sort.unsorted())
+                .sortDefault(Sort.unsorted())
                 .sortableParameters(r -> null)
                 .baseUrlStrategy(useRequestUrl())
                 .build())
@@ -70,7 +70,7 @@ class RequestContextTest {
                     .countParameter("count")
                     .defaultCount(10)
                     .maxCount(20)
-                    .sort(Sort.unsorted())
+                    .sortDefault(Sort.unsorted())
                     .baseUrlStrategy(useRequestUrl())
                     .build())
             .mappings(Mappings.forEntity(FugaziEntity.class).string("name").get())
@@ -93,8 +93,8 @@ class RequestContextTest {
     assertThatExceptionOfType(InvalidRequest.class).isThrownBy(() -> context(page, "10"));
   }
 
-  @ParameterizedTest
   @MethodSource
+  @ParameterizedTest
   void pageAndCount(String page, String count, int expectedPage, int expectedCount) {
     var ctx = context(page, count);
     assertThat(ctx.page()).as("page").isEqualTo(expectedPage);
@@ -120,7 +120,7 @@ class RequestContextTest {
                     .countParameter("count")
                     .defaultCount(10)
                     .maxCount(20)
-                    .sort(Sort.unsorted())
+                    .sortDefault(Sort.unsorted())
                     .baseUrlStrategy(useRequestUrl())
                     .build())
             .mappings(Mappings.forEntity(FugaziEntity.class).string("name").get())

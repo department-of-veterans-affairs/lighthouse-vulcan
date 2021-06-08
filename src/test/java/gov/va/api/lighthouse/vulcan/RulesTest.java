@@ -144,7 +144,7 @@ class RulesTest {
                 PagingConfiguration.builder()
                     .countParameter("count")
                     .pageParameter("page")
-                    .sort(Sort.unsorted())
+                    .sortDefault(Sort.unsorted())
                     .maxCount(20)
                     .defaultCount(10)
                     .baseUrlStrategy(useRequestUrl())
