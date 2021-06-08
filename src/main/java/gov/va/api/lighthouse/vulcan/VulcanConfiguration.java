@@ -4,7 +4,6 @@ import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import javax.servlet.http.HttpServletRequest;
-import javax.validation.constraints.NotNull;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -47,19 +46,38 @@ public class VulcanConfiguration<EntityT> {
   public static class PagingConfiguration {
     @NonNull String pageParameter;
 
-    @NotNull String countParameter;
+    @NonNull String countParameter;
 
     @Builder.Default int defaultCount = 10;
 
     @Builder.Default int maxCount = 20;
 
-    @NotNull Sort sort;
-
     @NonNull Vulcan.BaseUrlStrategy baseUrlStrategy;
+
+    @NonNull Sort sortDefault;
+
+    Function<SortRequest, Sort> sortableParameters;
+
+    public static Function<SortRequest, Sort> noSortableParameters() {
+      return r -> null;
+    }
 
     /** Return true if the given parameter is either the page or count parameter. */
     public boolean isPagingRelatedParameter(String param) {
       return pageParameter().equals(param) || countParameter().equals(param);
+    }
+
+    public static final class PagingConfigurationBuilder {
+      /**
+       * Set default sort.
+       *
+       * @deprecated use {@link #sortDefault}
+       */
+      @SuppressWarnings("InlineMeSuggester")
+      @Deprecated(since = "2.0.4", forRemoval = true)
+      public PagingConfigurationBuilder sort(Sort s) {
+        return sortDefault(s);
+      }
     }
   }
 }

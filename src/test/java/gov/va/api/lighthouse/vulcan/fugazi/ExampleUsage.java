@@ -11,6 +11,7 @@ import static java.util.stream.Collectors.toList;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import gov.va.api.health.autoconfig.configuration.JacksonConfig;
+import gov.va.api.lighthouse.vulcan.SortRequest;
 import gov.va.api.lighthouse.vulcan.Vulcan;
 import gov.va.api.lighthouse.vulcan.VulcanConfiguration;
 import gov.va.api.lighthouse.vulcan.VulcanConfiguration.PagingConfiguration;
@@ -42,7 +43,8 @@ public class ExampleUsage {
                 .countParameter("count")
                 .defaultCount(30)
                 .maxCount(100)
-                .sort(Sort.by("id").ascending())
+                .sortDefault(Sort.by("id").ascending())
+                .sortableParameters(this::sortableParameters)
                 .baseUrlStrategy(useUrl("http://vulcan.com"))
                 .build())
         .mappings(
@@ -89,5 +91,13 @@ public class ExampleUsage {
     result.paging().nextPageUrl().ifPresent(url -> headers.add("X-NEXT-PAGE", url));
     result.paging().lastPageUrl().ifPresent(url -> headers.add("X-LAST-PAGE", url));
     return response;
+  }
+
+  private Sort sortableParameters(SortRequest req) {
+    return req.sorting().stream()
+        .filter(p -> p.parameterName().equals("when"))
+        .findFirst()
+        .map(p -> Sort.by(p.direction(), "date").and(Sort.by("id").ascending()))
+        .orElse(null);
   }
 }

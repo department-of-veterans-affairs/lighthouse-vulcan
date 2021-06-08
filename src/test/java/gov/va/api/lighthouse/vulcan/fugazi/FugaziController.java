@@ -8,6 +8,7 @@ import static org.apache.commons.lang3.StringUtils.isBlank;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import gov.va.api.health.autoconfig.configuration.JacksonConfig;
 import gov.va.api.lighthouse.vulcan.InvalidRequest;
+import gov.va.api.lighthouse.vulcan.SortRequest;
 import gov.va.api.lighthouse.vulcan.Specifications;
 import gov.va.api.lighthouse.vulcan.SystemIdFields;
 import gov.va.api.lighthouse.vulcan.Vulcan;
@@ -60,8 +61,9 @@ public class FugaziController {
                 .countParameter("count")
                 .defaultCount(30)
                 .maxCount(100)
-                .sort(Sort.by("id").ascending())
                 .baseUrlStrategy(useUrl("http://vulcan.com"))
+                .sortDefault(Sort.by("id").ascending())
+                .sortableParameters(this::sortableParameters)
                 .build())
         .mappings(
             Mappings.forEntity(FugaziEntity.class)
@@ -155,7 +157,6 @@ public class FugaziController {
                 (system, code) -> {
                   return Specifications.<FugaziEntity>select("food", code);
                 });
-
     return token
         .behavior()
         .onExplicitSystemAndExplicitCode(helper.matchSystemAndCode())
@@ -226,5 +227,13 @@ public class FugaziController {
       return StringUtils.removeStart(value, "food_");
     }
     return value;
+  }
+
+  private Sort sortableParameters(SortRequest req) {
+    return req.sorting().stream()
+        .filter(p -> p.parameterName().equals("xname"))
+        .findFirst()
+        .map(p -> Sort.by(p.direction(), "name").and(Sort.by("id").ascending()))
+        .orElse(null);
   }
 }

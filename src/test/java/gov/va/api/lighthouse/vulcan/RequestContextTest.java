@@ -23,6 +23,30 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 
 class RequestContextTest {
+  private static VulcanConfiguration<FugaziEntity> config() {
+    return VulcanConfiguration.forEntity(FugaziEntity.class)
+        .paging(
+            PagingConfiguration.builder()
+                .pageParameter("page")
+                .countParameter("count")
+                .defaultCount(10)
+                .maxCount(20)
+                .sortDefault(Sort.unsorted())
+                .sortableParameters(r -> null)
+                .baseUrlStrategy(useRequestUrl())
+                .build())
+        .mappings(Mappings.forEntity(FugaziEntity.class).string("name").get())
+        .defaultQuery(returnNothing())
+        .build();
+  }
+
+  static RequestContext<FugaziEntity> context(String page, String count) {
+    var config = config();
+    HttpServletRequest req = mock(HttpServletRequest.class);
+    when(req.getParameter("count")).thenReturn(count);
+    when(req.getParameter("page")).thenReturn(page);
+    return RequestContext.forConfig(config).request(req).build();
+  }
 
   @SuppressWarnings("unused")
   static Stream<Arguments> pageAndCount() {
@@ -32,30 +56,6 @@ class RequestContextTest {
         arguments("1", "11", 1, 11),
         arguments("2", "20", 2, 20),
         arguments("2", "21", 2, 20));
-  }
-
-  private VulcanConfiguration<FugaziEntity> config() {
-    return VulcanConfiguration.forEntity(FugaziEntity.class)
-        .paging(
-            PagingConfiguration.builder()
-                .pageParameter("page")
-                .countParameter("count")
-                .defaultCount(10)
-                .maxCount(20)
-                .sort(Sort.unsorted())
-                .baseUrlStrategy(useRequestUrl())
-                .build())
-        .mappings(Mappings.forEntity(FugaziEntity.class).string("name").get())
-        .defaultQuery(returnNothing())
-        .build();
-  }
-
-  RequestContext<FugaziEntity> context(String page, String count) {
-    var config = config();
-    HttpServletRequest req = mock(HttpServletRequest.class);
-    when(req.getParameter("count")).thenReturn(count);
-    when(req.getParameter("page")).thenReturn(page);
-    return RequestContext.forConfig(config).request(req).build();
   }
 
   @Test
@@ -70,13 +70,12 @@ class RequestContextTest {
                     .countParameter("count")
                     .defaultCount(10)
                     .maxCount(20)
-                    .sort(Sort.unsorted())
+                    .sortDefault(Sort.unsorted())
                     .baseUrlStrategy(useRequestUrl())
                     .build())
             .mappings(Mappings.forEntity(FugaziEntity.class).string("name").get())
             .defaultQuery(r -> specification)
             .build();
-
     HttpServletRequest req = mock(HttpServletRequest.class);
     assertThat(RequestContext.forConfig(config).request(req).build().specification())
         .isSameAs(specification);
@@ -94,8 +93,8 @@ class RequestContextTest {
     assertThatExceptionOfType(InvalidRequest.class).isThrownBy(() -> context(page, "10"));
   }
 
-  @ParameterizedTest
   @MethodSource
+  @ParameterizedTest
   void pageAndCount(String page, String count, int expectedPage, int expectedCount) {
     var ctx = context(page, count);
     assertThat(ctx.page()).as("page").isEqualTo(expectedPage);
@@ -121,7 +120,7 @@ class RequestContextTest {
                     .countParameter("count")
                     .defaultCount(10)
                     .maxCount(20)
-                    .sort(Sort.unsorted())
+                    .sortDefault(Sort.unsorted())
                     .baseUrlStrategy(useRequestUrl())
                     .build())
             .mappings(Mappings.forEntity(FugaziEntity.class).string("name").get())
@@ -134,7 +133,6 @@ class RequestContextTest {
                       throw new InvalidRequest("fugazi");
                     }))
             .build();
-
     HttpServletRequest req = mock(HttpServletRequest.class);
     assertThatExceptionOfType(InvalidRequest.class)
         .isThrownBy(() -> RequestContext.forConfig(config).request(req).build());

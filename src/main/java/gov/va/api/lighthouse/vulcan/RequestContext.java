@@ -3,12 +3,14 @@ package gov.va.api.lighthouse.vulcan;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
 import java.util.Objects;
+import java.util.Optional;
 import javax.servlet.http.HttpServletRequest;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 
 /**
@@ -19,13 +21,18 @@ import org.springframework.data.jpa.domain.Specification;
 @Value
 @Slf4j
 public class RequestContext<EntityT> {
-
   VulcanConfiguration<EntityT> config;
+
   HttpServletRequest request;
+
   Specification<EntityT> specification;
+
   int page;
+
   int count;
+
   PageRequest pageRequest;
+
   boolean abortSearch;
 
   @Builder
@@ -35,7 +42,7 @@ public class RequestContext<EntityT> {
     this.request = request;
     page = pageValueOf(request);
     count = countValueOf(request);
-    pageRequest = PageRequest.of(page - 1, Math.max(count, 1), config.paging().sort());
+    pageRequest = PageRequest.of(page - 1, Math.max(count, 1), sort(config, request));
     checkRules();
     Specification<EntityT> maybeSpecification;
     try {
@@ -128,6 +135,15 @@ public class RequestContext<EntityT> {
     }
   }
 
+  private Sort sort(VulcanConfiguration<EntityT> config, HttpServletRequest request) {
+    String parameterValue = request.getParameter("_sort");
+    return parameterValue == null
+        ? config.paging().sortDefault()
+        : Optional.ofNullable(config.paging().sortableParameters())
+            .map(sp -> sp.apply(SortRequest.forCsv(parameterValue)))
+            .orElse(config.paging().sortDefault());
+  }
+
   private Specification<EntityT> specificationOf(HttpServletRequest request) {
     Specification<EntityT> all =
         config.mappings().stream()
@@ -144,7 +160,6 @@ public class RequestContext<EntityT> {
    * partially created RequestContext to whatever is implementing rules.
    */
   private class ProtectedRuleContext implements RuleContext {
-
     @Override
     public VulcanConfiguration<?> config() {
       return config;

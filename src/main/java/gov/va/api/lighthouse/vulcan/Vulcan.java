@@ -7,7 +7,6 @@ import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Stream;
 import javax.servlet.http.HttpServletRequest;
-import javax.validation.constraints.NotNull;
 import lombok.Builder;
 import lombok.NonNull;
 import org.springframework.data.domain.Page;
@@ -23,7 +22,7 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 public class Vulcan<EntityT, JpaRepositoryT extends JpaSpecificationExecutor<EntityT>> {
   @NonNull private final JpaRepositoryT repository;
 
-  @NotNull private final VulcanConfiguration<EntityT> config;
+  @NonNull private final VulcanConfiguration<EntityT> config;
 
   public static <E, R extends JpaSpecificationExecutor<E>> VulcanBuilder<E, R> forRepo(R repo) {
     return Vulcan.<E, R>builder().repository(repo);
