@@ -58,6 +58,10 @@ public class VulcanConfiguration<EntityT> {
 
     Function<SortRequest, Sort> sortableParameters;
 
+    public static Function<SortRequest, Sort> noSortableParameters() {
+      return r -> null;
+    }
+
     /** Return true if the given parameter is either the page or count parameter. */
     public boolean isPagingRelatedParameter(String param) {
       return pageParameter().equals(param) || countParameter().equals(param);
