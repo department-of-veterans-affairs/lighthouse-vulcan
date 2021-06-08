@@ -67,6 +67,7 @@ public class FugaziController {
             Mappings.forEntity(FugaziEntity.class)
                 .string("name")
                 .string("xname", "name")
+                .string("foodOrBase", p -> (Set.of("food", "base")))
                 .value("namevalue", "name")
                 .value("namevalue", "name")
                 .value("millis", v -> Instant.parse(v).toEpochMilli())

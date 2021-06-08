@@ -24,6 +24,7 @@ public class FugaziEntity {
   @Id @GeneratedValue @Column @NotNull @EqualsAndHashCode.Include long id;
   @Column @NotNull String name;
   @Column String food;
+  @Column String base;
   @Column @NotNull Instant date;
   @Column long millis;
   @Column String payload;

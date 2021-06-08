@@ -19,4 +19,10 @@ public class FugaziDto {
     TACOS,
     EVEN_MORE_NACHOS
   }
+
+  public enum Base {
+    CHIPS,
+    TORTILLAS,
+    BREAD
+  }
 }
