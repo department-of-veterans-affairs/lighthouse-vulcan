@@ -99,7 +99,7 @@ public class StringMapping<EntityT> implements Mapping<EntityT> {
 
   private Collection<String> fieldNames(String value) {
     var fieldNames = fieldNameSelector().apply(value);
-    if (fieldNames.isEmpty()) {
+    if (fieldNames == null || fieldNames.isEmpty()) {
       throw CircuitBreaker.noResultsWillBeFound(
           asContainsParameterName(), value, "No database column defined.");
     }
