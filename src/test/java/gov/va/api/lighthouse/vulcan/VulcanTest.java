@@ -15,6 +15,7 @@ import gov.va.api.lighthouse.vulcan.VulcanConfiguration.PagingConfiguration;
 import gov.va.api.lighthouse.vulcan.VulcanResult.Paging;
 import gov.va.api.lighthouse.vulcan.fugazi.FugaziApplication;
 import gov.va.api.lighthouse.vulcan.fugazi.FugaziDto;
+import gov.va.api.lighthouse.vulcan.fugazi.FugaziDto.Base;
 import gov.va.api.lighthouse.vulcan.fugazi.FugaziDto.Food;
 import gov.va.api.lighthouse.vulcan.fugazi.FugaziEntity;
 import gov.va.api.lighthouse.vulcan.fugazi.FugaziRepository;
@@ -112,23 +113,25 @@ class VulcanTest {
 
   @BeforeEach
   void _insertData() {
-    unknown = _save("unknown", "2004-01-23T04:04:00Z", null);
-    nachos2005 = _save("nachos2005", "2005-01-21T07:57:00Z", Food.NACHOS);
-    moreNachos2005 = _save("moreNachos2005", "2005-01-22T07:57:00Z", Food.EVEN_MORE_NACHOS);
-    tacos2005 = _save("tacos2005", "2005-01-23T07:57:00Z", Food.TACOS);
-    tacos2006 = _save("tacos2006", "2006-01-21T07:57:00Z", Food.TACOS);
-    tacos2007 = _save("tacos2007", "2007-01-21T07:57:00Z", Food.TACOS);
-    tacos2008 = _save("tacos2008", "2008-01-21T07:57:00Z", Food.TACOS);
+    unknown = _save("unknown", "2004-01-23T04:04:00Z", null, null);
+    nachos2005 = _save("nachos2005", "2005-01-21T07:57:00Z", Food.NACHOS, Base.CHIPS);
+    moreNachos2005 =
+        _save("moreNachos2005", "2005-01-22T07:57:00Z", Food.EVEN_MORE_NACHOS, Base.CHIPS);
+    tacos2005 = _save("tacos2005", "2005-01-23T07:57:00Z", Food.TACOS, Base.TORTILLAS);
+    tacos2006 = _save("tacos2006", "2006-01-21T07:57:00Z", Food.TACOS, Base.TORTILLAS);
+    tacos2007 = _save("tacos2007", "2007-01-21T07:57:00Z", Food.TACOS, Base.TORTILLAS);
+    tacos2008 = _save("tacos2008", "2008-01-21T07:57:00Z", Food.TACOS, Base.TORTILLAS);
   }
 
   @SneakyThrows
-  FugaziDto _save(String name, String date, Food food) {
+  FugaziDto _save(String name, String date, Food food, Base base) {
     var dto = FugaziDto.builder().name(name).dinner(food).favoriteNumber(name.length()).build();
     Instant time = Instant.parse(date);
     repo.save(
         FugaziEntity.builder()
             .name(name)
             .food(food == null ? null : food.toString())
+            .base(base == null ? null : base.toString())
             .date(time)
             .millis(time.toEpochMilli())
             .payload(mapper.writeValueAsString(dto))
@@ -327,6 +330,12 @@ class VulcanTest {
     assertThat(req("/fugazi?foodSpecHelper=http://food-custom|PIZZA")).isEmpty();
     assertThat(req("/fugazi?foodSpecHelper=http://food-custom|TACOS"))
         .containsExactlyInAnyOrder(tacos2005, tacos2006, tacos2007, tacos2008);
+
+    assertThat(req("/fugazi?foodOrBase=nachos")).containsExactly(nachos2005);
+    assertThat(req("/fugazi?foodOrBase=tortillas"))
+        .containsExactly(tacos2005, tacos2006, tacos2007, tacos2008);
+    assertThat(req("/fugazi?foodOrBase=bread")).isEmpty();
+    assertThat(req("/fugazi?foodOrBase=chips")).containsExactly(nachos2005, moreNachos2005);
   }
 
   @Test

@@ -134,8 +134,17 @@ public class Mappings<EntityT> implements Supplier<List<Mapping<EntityT>>> {
 
   /** Create a string mapping where request and field name are different. */
   public Mappings<EntityT> string(String parameterName, String fieldName) {
+    return string(parameterName, s -> singletonList(fieldName));
+  }
+
+  /** Create a string mapping where the value should match one of many field names. */
+  public Mappings<EntityT> string(
+      String parameterName, Function<String, Collection<String>> fieldNameSelector) {
     return add(
-        StringMapping.<EntityT>builder().parameterName(parameterName).fieldName(fieldName).build());
+        StringMapping.<EntityT>builder()
+            .parameterName(parameterName)
+            .fieldNameSelector(fieldNameSelector)
+            .build());
   }
 
   /** Create a token mapping where all aspects are configurable. */

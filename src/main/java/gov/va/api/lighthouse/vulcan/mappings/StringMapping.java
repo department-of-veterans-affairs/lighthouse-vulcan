@@ -3,9 +3,13 @@ package gov.va.api.lighthouse.vulcan.mappings;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
+import gov.va.api.lighthouse.vulcan.CircuitBreaker;
 import gov.va.api.lighthouse.vulcan.Mapping;
+import gov.va.api.lighthouse.vulcan.Specifications;
+import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
+import java.util.function.Function;
 import javax.servlet.http.HttpServletRequest;
 import lombok.Builder;
 import lombok.Value;
@@ -24,10 +28,9 @@ import org.springframework.data.jpa.domain.Specification;
 @Value
 @Builder
 public class StringMapping<EntityT> implements Mapping<EntityT> {
-
   String parameterName;
 
-  String fieldName;
+  Function<String, Collection<String>> fieldNameSelector;
 
   @Override
   public boolean appliesTo(HttpServletRequest request) {
@@ -53,17 +56,28 @@ public class StringMapping<EntityT> implements Mapping<EntityT> {
     if (isBlank(value)) {
       return null;
     }
-    return (Specification<EntityT>)
-        (root, criteriaQuery, criteriaBuilder) ->
-            criteriaBuilder.like(
-                criteriaBuilder.lower(root.get(fieldName)),
-                "%" + value.toLowerCase(Locale.ENGLISH) + "%");
+    Collection<String> fieldNames = fieldNames(value);
+    return fieldNames.stream()
+        .map(
+            fieldName ->
+                (Specification<EntityT>)
+                    (root, criteriaQuery, criteriaBuilder) ->
+                        criteriaBuilder.like(
+                            criteriaBuilder.lower(root.get(fieldName)),
+                            "%" + value.toLowerCase(Locale.ENGLISH) + "%"))
+        .collect(Specifications.any());
   }
 
   private Specification<EntityT> clauseForExactMatch(HttpServletRequest request) {
     String value = request.getParameter(asExactParameterName());
-    return (Specification<EntityT>)
-        (root, criteriaQuery, criteriaBuilder) -> criteriaBuilder.equal(root.get(fieldName), value);
+    Collection<String> fieldNames = fieldNames(value);
+    return fieldNames.stream()
+        .map(
+            fieldName ->
+                (Specification<EntityT>)
+                    (root, criteriaQuery, criteriaBuilder) ->
+                        criteriaBuilder.equal(root.get(fieldName), value))
+        .collect(Specifications.any());
   }
 
   private Specification<EntityT> clauseForStartsWithMatch(HttpServletRequest request) {
@@ -71,11 +85,25 @@ public class StringMapping<EntityT> implements Mapping<EntityT> {
     if (isBlank(value)) {
       return null;
     }
-    return (Specification<EntityT>)
-        (root, criteriaQuery, criteriaBuilder) ->
-            criteriaBuilder.like(
-                criteriaBuilder.lower(root.get(fieldName)),
-                value.toLowerCase(Locale.ENGLISH) + "%");
+    Collection<String> fieldNames = fieldNames(value);
+    return fieldNames.stream()
+        .map(
+            fieldName ->
+                (Specification<EntityT>)
+                    (root, criteriaQuery, criteriaBuilder) ->
+                        criteriaBuilder.like(
+                            criteriaBuilder.lower(root.get(fieldName)),
+                            value.toLowerCase(Locale.ENGLISH) + "%"))
+        .collect(Specifications.any());
+  }
+
+  private Collection<String> fieldNames(String value) {
+    var fieldNames = fieldNameSelector().apply(value);
+    if (fieldNames == null || fieldNames.isEmpty()) {
+      throw CircuitBreaker.noResultsWillBeFound(
+          asContainsParameterName(), value, "No database column defined.");
+    }
+    return fieldNames;
   }
 
   @Override
