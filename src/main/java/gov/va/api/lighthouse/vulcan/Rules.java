@@ -25,13 +25,17 @@ public class Rules {
    * <p>If the parameter is not known to be supported, it is returned anyways so the Rules can be
    * enforced.
    */
-  private static List<String> expanded(String startsWith, List<String> source) {
-    if (source == null || source.isEmpty()) {
-      return List.of(startsWith);
+  private static List<String> expanded(
+      String baseParameterName, List<String> allSupportedParameters) {
+    if (allSupportedParameters == null || allSupportedParameters.isEmpty()) {
+      return List.of(baseParameterName);
     }
-    var result = source.stream().filter(s -> s.startsWith(startsWith)).collect(toList());
+    var result =
+        allSupportedParameters.stream()
+            .filter(s -> s.equals(baseParameterName) || s.startsWith(baseParameterName + ":"))
+            .collect(toList());
     if (result.isEmpty()) {
-      result.add(startsWith);
+      result.add(baseParameterName);
     }
     return result;
   }
