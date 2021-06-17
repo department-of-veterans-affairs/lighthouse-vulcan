@@ -6,6 +6,7 @@ import static java.util.stream.Collectors.toSet;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.stream.Stream;
 import lombok.RequiredArgsConstructor;
 import lombok.Value;
@@ -17,12 +18,34 @@ import lombok.experimental.UtilityClass;
  */
 @UtilityClass
 public class Rules {
+  /**
+   * Returns all supported parameters, including modifiers, for a specific parameter. For example,
+   * the parameter "name" could return ["name", "name:contains", "name:exact"].
+   *
+   * <p>If the parameter is not known to be supported, it is returned anyways so the Rules can be
+   * enforced.
+   */
+  private static List<String> expanded(String startsWith, List<String> source) {
+    if (source == null || source.isEmpty()) {
+      return List.of(startsWith);
+    }
+    var result = source.stream().filter(s -> s.startsWith(startsWith)).collect(toList());
+    if (result.isEmpty()) {
+      result.add(startsWith);
+    }
+    return result;
+  }
+
   /** Requires that at least on of the parameters be specified. */
   public Rule atLeastOneParameterOf(String... parameter) {
     return (ctx) -> {
+      var allSupported = ctx.config().supportedParameters();
       for (String p : parameter) {
-        if (ctx.request().getParameter(p) != null) {
-          return;
+        var supported = expanded(p, allSupported);
+        for (String expandedParameter : supported) {
+          if (ctx.request().getParameter(expandedParameter) != null) {
+            return;
+          }
         }
       }
       throw InvalidRequest.because(
@@ -49,10 +72,14 @@ public class Rules {
   /** Requires that none of these parameters be specified. */
   public Rule forbiddenParameters(String... parameter) {
     return (ctx) -> {
+      var allSupported = ctx.config().supportedParameters();
       for (String p : parameter) {
-        if (ctx.request().getParameter(p) != null) {
-          throw InvalidRequest.because(
-              "No parameter of %s can be specified", Arrays.toString(parameter));
+        var supported = expanded(p, allSupported);
+        for (String expandedParameter : supported) {
+          if (ctx.request().getParameter(expandedParameter) != null) {
+            throw InvalidRequest.because(
+                "No parameter of %s can be specified", Arrays.toString(parameter));
+          }
         }
       }
     };
@@ -73,9 +100,13 @@ public class Rules {
   public Rule parametersAlwaysSpecifiedTogether(String... parameter) {
     return (ctx) -> {
       int specified = 0;
+      var allSupported = ctx.config().supportedParameters();
       for (String p : parameter) {
-        if (ctx.request().getParameter(p) != null) {
-          specified++;
+        var supported = expanded(p, allSupported);
+        for (String expandedParameter : supported) {
+          if (ctx.request().getParameter(expandedParameter) != null) {
+            specified++;
+          }
         }
       }
       if (specified > 0 && specified != parameter.length) {
@@ -89,9 +120,13 @@ public class Rules {
   public Rule parametersNeverSpecifiedTogether(String... parameter) {
     return (ctx) -> {
       int specified = 0;
+      var allSupported = ctx.config().supportedParameters();
       for (String p : parameter) {
-        if (ctx.request().getParameter(p) != null) {
-          specified++;
+        var supported = expanded(p, allSupported);
+        for (String expandedParameter : supported) {
+          if (ctx.request().getParameter(expandedParameter) != null) {
+            specified++;
+          }
         }
       }
       if (specified > 0 && specified != 1) {
