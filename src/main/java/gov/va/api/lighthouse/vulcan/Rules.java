@@ -91,8 +91,7 @@ public class Rules {
     if (specifiedParameters.contains(parameter)) {
       return true;
     }
-    var modified = specifiedParameters.stream().filter(isModifiedVersionOf(parameter)).findFirst();
-    return modified.isPresent();
+    return specifiedParameters.stream().anyMatch(isModifiedVersionOf(parameter));
   }
 
   /**
