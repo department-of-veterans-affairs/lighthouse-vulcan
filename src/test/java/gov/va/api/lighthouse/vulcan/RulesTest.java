@@ -25,6 +25,23 @@ class RulesTest {
   }
 
   @Test
+  void atLeastOneParameterOfWithModifiers() {
+    Rules.atLeastOneParameterOf("foo", "str").check(requestWithParameters("foo"));
+    Rules.atLeastOneParameterOf("foo", "str").check(requestWithParameters("str"));
+    Rules.atLeastOneParameterOf("foo", "str").check(requestWithParameters("str:contains"));
+    Rules.atLeastOneParameterOf("foo", "str").check(requestWithParameters("str:exact"));
+    Rules.atLeastOneParameterOf("foo", "str").check(requestWithParameters("str:whatever"));
+    assertThatExceptionOfType(InvalidRequest.class)
+        .isThrownBy(
+            () ->
+                Rules.atLeastOneParameterOf("foo", "str").check(requestWithParameters("strnope")));
+    assertThatExceptionOfType(InvalidRequest.class)
+        .isThrownBy(
+            () ->
+                Rules.atLeastOneParameterOf("foo", "str").check(requestWithParameters("str-nope")));
+  }
+
+  @Test
   void forbidUnknownParameters() {
     Rules.forbidUnknownParameters().check(requestWithParameters("foo"));
     Rules.forbidUnknownParameters().check(requestWithParameters("bar"));
@@ -45,6 +62,30 @@ class RulesTest {
     assertThatExceptionOfType(InvalidRequest.class)
         .isThrownBy(
             () -> Rules.forbiddenParameters("foo", "bar").check(requestWithParameters("bar")));
+  }
+
+  @Test
+  void forbiddenParametersWithModifiers() {
+    Rules.forbiddenParameters("foo", "str").check(requestWithParameters("bar"));
+    Rules.forbiddenParameters("foo", "str").check(requestWithParameters("str-whatever"));
+    Rules.forbiddenParameters("foo", "str").check(requestWithParameters("strwhatever"));
+    assertThatExceptionOfType(InvalidRequest.class)
+        .isThrownBy(
+            () -> Rules.forbiddenParameters("foo", "str").check(requestWithParameters("str")));
+    assertThatExceptionOfType(InvalidRequest.class)
+        .isThrownBy(
+            () ->
+                Rules.forbiddenParameters("foo", "str")
+                    .check(requestWithParameters("str:contains")));
+    assertThatExceptionOfType(InvalidRequest.class)
+        .isThrownBy(
+            () ->
+                Rules.forbiddenParameters("foo", "str").check(requestWithParameters("str:exact")));
+    assertThatExceptionOfType(InvalidRequest.class)
+        .isThrownBy(
+            () ->
+                Rules.forbiddenParameters("foo", "str")
+                    .check(requestWithParameters("str:whatever")));
   }
 
   @Test
@@ -83,6 +124,43 @@ class RulesTest {
   }
 
   @Test
+  void ifParameterThenAlsoAtLeastOneParameterOfWithModifiers() {
+    Rules.ifParameter("foo")
+        .thenAlsoAtLeastOneParameterOf("str")
+        .check(requestWithParameters("whatever"));
+    Rules.ifParameter("foo")
+        .thenAlsoAtLeastOneParameterOf("str")
+        .check(requestWithParameters("foo", "str"));
+    Rules.ifParameter("foo")
+        .thenAlsoAtLeastOneParameterOf("str")
+        .check(requestWithParameters("foo", "str:contains"));
+    Rules.ifParameter("foo")
+        .thenAlsoAtLeastOneParameterOf("str")
+        .check(requestWithParameters("foo", "str:exact"));
+    Rules.ifParameter("foo")
+        .thenAlsoAtLeastOneParameterOf("str")
+        .check(requestWithParameters("foo", "str:whatever"));
+    assertThatExceptionOfType(InvalidRequest.class)
+        .isThrownBy(
+            () ->
+                Rules.ifParameter("foo")
+                    .thenAlsoAtLeastOneParameterOf("str")
+                    .check(requestWithParameters("foo", "whatever")));
+    assertThatExceptionOfType(InvalidRequest.class)
+        .isThrownBy(
+            () ->
+                Rules.ifParameter("foo")
+                    .thenAlsoAtLeastOneParameterOf("str")
+                    .check(requestWithParameters("foo", "strnope")));
+    assertThatExceptionOfType(InvalidRequest.class)
+        .isThrownBy(
+            () ->
+                Rules.ifParameter("foo")
+                    .thenAlsoAtLeastOneParameterOf("str")
+                    .check(requestWithParameters("foo", "str-nope")));
+  }
+
+  @Test
   void ifParameterThenForbidParameters() {
     Rules.ifParameter("foo")
         .thenForbidParameters("bar", "ack")
@@ -105,6 +183,44 @@ class RulesTest {
   }
 
   @Test
+  void ifParameterThenForbidParametersWithModifiers() {
+    Rules.ifParameter("foo").thenForbidParameters("str").check(requestWithParameters("whatever"));
+    Rules.ifParameter("foo")
+        .thenForbidParameters("str")
+        .check(requestWithParameters("str-whatever"));
+    Rules.ifParameter("foo")
+        .thenForbidParameters("str")
+        .check(requestWithParameters("strwhatever"));
+    Rules.ifParameter("foo")
+        .thenForbidParameters("str")
+        .check(requestWithParameters("foo", "whatever"));
+    assertThatExceptionOfType(InvalidRequest.class)
+        .isThrownBy(
+            () ->
+                Rules.ifParameter("foo")
+                    .thenForbidParameters("str")
+                    .check(requestWithParameters("foo", "str")));
+    assertThatExceptionOfType(InvalidRequest.class)
+        .isThrownBy(
+            () ->
+                Rules.ifParameter("foo")
+                    .thenForbidParameters("str")
+                    .check(requestWithParameters("foo", "str:contains")));
+    assertThatExceptionOfType(InvalidRequest.class)
+        .isThrownBy(
+            () ->
+                Rules.ifParameter("foo")
+                    .thenForbidParameters("str")
+                    .check(requestWithParameters("foo", "str:exact")));
+    assertThatExceptionOfType(InvalidRequest.class)
+        .isThrownBy(
+            () ->
+                Rules.ifParameter("foo")
+                    .thenForbidParameters("str")
+                    .check(requestWithParameters("foo", "str:whatever")));
+  }
+
+  @Test
   void parametersAlwaysSpecifiedTogether() {
     Rules.parametersAlwaysSpecifiedTogether("foo", "bar").check(requestWithParameters("whatever"));
     Rules.parametersAlwaysSpecifiedTogether("foo", "bar")
@@ -122,6 +238,46 @@ class RulesTest {
   }
 
   @Test
+  void parametersAlwaysSpecifiedTogetherWithModifiers() {
+    Rules.parametersAlwaysSpecifiedTogether("foo", "str").check(requestWithParameters("whatever"));
+    Rules.parametersAlwaysSpecifiedTogether("foo", "str")
+        .check(requestWithParameters("str-whatever"));
+    Rules.parametersAlwaysSpecifiedTogether("foo", "str")
+        .check(requestWithParameters("foo", "str"));
+    Rules.parametersAlwaysSpecifiedTogether("foo", "str")
+        .check(requestWithParameters("foo", "str:contains"));
+    Rules.parametersAlwaysSpecifiedTogether("foo", "str")
+        .check(requestWithParameters("foo", "str:exact"));
+    Rules.parametersAlwaysSpecifiedTogether("foo", "str")
+        .check(requestWithParameters("foo", "str:whatever"));
+    assertThatExceptionOfType(InvalidRequest.class)
+        .isThrownBy(
+            () ->
+                Rules.parametersAlwaysSpecifiedTogether("foo", "str")
+                    .check(requestWithParameters("foo")));
+    assertThatExceptionOfType(InvalidRequest.class)
+        .isThrownBy(
+            () ->
+                Rules.parametersAlwaysSpecifiedTogether("foo", "str")
+                    .check(requestWithParameters("str")));
+    assertThatExceptionOfType(InvalidRequest.class)
+        .isThrownBy(
+            () ->
+                Rules.parametersAlwaysSpecifiedTogether("foo", "str")
+                    .check(requestWithParameters("str:contains")));
+    assertThatExceptionOfType(InvalidRequest.class)
+        .isThrownBy(
+            () ->
+                Rules.parametersAlwaysSpecifiedTogether("foo", "str")
+                    .check(requestWithParameters("foo", "str-whatever")));
+    assertThatExceptionOfType(InvalidRequest.class)
+        .isThrownBy(
+            () ->
+                Rules.parametersAlwaysSpecifiedTogether("foo", "str")
+                    .check(requestWithParameters("foo", "strwhatever")));
+  }
+
+  @Test
   void parametersNeverSpecifiedTogether() {
     Rules.parametersNeverSpecifiedTogether("foo", "bar").check(requestWithParameters("whatever"));
     Rules.parametersNeverSpecifiedTogether("foo", "bar").check(requestWithParameters("foo"));
@@ -131,6 +287,40 @@ class RulesTest {
             () ->
                 Rules.parametersNeverSpecifiedTogether("foo", "bar")
                     .check(requestWithParameters("foo", "bar")));
+  }
+
+  @Test
+  void parametersNeverSpecifiedTogetherWithModifiers() {
+    Rules.parametersNeverSpecifiedTogether("foo", "str").check(requestWithParameters("whatever"));
+    Rules.parametersNeverSpecifiedTogether("foo", "str").check(requestWithParameters("foo"));
+    Rules.parametersNeverSpecifiedTogether("foo", "str").check(requestWithParameters("str"));
+    Rules.parametersNeverSpecifiedTogether("foo", "str")
+        .check(requestWithParameters("str:contains"));
+    Rules.parametersNeverSpecifiedTogether("foo", "str").check(requestWithParameters("str:exact"));
+    Rules.parametersNeverSpecifiedTogether("foo", "str")
+        .check(requestWithParameters("foo", "str-whatever"));
+    Rules.parametersNeverSpecifiedTogether("foo", "str")
+        .check(requestWithParameters("foo", "strwhatever"));
+    assertThatExceptionOfType(InvalidRequest.class)
+        .isThrownBy(
+            () ->
+                Rules.parametersNeverSpecifiedTogether("foo", "str")
+                    .check(requestWithParameters("foo", "str")));
+    assertThatExceptionOfType(InvalidRequest.class)
+        .isThrownBy(
+            () ->
+                Rules.parametersNeverSpecifiedTogether("foo", "str")
+                    .check(requestWithParameters("foo", "str:contains")));
+    assertThatExceptionOfType(InvalidRequest.class)
+        .isThrownBy(
+            () ->
+                Rules.parametersNeverSpecifiedTogether("foo", "str")
+                    .check(requestWithParameters("foo", "str:exact")));
+    assertThatExceptionOfType(InvalidRequest.class)
+        .isThrownBy(
+            () ->
+                Rules.parametersNeverSpecifiedTogether("foo", "str")
+                    .check(requestWithParameters("foo", "str:whatever")));
   }
 
   private FugaziRuleContext requestWithParameters(String... parameters) {
@@ -150,7 +340,12 @@ class RulesTest {
                     .baseUrlStrategy(useRequestUrl())
                     .build())
             .defaultQuery(Vulcan.returnNothing())
-            .mappings(Mappings.forEntity(FugaziEntity.class).value("foo").value("bar").get())
+            .mappings(
+                Mappings.forEntity(FugaziEntity.class)
+                    .value("foo")
+                    .value("bar")
+                    .string("str")
+                    .get())
             .build();
     return new FugaziRuleContext(req, config);
   }

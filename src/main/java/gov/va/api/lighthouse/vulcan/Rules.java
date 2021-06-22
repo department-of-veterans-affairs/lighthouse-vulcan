@@ -6,6 +6,8 @@ import static java.util.stream.Collectors.toSet;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
 import java.util.Arrays;
+import java.util.Set;
+import java.util.function.Predicate;
 import java.util.stream.Stream;
 import lombok.RequiredArgsConstructor;
 import lombok.Value;
@@ -13,15 +15,17 @@ import lombok.experimental.UtilityClass;
 
 /**
  * This provides some standard rules for HTTP request validation. If a rule fails and invalid
- * request exception will be thrown.
+ * request exception will be thrown. Rules are aware of FHIR style modifiers (parameter:modifier),
+ * e.g. string parameters have `name:exact` or `name:contains` parameter name modifier.
  */
 @UtilityClass
 public class Rules {
   /** Requires that at least on of the parameters be specified. */
   public Rule atLeastOneParameterOf(String... parameter) {
     return (ctx) -> {
+      var specifiedParameters = ctx.request().getParameterMap().keySet();
       for (String p : parameter) {
-        if (ctx.request().getParameter(p) != null) {
+        if (isParameterOrModifiedParameterSpecified(specifiedParameters, p)) {
           return;
         }
       }
@@ -38,6 +42,7 @@ public class Rules {
           ctx.request().getParameterMap().keySet().stream()
               .filter(p -> !ctx.config().paging().isPagingRelatedParameter(p))
               .filter(p -> !knownParameters.contains(p))
+              .filter(p -> !isModifiedParameter(p))
               .collect(toList());
       if (!unknownParameters.isEmpty()) {
         throw InvalidRequest.because(
@@ -49,10 +54,17 @@ public class Rules {
   /** Requires that none of these parameters be specified. */
   public Rule forbiddenParameters(String... parameter) {
     return (ctx) -> {
+      var specifiedParameters = ctx.request().getParameterMap().keySet();
       for (String p : parameter) {
-        if (ctx.request().getParameter(p) != null) {
+        if (specifiedParameters.contains(p)) {
           throw InvalidRequest.because(
               "No parameter of %s can be specified", Arrays.toString(parameter));
+        }
+        var modified = specifiedParameters.stream().filter(isModifiedVersionOf(p)).findFirst();
+        if (modified.isPresent()) {
+          throw InvalidRequest.because(
+              "No parameter of %s can be specified. Found modified parameter %s",
+              Arrays.toString(parameter), modified.get());
         }
       }
     };
@@ -66,6 +78,22 @@ public class Rules {
     return new IfParameterRuleBuilder(parameter);
   }
 
+  private boolean isModifiedParameter(String parameter) {
+    return parameter.indexOf(':') > 0;
+  }
+
+  private Predicate<String> isModifiedVersionOf(String baseParameterName) {
+    return parameter -> parameter.startsWith(baseParameterName + ":");
+  }
+
+  private boolean isParameterOrModifiedParameterSpecified(
+      Set<String> specifiedParameters, String parameter) {
+    if (specifiedParameters.contains(parameter)) {
+      return true;
+    }
+    return specifiedParameters.stream().anyMatch(isModifiedVersionOf(parameter));
+  }
+
   /**
    * Create a rule that requires certain parameters to be specified together, e.g. latitude and
    * longitude.
@@ -73,8 +101,9 @@ public class Rules {
   public Rule parametersAlwaysSpecifiedTogether(String... parameter) {
     return (ctx) -> {
       int specified = 0;
+      var specifiedParameters = ctx.request().getParameterMap().keySet();
       for (String p : parameter) {
-        if (ctx.request().getParameter(p) != null) {
+        if (isParameterOrModifiedParameterSpecified(specifiedParameters, p)) {
           specified++;
         }
       }
@@ -89,8 +118,9 @@ public class Rules {
   public Rule parametersNeverSpecifiedTogether(String... parameter) {
     return (ctx) -> {
       int specified = 0;
+      var specifiedParameters = ctx.request().getParameterMap().keySet();
       for (String p : parameter) {
-        if (ctx.request().getParameter(p) != null) {
+        if (isParameterOrModifiedParameterSpecified(specifiedParameters, p)) {
           specified++;
         }
       }
@@ -104,7 +134,7 @@ public class Rules {
   @Value
   @RequiredArgsConstructor
   public static class IfParameterRuleBuilder {
-    private final String parameter;
+    String parameter;
 
     /**
      * Forbid any unknown parameter modifiers. Known modifiers are determined both by the mappings
