@@ -8,7 +8,6 @@ import gov.va.api.lighthouse.vulcan.Mapping;
 import gov.va.api.lighthouse.vulcan.Specifications;
 import java.util.Collection;
 import java.util.List;
-import java.util.Locale;
 import java.util.function.Function;
 import javax.servlet.http.HttpServletRequest;
 import lombok.Builder;
@@ -62,9 +61,7 @@ public class StringMapping<EntityT> implements Mapping<EntityT> {
             fieldName ->
                 (Specification<EntityT>)
                     (root, criteriaQuery, criteriaBuilder) ->
-                        criteriaBuilder.like(
-                            criteriaBuilder.lower(root.get(fieldName)),
-                            "%" + value.toLowerCase(Locale.ENGLISH) + "%"))
+                        criteriaBuilder.like(root.get(fieldName), "%" + value + "%"))
         .collect(Specifications.any());
   }
 
@@ -91,9 +88,7 @@ public class StringMapping<EntityT> implements Mapping<EntityT> {
             fieldName ->
                 (Specification<EntityT>)
                     (root, criteriaQuery, criteriaBuilder) ->
-                        criteriaBuilder.like(
-                            criteriaBuilder.lower(root.get(fieldName)),
-                            value.toLowerCase(Locale.ENGLISH) + "%"))
+                        criteriaBuilder.like(root.get(fieldName), value + "%"))
         .collect(Specifications.any());
   }
 
