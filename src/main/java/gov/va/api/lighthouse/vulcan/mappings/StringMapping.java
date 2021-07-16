@@ -57,7 +57,7 @@ public class StringMapping<EntityT> implements Mapping<EntityT> {
     }
     Collection<String> fieldNames = fieldNames(value);
     /* This query relies on the database for case insesitivity in order to prevent performance
-     * degredation caused by the lower() method of criteria builder. */
+     * degradation caused by the lower() method of criteria builder. */
     return fieldNames.stream()
         .map(
             fieldName ->
@@ -86,7 +86,7 @@ public class StringMapping<EntityT> implements Mapping<EntityT> {
     }
     Collection<String> fieldNames = fieldNames(value);
     /* This query relies on the database for case insesitivity in order to prevent performance
-     * degredation caused by the lower() method of criteria builder. */
+     * degradation caused by the lower() method of criteria builder. */
     return fieldNames.stream()
         .map(
             fieldName ->
