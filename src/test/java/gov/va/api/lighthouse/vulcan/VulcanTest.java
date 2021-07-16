@@ -278,7 +278,7 @@ class VulcanTest {
         .containsExactlyInAnyOrder(tacos2005, tacos2006, tacos2007, tacos2008);
     assertThat(req("/fugazi?name:exact=nachos")).isEmpty();
     assertThat(req("/fugazi?name:exact=")).isEmpty();
-    assertThat(req("/fugazi?name:contains=nachos"))
+    assertThat(req("/fugazi?name:contains=acho"))
         .containsExactlyInAnyOrder(nachos2005, moreNachos2005);
     assertThat(req("/fugazi?name:contains=")).isEmpty();
     assertThat(req("/fugazi?xname=nachos2005")).containsExactly(nachos2005);
@@ -331,11 +331,11 @@ class VulcanTest {
     assertThat(req("/fugazi?foodSpecHelper=http://food-custom|TACOS"))
         .containsExactlyInAnyOrder(tacos2005, tacos2006, tacos2007, tacos2008);
 
-    assertThat(req("/fugazi?foodOrBase=nachos")).containsExactly(nachos2005);
-    assertThat(req("/fugazi?foodOrBase=tortillas"))
+    assertThat(req("/fugazi?foodOrBase=NACHOS")).containsExactly(nachos2005);
+    assertThat(req("/fugazi?foodOrBase=TORTILLAS"))
         .containsExactly(tacos2005, tacos2006, tacos2007, tacos2008);
     assertThat(req("/fugazi?foodOrBase=bread")).isEmpty();
-    assertThat(req("/fugazi?foodOrBase=chips")).containsExactly(nachos2005, moreNachos2005);
+    assertThat(req("/fugazi?foodOrBase=CHIPS")).containsExactly(nachos2005, moreNachos2005);
   }
 
   @Test

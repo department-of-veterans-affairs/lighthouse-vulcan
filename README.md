@@ -110,20 +110,19 @@ _Vulcan_ provides several mappings and allows you to add your own with the `Mapp
 
 - Matches `String` field values.
 - Supports FHIR semantics for string parameters. See http://hl7.org/fhir/R4/search.html#string
-    - `name=vul` - Starts with, case-insensitive matching
-    - `name:contains=ulca` - Contains, case-insensitive matching
-    - `name:exact=Vulcan` - Exact, case-sensitive matching
+    - `name=vul` - Starts with
+    - `name:contains=ulca` - Contains
+    - `name:exact=Vulcan` - Exact
+- Case-sensitivity for string parameters depends on database configurations
 
 For the JPA field value of `Vulcan`, here's how the following parameters match.
 
 | Parameter | Matches |
 | --------- | ------- |
-| `name=vul`           | yes |
-| `name=vulcan`        | yes |
-| `name=VUL`           | yes |
+| `name=Vul`           | yes |
+| `name=Vulcan`        | yes |
 | `name=can`           | no  |
-| `name:contains=uLcA` | yes |
-| `name:exact=vulcan`  | no  |
+| `name:contains=ulca` | yes |
 | `name:exact=Vulcan`  | yes |
 
 ### `csvList("name")` and `csvList("name","field")`
